@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>النقاشات | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="discussions.html">
+<div id="app">
+  <div>
+    <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="message-square" style="color:var(--primary)"></i><span data-ar="النقاشات" data-en="Discussions">النقاشات</span></h1>
+    <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="مناقشات الفريق حول المخاطر وخطط المعالجة" data-en="Team discussions on risks and treatment plans">مناقشات الفريق حول المخاطر وخطط المعالجة</p>
+  </div>
+  <div class="card"><div class="card-pad" style="display:flex;gap:.75rem;align-items:flex-start">
+    <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-hover))">A</div>
+    <div style="flex:1"><textarea class="input" rows="2" data-ar-ph="اكتب تعليقاً أو اطرح سؤالاً..." data-en-ph="Write a comment or ask a question..." placeholder=""></textarea>
+    <div style="margin-top:.5rem;display:flex;justify-content:flex-end"><button class="btn btn-primary" style="padding:.5rem 1rem"><i data-lucide="send" style="width:1rem;height:1rem"></i><span data-ar="إرسال" data-en="Post">إرسال</span></button></div></div>
+  </div></div>
+  <div style="display:flex;flex-direction:column;gap:1rem" id="threads"></div>
+</div>
+<script>
+window.ermInit=function(){
+  const G=[['#f97316','#f59e0b'],['#3b82f6','#6366f1'],['#10b981','#22c55e'],['#a855f7','#8b5cf6']];
+  const T=[
+    ['سعاد البيشي','Suaad Al-Bishi','question','سؤال','Question','بخصوص R-002، هل تم تأكيد المورد البديل الثالث؟ نحتاج إغلاق هذه النقطة قبل اجتماع اللجنة.','Regarding R-002, has the third alternate supplier been confirmed? We need to close this before the committee meeting.','منذ ساعتين','2h ago',4],
+    ['ماجد الدوسري','Majed Al-Dossari','comment','تعليق','Comment','تم رفع نسبة إنجاز خطة تحوّط النحاس إلى 75% بعد توقيع العقد الإطاري مع المورد الرئيسي.','Copper hedging plan progress raised to 75% after signing the framework agreement with the main supplier.','منذ 5 ساعات','5h ago',2],
+    ['فهد الشمري','Fahad Al-Shamri','decision','قرار','Decision','تقرر تصعيد خطة الأمن السيبراني (TP-016) كأولوية قصوى بعد تجاوزها الموعد المحدد.','Decided to escalate the cybersecurity plan (TP-016) to top priority after it passed its deadline.','أمس','Yesterday',6],
+  ];
+  const TY={question:['#3b82f6','help-circle'],comment:['#64748b','message-circle'],decision:['#10b981','check-circle']};
+  document.getElementById('threads').innerHTML=T.map(([na,ne,ty,tya,tye,ca,ce,ta,te,replies],i)=>{const[c1,c2]=G[i%G.length];const[tc,tic]=TY[ty];return `
+    <div class="card"><div class="card-pad">
+      <div style="display:flex;gap:.75rem;align-items:flex-start">
+        <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;background:linear-gradient(135deg,${c1},${c2})">${na.charAt(0)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span style="font-weight:600;color:var(--foreground)" data-ar="${na}" data-en="${ne}">${na}</span><span class="chip" style="background:${tc}1f;color:${tc}"><i data-lucide="${tic}" style="width:.8rem;height:.8rem"></i> <span data-ar="${tya}" data-en="${tye}">${tya}</span></span><span class="muted" style="font-size:.72rem" data-ar="${ta}" data-en="${te}">${ta}</span></div>
+          <p style="margin:.5rem 0 0;color:var(--foreground);line-height:1.7;font-size:.9rem" data-ar="${ca}" data-en="${ce}">${ca}</p>
+          <div style="margin-top:.6rem;display:flex;gap:1.25rem;font-size:.78rem" class="muted">
+            <button style="background:none;border:0;cursor:pointer;color:inherit;display:flex;align-items:center;gap:.3rem"><i data-lucide="message-square" style="width:.85rem;height:.85rem"></i> <span>${replies}</span> <span data-ar="رد" data-en="replies">رد</span></button>
+            <button style="background:none;border:0;cursor:pointer;color:inherit;display:flex;align-items:center;gap:.3rem"><i data-lucide="corner-up-left" class="flip-x" style="width:.85rem;height:.85rem"></i> <span data-ar="رد" data-en="Reply">رد</span></button>
+          </div>
+        </div>
+      </div>
+    </div></div>`;}).join('');
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

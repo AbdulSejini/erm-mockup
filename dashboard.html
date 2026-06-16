@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة المعلومات | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="dashboard.html">
+<div id="app">
+
+  <div class="page-hero">
+    <div class="blob" style="width:16rem;height:16rem;top:-5rem;inset-inline-end:-5rem"></div>
+    <div class="blob" style="width:12rem;height:12rem;bottom:-5rem;inset-inline-start:-5rem"></div>
+    <div style="position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+      <div>
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem"><i data-lucide="shield" style="width:2rem;height:2rem"></i><h1 style="margin:0;font-size:1.875rem;font-weight:700" data-ar="لوحة المعلومات" data-en="Dashboard">لوحة المعلومات</h1></div>
+        <p style="margin:0;color:rgba(255,255,255,.85)"><span data-ar="مرحباً" data-en="Welcome">مرحباً</span>، <span data-ar="عبدالإله سجيني" data-en="Abdulelah Sejini">عبدالإله سجيني</span></p>
+        <p style="margin:.25rem 0 0;color:rgba(255,255,255,.6);font-size:.75rem" data-ar="الثلاثاء، 16 يونيو 2026" data-en="Tuesday, 16 June 2026">الثلاثاء، 16 يونيو 2026</p>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <button class="btn" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff"><i data-lucide="refresh-cw" style="width:1rem;height:1rem"></i><span data-ar="تحديث" data-en="Refresh">تحديث</span></button>
+        <button class="btn" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تقرير شهري" data-en="Monthly Report">تقرير شهري</span></button>
+      </div>
+    </div>
+    <div style="position:relative;z-index:1;margin-top:1.5rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem" class="hero-stats"></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:1rem" id="ratingCards"></div>
+  <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:1rem" id="secondaryStats"></div>
+
+  <div class="grid" style="grid-template-columns:1fr;gap:1.5rem" id="midGrid">
+    <div class="card" style="grid-column:span 2">
+      <div class="card-head"><div><h3 class="h-title"><i data-lucide="bar-chart-3" style="color:var(--primary)"></i><span data-ar="مصفوفة المخاطر" data-en="Risk Matrix">مصفوفة المخاطر</span></h3><p class="muted" style="margin:.25rem 0 0;font-size:.75rem" data-ar="المخاطر الكامنة" data-en="Inherent Risks">المخاطر الكامنة</p></div><a href="assessment.html" class="btn btn-ghost"><span data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</span><i data-lucide="chevron-right" class="flip-x" style="width:1rem;height:1rem"></i></a></div>
+      <div class="card-pad" style="display:flex;justify-content:center;padding:1.5rem">
+        <div>
+          <div style="display:flex">
+            <div style="display:flex;align-items:center;justify-content:center;padding-inline-end:.5rem"><span class="muted" style="font-size:.75rem;writing-mode:vertical-rl;transform:rotate(180deg)" data-ar="الاحتمالية" data-en="Likelihood">الاحتمالية</span></div>
+            <div><div id="matrix" style="display:flex;flex-direction:column-reverse"></div><div style="display:flex"><div style="width:52px"></div><div id="xaxis" style="display:flex"></div></div><div style="margin-top:.25rem;text-align:center"><span class="muted" style="font-size:.75rem" data-ar="الأثر" data-en="Impact">الأثر</span></div></div>
+          </div>
+          <div id="legend" style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="calendar" style="color:var(--primary)"></i><span data-ar="المواعيد القادمة" data-en="Upcoming Deadlines">المواعيد القادمة</span></h3></div>
+      <div class="card-pad" style="display:flex;flex-direction:column;gap:.75rem" id="deadlines"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="activity" style="color:var(--primary)"></i><span data-ar="أحدث المخاطر" data-en="Recent Risks">أحدث المخاطر</span></h3><a href="risks.html" class="btn btn-ghost"><span data-ar="عرض الكل" data-en="View All">عرض الكل</span><i data-lucide="arrow-up-right" style="width:1rem;height:1rem"></i></a></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+      <th data-ar="رقم الخطر" data-en="Risk ID">رقم الخطر</th><th data-ar="عنوان الخطر" data-en="Risk Title">عنوان الخطر</th><th data-ar="التصنيف" data-en="Rating">التصنيف</th><th data-ar="خطة معالجة" data-en="Treatment">خطة معالجة</th><th data-ar="الرائد" data-en="Champion">الرائد</th><th data-ar="التاريخ" data-en="Date">التاريخ</th>
+    </tr></thead><tbody id="recentRisks"></tbody></table></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr;gap:1.5rem" id="bottomGrid">
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="target" style="color:var(--primary)"></i><span data-ar="حالة خطط المعالجة" data-en="Treatment Plans Status">حالة خطط المعالجة</span></h3></div>
+      <div class="card-pad" style="display:flex;flex-direction:column;gap:1rem" id="treatmentStatus"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="zap" style="color:var(--primary)"></i><span data-ar="إجراءات سريعة" data-en="Quick Actions">إجراءات سريعة</span></h3></div>
+      <div class="card-pad" style="display:flex;flex-direction:column;gap:.75rem" id="quickActions"></div>
+    </div>
+  </div>
+
+</div>
+<script src="dashboard-data.js"></script>
+<script src="erm-shell.js"></script>
+</body></html>

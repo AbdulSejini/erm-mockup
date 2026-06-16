@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>التدقيق الداخلي | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="audit.html">
+<div id="app">
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="file-search" style="color:var(--primary)"></i><span data-ar="التدقيق الداخلي" data-en="Internal Audit">التدقيق الداخلي</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="ارتباطات التدقيق والملاحظات وحالة معالجتها" data-en="Audit engagements, findings & follow-up status">ارتباطات التدقيق والملاحظات وحالة معالجتها</p>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-outline"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تقرير ربع سنوي" data-en="Quarterly Report">تقرير ربع سنوي</span></button>
+      <button class="btn btn-primary"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="ارتباط جديد" data-en="New Engagement">ارتباط جديد</span></button>
+    </div>
+  </div>
+
+  <!-- Top stats -->
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem" id="stats"></div>
+
+  <!-- Active engagements -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="briefcase" style="color:var(--primary)"></i><span data-ar="الارتباطات النشطة" data-en="Active Engagements">الارتباطات النشطة</span></h3></div>
+    <div class="card-pad grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem" id="cards"></div>
+  </div>
+
+  <!-- Findings table -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="flag" style="color:var(--primary)"></i><span data-ar="الملاحظات النشطة" data-en="Open Findings">الملاحظات النشطة</span> <span class="chip" style="background:rgba(239,68,68,.1);color:#ef4444">15</span></h3><button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="filter" style="width:.9rem;height:.9rem"></i><span data-ar="تصفية" data-en="Filter">تصفية</span></button></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+      <th data-ar="المعرّف" data-en="ID">المعرّف</th>
+      <th data-ar="الملاحظة" data-en="Finding">الملاحظة</th>
+      <th data-ar="الخطورة" data-en="Severity">الخطورة</th>
+      <th data-ar="الإدارة" data-en="Department">الإدارة</th>
+      <th data-ar="المسؤول" data-en="Owner">المسؤول</th>
+      <th data-ar="الاستحقاق" data-en="Due">الاستحقاق</th>
+      <th data-ar="الحالة" data-en="Status">الحالة</th>
+    </tr></thead><tbody id="findings"></tbody></table></div>
+  </div>
+
+</div>
+<script>
+window.ermInit=function(){
+  const ST={prog:['جارٍ','In Progress','#3b82f6'],plan:['مخطّط','Planned','#64748b'],done:['مكتمل','Completed','#10b981']};
+  const A=[
+    ['AE-09','تدقيق دورة المشتريات والموردين','Procurement & vendor cycle audit','المشتريات','Procurement','prog',60,12,4,'2026-07-30','سعاد البيشي','Suaad Al-Bishi'],
+    ['AE-08','تدقيق الضوابط المالية والخزينة','Financial controls & treasury audit','المالية','Finance','done',100,18,18,'2026-05-15','نواف باقاسي','Nawaf Bagasi'],
+    ['AE-07','تدقيق أمن المعلومات','Information security audit','تقنية المعلومات','IT','prog',40,8,2,'2026-08-20','أكرم زهير','Akram Zuhair'],
+    ['AE-10','تدقيق السلامة المهنية','Occupational safety audit','السلامة','HSE','plan',0,0,0,'2026-09-10','فيصل الزغيبي','Faisal Al-Zaghibi'],
+    ['AE-11','تدقيق الموارد البشرية والرواتب','HR & payroll audit','الموارد البشرية','HR','prog',75,9,5,'2026-08-05','حسام المالكي','Hussam Al-Malki'],
+    ['AE-12','تدقيق العمليات الإنتاجية','Production operations audit','الإنتاج','Production','plan',0,0,0,'2026-10-15','محمد عشرم','Mohammed Ashram'],
+  ];
+
+  document.getElementById('stats').innerHTML=[
+    ['ارتباطات نشطة','Active Engagements',A.length,'#F39200','briefcase'],
+    ['ملاحظات مفتوحة','Open Findings',15,'#ef4444','flag'],
+    ['تمت معالجتها','Resolved',32,'#10b981','check-circle-2'],
+    ['متأخرة','Overdue',3,'#f97316','clock'],
+  ].map(([ar,en,v,c,ic])=>`<div class="stat-tile"><div class="glow" style="background:${c}"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c}">${v}</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:${c}1f;color:${c}"><i data-lucide="${ic}"></i></div></div></div>`).join('');
+
+  document.getElementById('cards').innerHTML=A.map(([id,ta,te,da,de,st,prog,fc,fcl,due,oa,oe])=>{const[sa,se,sc]=ST[st];return `
+    <div class="card" style="border:1px solid var(--border)"><div class="card-pad">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem"><code class="mono">${id}</code><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></div>
+      <p style="margin:0 0 .3rem;font-size:1rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
+      <p class="muted" style="margin:0;font-size:.78rem"><i data-lucide="building-2" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${da}" data-en="${de}">${da}</span> · <i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${oa}" data-en="${oe}">${oa}</span></p>
+      <div style="margin-top:.75rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.25rem" class="muted"><span data-ar="نسبة الإنجاز" data-en="Progress">نسبة الإنجاز</span><span>${prog}%</span></div><div class="progress"><span style="width:${prog}%;background:${sc}"></span></div></div>
+      <div style="margin-top:.75rem;display:flex;justify-content:space-between;font-size:.78rem" class="muted">
+        <span><i data-lucide="flag" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="ملاحظات مغلقة" data-en="Findings closed">ملاحظات مغلقة</span>: ${fcl}/${fc}</span>
+        <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${due}</span>
+      </div>
+    </div></div>`;}).join('');
+
+  // Findings table
+  const SEV={high:['عالية','High','#ef4444'],med:['متوسطة','Medium','#f97316'],low:['منخفضة','Low','#eab308']};
+  const FST={open:['مفتوح','Open','#3b82f6'],progress:['قيد المعالجة','In Progress','#f97316'],overdue:['متأخر','Overdue','#ef4444']};
+  const F=[
+    ['F-024','عدم وجود فصل مهام في موافقة طلبات الشراء','SoD missing on PR approval','high','المشتريات','Procurement','سعاد البيشي','2026-07-15','progress'],
+    ['F-022','صلاحيات SAP لمستخدمين منتهي تعيينهم','SAP access for terminated users','high','تقنية المعلومات','IT','أكرم زهير','2026-06-30','overdue'],
+    ['F-021','ضعف توثيق التسويات البنكية اليومية','Daily bank reconciliation gaps','med','المالية','Finance','نواف باقاسي','2026-08-10','open'],
+    ['F-020','عدم تحديث سياسة إدارة المخزون منذ 2024','Inventory policy not updated since 2024','med','اللوجستيات','Logistics','أحمد صالح','2026-08-25','open'],
+    ['F-019','ضعف في برنامج تدريب الموظفين الجدد على HSE','New-hire HSE onboarding gap','med','السلامة','HSE','فيصل الزغيبي','2026-09-01','open'],
+    ['F-018','عدم وجود تأمين على شحنات NaCl','Missing insurance on NaCl shipments','low','الشحن','Shipping','تركي أبو طالب','2026-09-15','open'],
+  ];
+  document.getElementById('findings').innerHTML=F.map(([id,ta,te,sev,da,de,oa,due,fst])=>{const[sva,sve,svc]=SEV[sev];const[fsta,fste,fstc]=FST[fst];return `
+    <tr><td><code class="mono">${id}</code></td>
+    <td><p style="margin:0;font-weight:500" data-ar="${ta}" data-en="${te}">${ta}</p></td>
+    <td><span class="chip" style="background:${svc}1f;color:${svc}" data-ar="${sva}" data-en="${sve}">${sva}</span></td>
+    <td class="muted" data-ar="${da}" data-en="${de}">${da}</td>
+    <td class="muted" data-ar="${oa}" data-en="${oa}">${oa}</td>
+    <td class="muted">${due}</td>
+    <td><span class="chip" style="background:${fstc}1f;color:${fstc}" data-ar="${fsta}" data-en="${fste}">${fsta}</span></td></tr>`;}).join('');
+
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

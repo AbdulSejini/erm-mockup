@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>سجل المخاطر | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="risks.html">
+<div id="app">
+
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="alert-triangle" style="color:var(--primary)"></i><span data-ar="سجل المخاطر" data-en="Risk Register">سجل المخاطر</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="إدارة وتتبّع جميع المخاطر المؤسسية" data-en="Manage and track all enterprise risks">إدارة وتتبّع جميع المخاطر المؤسسية</p>
+    </div>
+    <a href="risk-new.html" class="btn btn-primary" style="text-decoration:none"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="تسجيل خطر جديد" data-en="Register New Risk">تسجيل خطر جديد</span></a>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+    <div class="stat-tile"><div class="glow" style="background:linear-gradient(135deg,#f97316,#f59e0b)"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="إجمالي المخاطر" data-en="Total Risks">إجمالي المخاطر</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700">48</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:linear-gradient(135deg,#f97316,#f59e0b)"><i data-lucide="layers" style="color:#fff"></i></div></div></div>
+    <div class="stat-tile"><div class="glow" style="background:linear-gradient(135deg,#3b82f6,#6366f1)"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="مخاطر مفتوحة" data-en="Open Risks">مخاطر مفتوحة</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700">21</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:linear-gradient(135deg,#3b82f6,#6366f1)"><i data-lucide="folder-open" style="color:#fff"></i></div></div></div>
+    <div class="stat-tile"><div class="glow" style="background:linear-gradient(135deg,#ef4444,#f43f5e)"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="مخاطر حرجة" data-en="Critical Risks">مخاطر حرجة</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700">2</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:linear-gradient(135deg,#ef4444,#f43f5e)"><i data-lucide="alert-octagon" style="color:#fff"></i></div></div></div>
+    <div class="stat-tile"><div class="glow" style="background:linear-gradient(135deg,#10b981,#22c55e)"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="لها خطة معالجة" data-en="With Treatment">لها خطة معالجة</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700">32</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:linear-gradient(135deg,#10b981,#22c55e)"><i data-lucide="shield-check" style="color:#fff"></i></div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-pad" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
+      <div style="position:relative;flex:1;min-width:200px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input class="input" style="padding-inline-start:2.25rem" data-ar-ph="بحث في المخاطر..." data-en-ph="Search risks..." placeholder="بحث..."></div>
+      <select class="select" style="width:auto"><option data-ar="كل التصنيفات" data-en="All Categories">كل التصنيفات</option><option data-ar="استراتيجي" data-en="Strategic">استراتيجي</option><option data-ar="تشغيلي" data-en="Operational">تشغيلي</option><option data-ar="مالي" data-en="Financial">مالي</option></select>
+      <select class="select" style="width:auto"><option data-ar="كل المستويات" data-en="All Ratings">كل المستويات</option><option data-ar="حرج" data-en="Critical">حرج</option><option data-ar="رئيسي" data-en="Major">رئيسي</option><option data-ar="متوسط" data-en="Moderate">متوسط</option></select>
+      <select class="select" style="width:auto"><option data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option><option data-ar="مفتوح" data-en="Open">مفتوح</option><option data-ar="قيد المعالجة" data-en="In Treatment">قيد المعالجة</option><option data-ar="مُعالج" data-en="Mitigated">مُعالج</option></select>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+      <th data-ar="المعرّف" data-en="ID">المعرّف</th><th data-ar="عنوان الخطر" data-en="Risk Title">عنوان الخطر</th><th data-ar="التصنيف" data-en="Category">التصنيف</th><th data-ar="الإدارة" data-en="Department">الإدارة</th>
+      <th data-ar="كامن" data-en="Inherent">كامن</th><th data-ar="متبقٍ" data-en="Residual">متبقٍ</th><th data-ar="الحالة" data-en="Status">الحالة</th><th data-ar="المالك" data-en="Owner">المالك</th><th></th>
+    </tr></thead><tbody id="riskRows"></tbody></table></div>
+    <div class="card-pad" style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+      <span class="muted" style="font-size:.8rem"><span data-ar="عرض 1–10 من 48" data-en="Showing 1–10 of 48">عرض 1–10 من 48</span></span>
+      <div style="display:flex;gap:.25rem">
+        <button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="chevron-right" class="flip-x" style="width:1rem;height:1rem"></i></button>
+        <button class="btn btn-primary" style="padding:.4rem .8rem">1</button>
+        <button class="btn btn-outline" style="padding:.4rem .8rem">2</button>
+        <button class="btn btn-outline" style="padding:.4rem .8rem">3</button>
+        <button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="chevron-left" class="flip-x" style="width:1rem;height:1rem"></i></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+window.ermInit=function(){
+  const R=[
+    ['R-001','تقلبات أسعار النحاس والألمنيوم','Copper & aluminum price volatility','مالي','Financial','المالية','Finance',25,'حرج','Critical','#ef4444',15,'مفتوح','Open','#3b82f6','ماجد الدوسري','Majed Al-Dossari'],
+    ['R-002','اضطرابات سلسلة الإمداد للمواد الخام','Raw material supply disruptions','تشغيلي','Operational','المشتريات','Procurement',20,'حرج','Critical','#ef4444',12,'قيد المعالجة','In Treatment','#f59e0b','سعاد البيشي','Suaad Al-Bishi'],
+    ['R-003','تغيّر أسعار صرف العملات الأجنبية','Foreign exchange fluctuations','مالي','Financial','الخزينة','Treasury',16,'رئيسي','Major','#f97316',16,'مفتوح','Open','#3b82f6','خالد الزهراني','Khaled Al-Zahrani'],
+    ['R-004','الامتثال للاشتراطات البيئية','Environmental compliance','امتثال','Compliance','القانونية','Legal',12,'رئيسي','Major','#f97316',8,'قيد المعالجة','In Treatment','#f59e0b','هند السبيعي','Hind Al-Subaie'],
+    ['R-005','السلامة المهنية في خطوط الإنتاج','Occupational safety','تشغيلي','Operational','السلامة','HSE',10,'رئيسي','Major','#f97316',6,'قيد المعالجة','In Treatment','#f59e0b','ياسر الشهراني','Yasser Al-Shahrani'],
+    ['R-006','مخاطر الأمن السيبراني','Cybersecurity risk','تقني','Technology','تقنية المعلومات','IT',12,'رئيسي','Major','#f97316',9,'مفتوح','Open','#3b82f6','فهد الشمري','Fahad Al-Shamri'],
+    ['R-007','تركّز العملاء في قطاع المرافق','Customer concentration','استراتيجي','Strategic','المبيعات','Sales',9,'متوسط','Moderate','#eab308',9,'مفتوح','Open','#3b82f6','نورة الغامدي','Nora Al-Ghamdi'],
+    ['R-008','فقدان الكفاءات الهندسية','Loss of engineering talent','موارد بشرية','HR','الموارد البشرية','HR',6,'متوسط','Moderate','#eab308',4,'مُعالج','Mitigated','#10b981','عبدالله القحطاني','Abdullah Al-Qahtani'],
+    ['R-009','تقادم خطوط الإنتاج','Production line obsolescence','تشغيلي','Operational','الإنتاج','Production',8,'متوسط','Moderate','#eab308',6,'قيد المعالجة','In Treatment','#f59e0b','ماجد الدوسري','Majed Al-Dossari'],
+    ['R-010','تقلب الطلب في السوق','Market demand volatility','استراتيجي','Strategic','المبيعات','Sales',6,'متوسط','Moderate','#eab308',4,'مُعالج','Mitigated','#10b981','نورة الغامدي','Nora Al-Ghamdi'],
+  ];
+  document.getElementById('riskRows').innerHTML=R.map(([id,ta,te,ca,ce,da,de,iscore,ira,ire,ic,rscore,sa,se,sc,oa,oe])=>`
+    <tr style="cursor:pointer" onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${id}'"><td><code class="mono">${id}</code></td>
+    <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p></td>
+    <td class="muted" data-ar="${ca}" data-en="${ce}">${ca}</td>
+    <td class="muted" data-ar="${da}" data-en="${de}">${da}</td>
+    <td><span class="chip" style="background:${ic}1f;color:${ic}">${iscore}</span></td>
+    <td><span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)">${rscore}</span></td>
+    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
+    <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
+    <td><button class="btn btn-outline" style="padding:.3rem .5rem" onclick="event.stopPropagation()"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td></tr>`).join('');
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

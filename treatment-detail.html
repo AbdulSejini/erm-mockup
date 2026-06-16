@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تفاصيل خطة المعالجة | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  .nav-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-radius:.6rem;font-size:.8rem;font-weight:600;color:var(--foreground-secondary);background:transparent;border:0;cursor:pointer;text-decoration:none;transition:all .15s}
+  .nav-pill:hover{background:var(--background-tertiary);color:var(--foreground)}
+  .nav-pill.active{background:var(--primary-light);color:var(--primary)}
+  .meta-card{display:flex;gap:.6rem;padding:.85rem;border-radius:.75rem;background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.18)}
+  .meta-card i{flex-shrink:0;width:1.1rem;height:1.1rem;color:rgba(255,255,255,.8)}
+  .meta-card .lbl{margin:0;font-size:.7rem;color:rgba(255,255,255,.7);font-weight:500}
+  .meta-card .val{margin:.15rem 0 0;font-size:.85rem;color:#fff;font-weight:600}
+  .score-tile{flex:1;padding:1rem;border-radius:.75rem;text-align:center;background:var(--background-tertiary);border:1px solid var(--border)}
+  .score-tile .lbl{font-size:.7rem;color:var(--foreground-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:0}
+  .score-tile .val{font-size:1.75rem;font-weight:800;margin:.4rem 0 .2rem}
+  .score-tile .sub{font-size:.7rem;color:var(--foreground-muted);margin:0}
+  .task-card{border:1px solid var(--border);border-radius:1rem;background:var(--card);overflow:hidden;transition:border-color .15s}
+  .task-card:hover{border-color:var(--border-hover)}
+  .task-head{padding:1rem;border-bottom:1px solid var(--border)}
+  .task-num{flex-shrink:0;width:2.5rem;height:2.5rem;border-radius:.6rem;background:rgba(243,146,0,.1);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem}
+  .step-row{display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:.6rem;background:var(--background-tertiary)}
+  .update-bubble{padding:.75rem;border-radius:.75rem;background:var(--background-tertiary);border:1px solid var(--border)}
+  .timeline-dot{flex-shrink:0;width:2.2rem;height:2.2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 8px rgba(0,0,0,.1)}
+  .timeline-line{position:absolute;inset-inline-start:1.1rem;top:2.2rem;bottom:-.4rem;width:2px;background:var(--border)}
+  .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:.5rem;background:transparent;border:1px solid var(--border);color:var(--foreground-secondary);cursor:pointer;transition:all .15s}
+  .icon-btn:hover{background:var(--background-tertiary)}
+  .icon-btn.danger{color:#e11d48;border-color:rgba(225,29,72,.3)}
+  .icon-btn.danger:hover{background:rgba(225,29,72,.08)}
+  .matrix-mini{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .matrix-mini-cell{aspect-ratio:1;border-radius:.3rem;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;font-weight:700}
+</style>
+</head>
+<body data-page="treatment.html">
+<div id="app">
+
+  <!-- Sticky navigation header -->
+  <div class="card" style="position:sticky;top:4rem;z-index:20;padding:.75rem 1rem;display:flex;flex-wrap:wrap;align-items:center;gap:.75rem">
+    <a href="treatment.html" class="icon-btn" title="رجوع"><i data-lucide="arrow-right" style="width:1rem;height:1rem"></i></a>
+    <code class="mono" style="font-size:.85rem;background:rgba(243,146,0,.1);color:var(--primary)">R-001</code>
+    <div style="height:1.2rem;width:1px;background:var(--border)"></div>
+    <div style="display:flex;gap:.25rem;flex-wrap:wrap">
+      <a href="#overview" class="nav-pill active"><i data-lucide="layout-dashboard" style="width:.9rem;height:.9rem"></i><span data-ar="نظرة عامة" data-en="Overview">نظرة عامة</span></a>
+      <a href="#tasks" class="nav-pill"><i data-lucide="check-square" style="width:.9rem;height:.9rem"></i><span data-ar="المهام" data-en="Tasks">المهام</span></a>
+      <a href="#risk" class="nav-pill"><i data-lucide="alert-triangle" style="width:.9rem;height:.9rem"></i><span data-ar="الخطر" data-en="Risk">الخطر</span></a>
+      <a href="#discussions" class="nav-pill"><i data-lucide="message-square" style="width:.9rem;height:.9rem"></i><span data-ar="نقاشات" data-en="Discussions">نقاشات</span></a>
+      <a href="#log" class="nav-pill"><i data-lucide="history" style="width:.9rem;height:.9rem"></i><span data-ar="سجل التعديلات" data-en="Change Log">سجل التعديلات</span></a>
+    </div>
+    <div style="margin-inline-start:auto;display:flex;gap:.4rem;flex-wrap:wrap">
+      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
+      <button class="btn btn-outline" id="emailBtn" style="padding:.45rem .7rem"><i data-lucide="mail" style="width:.9rem;height:.9rem"></i><span data-ar="بريد" data-en="Email">بريد</span></button>
+      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="pencil" style="width:.9rem;height:.9rem"></i><span data-ar="تعديل" data-en="Edit">تعديل</span></button>
+      <button class="btn btn-outline" style="padding:.45rem .7rem;color:#e11d48;border-color:rgba(225,29,72,.3)"><i data-lucide="trash-2" style="width:.9rem;height:.9rem"></i><span data-ar="حذف" data-en="Delete">حذف</span></button>
+    </div>
+  </div>
+
+  <!-- ========== Overview Hero ========== -->
+  <section id="overview" class="page-hero">
+    <div class="blob" style="width:18rem;height:18rem;top:-6rem;inset-inline-end:-6rem"></div>
+    <div class="blob" style="width:14rem;height:14rem;bottom:-6rem;inset-inline-start:-6rem"></div>
+    <div style="position:relative;z-index:1">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:1rem;margin-bottom:1.25rem">
+        <div style="display:flex;height:3.5rem;width:3.5rem;align-items:center;justify-content:center;border-radius:1rem;background:rgba(255,255,255,.2);backdrop-filter:blur(4px)">
+          <i data-lucide="trending-down" style="width:1.75rem;height:1.75rem;color:#fff"></i>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <span style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.25);font-size:.75rem;font-weight:700;color:#fff" data-ar="تقليل" data-en="Reduce">تقليل</span>
+            <span style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:999px;background:#3b82f6;font-size:.75rem;font-weight:700;color:#fff" data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</span>
+            <span style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.2);font-size:.75rem;font-weight:600;color:#fff" data-ar="عالية الأولوية" data-en="High Priority">عالية الأولوية</span>
+          </div>
+          <h1 style="margin:0;font-size:1.6rem;font-weight:800;color:#fff;line-height:1.3" data-ar="خطة تحوّط أسعار النحاس" data-en="Copper price hedging plan">خطة تحوّط أسعار النحاس</h1>
+          <p style="margin:.4rem 0 0;color:rgba(255,255,255,.85);font-size:.85rem" data-ar="مرتبطة بالخطر R-001 — تقلبات أسعار النحاس والألمنيوم" data-en="Linked to R-001 — Copper & aluminum price volatility">مرتبطة بالخطر R-001 — تقلبات أسعار النحاس والألمنيوم</p>
+        </div>
+      </div>
+
+      <!-- Meta grid -->
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem">
+        <div class="meta-card"><i data-lucide="building"></i><div><p class="lbl" data-ar="الإدارة" data-en="Department">الإدارة</p><p class="val" data-ar="المالية — الخزينة" data-en="Finance — Treasury">المالية — الخزينة</p></div></div>
+        <div class="meta-card"><i data-lucide="user-check"></i><div><p class="lbl" data-ar="المسؤول عن الخطة" data-en="Responsible">المسؤول عن الخطة</p><p class="val" data-ar="ماجد الدوسري" data-en="Majed Al-Dossari">ماجد الدوسري</p></div></div>
+        <div class="meta-card"><i data-lucide="shield"></i><div><p class="lbl" data-ar="مالك الخطر" data-en="Risk Owner">مالك الخطر</p><p class="val" data-ar="أحلام تركستاني" data-en="Ahlam Turkistani">أحلام تركستاني</p></div></div>
+        <div class="meta-card"><i data-lucide="award"></i><div><p class="lbl" data-ar="رائد المخاطر" data-en="Champion">رائد المخاطر</p><p class="val" data-ar="نواف باقاسي" data-en="Nawaf Bagasi">نواف باقاسي</p></div></div>
+        <div class="meta-card"><i data-lucide="calendar-clock"></i><div><p class="lbl" data-ar="تاريخ البدء" data-en="Start Date">تاريخ البدء</p><p class="val">2026-01-15</p></div></div>
+        <div class="meta-card"><i data-lucide="calendar-check"></i><div><p class="lbl" data-ar="تاريخ الاستحقاق" data-en="Due Date">تاريخ الاستحقاق</p><p class="val">2026-08-31</p></div></div>
+      </div>
+
+      <!-- Progress -->
+      <div style="margin-top:1.25rem;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border-radius:.85rem;padding:1rem;border:1px solid rgba(255,255,255,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+          <span style="color:#fff;font-size:.85rem;font-weight:600" data-ar="تقدم تنفيذ الخطة" data-en="Plan Progress">تقدم تنفيذ الخطة</span>
+          <span style="color:#fff;font-size:1.5rem;font-weight:800">75%</span>
+        </div>
+        <div style="height:.65rem;border-radius:999px;background:rgba(255,255,255,.2);overflow:hidden">
+          <div style="height:100%;width:75%;background:#fff;border-radius:999px;box-shadow:0 0 8px rgba(255,255,255,.5)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:.6rem;color:rgba(255,255,255,.85);font-size:.78rem">
+          <span><i data-lucide="check-circle-2" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> 3/4 <span data-ar="مهام مكتملة" data-en="tasks completed">مهام مكتملة</span></span>
+          <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="باقي" data-en="Remaining">باقي</span> 76 <span data-ar="يوماً" data-en="days">يوماً</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Risk Scores -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="bar-chart-3" style="color:var(--primary)"></i><span data-ar="درجات المخاطر" data-en="Risk Scores">درجات المخاطر</span></h3></div>
+    <div class="card-pad" style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <div class="score-tile">
+        <p class="lbl" data-ar="الخطر الكامن" data-en="Inherent Risk">الخطر الكامن</p>
+        <p class="val" style="color:#ef4444">25</p>
+        <p class="sub">5 × 5 — <span data-ar="حرج" data-en="Critical">حرج</span></p>
+      </div>
+      <div class="score-tile">
+        <p class="lbl" data-ar="الخطر المتبقي" data-en="Residual Risk">الخطر المتبقي</p>
+        <p class="val" style="color:#F39200">15</p>
+        <p class="sub">3 × 5 — <span data-ar="رئيسي" data-en="Major">رئيسي</span></p>
+      </div>
+      <div class="score-tile">
+        <p class="lbl" data-ar="الخطر المتبقي المتوقع" data-en="Expected Residual">الخطر المتبقي المتوقع</p>
+        <p class="val" style="color:#10b981">6</p>
+        <p class="sub">2 × 3 — <span data-ar="متوسط" data-en="Moderate">متوسط</span></p>
+      </div>
+      <div class="score-tile">
+        <p class="lbl" data-ar="نسبة التخفيف" data-en="Reduction">نسبة التخفيف</p>
+        <p class="val" style="color:var(--primary)">76%</p>
+        <p class="sub" data-ar="من الكامن إلى المتوقع" data-en="from inherent to expected">من الكامن إلى المتوقع</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Justification -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="file-text" style="color:var(--primary)"></i><span data-ar="مسوّغات المعالجة" data-en="Justification">مسوّغات المعالجة</span></h3></div>
+    <div class="card-pad">
+      <p style="margin:0;line-height:1.8;color:var(--foreground)" data-ar="نظراً لتذبذب أسعار النحاس في LME بنسبة تتجاوز ±18% خلال الأرباع الأخيرة، وتشكيل النحاس نحو 38% من تكلفة المواد الخام، تم اعتماد استراتيجية التحوّط عبر عقود مستقبلية لمدة 6 أشهر لتغطية 60% من احتياجاتنا التشغيلية، بالتوازي مع مراجعة سياسة التسعير لتمرير 50% من فروقات الأسعار للعملاء طويلي الأجل." data-en="Given that LME copper prices have fluctuated ±18% over recent quarters and copper represents ~38% of raw-material cost, we have adopted a 6-month forward hedge covering 60% of operational needs, alongside a revised pricing policy that passes 50% of price deltas through to long-term customers.">نظراً لتذبذب أسعار النحاس في LME بنسبة تتجاوز ±18% خلال الأرباع الأخيرة، وتشكيل النحاس نحو 38% من تكلفة المواد الخام، تم اعتماد استراتيجية التحوّط عبر عقود مستقبلية لمدة 6 أشهر لتغطية 60% من احتياجاتنا التشغيلية، بالتوازي مع مراجعة سياسة التسعير لتمرير 50% من فروقات الأسعار للعملاء طويلي الأجل.</p>
+    </div>
+  </div>
+
+  <!-- ========== Tasks ========== -->
+  <section id="tasks" class="card">
+    <div class="card-head">
+      <div>
+        <h3 class="h-title"><i data-lucide="check-square" style="color:var(--primary)"></i><span data-ar="المهام" data-en="Tasks">المهام</span> <span class="chip" style="background:rgba(243,146,0,.1);color:var(--primary)">3/4</span></h3>
+        <p class="muted" style="margin:.25rem 0 0;font-size:.75rem" data-ar="3 مهام مكتملة من أصل 4" data-en="3 tasks completed out of 4">3 مهام مكتملة من أصل 4</p>
+      </div>
+      <button class="btn btn-primary" style="padding:.5rem .9rem"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="إضافة مهمة" data-en="Add Task">إضافة مهمة</span></button>
+    </div>
+    <div class="card-pad" style="display:flex;flex-direction:column;gap:.85rem" id="tasksList"></div>
+  </section>
+
+  <!-- ========== Risk Details ========== -->
+  <section id="risk" class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="alert-triangle" style="color:var(--primary)"></i><span data-ar="تفاصيل الخطر" data-en="Risk Details">تفاصيل الخطر</span></h3><a href="risks.html" class="btn btn-ghost" style="font-size:.8rem"><span data-ar="فتح صفحة الخطر" data-en="Open risk page">فتح صفحة الخطر</span><i data-lucide="external-link" style="width:.85rem;height:.85rem"></i></a></div>
+    <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:1.25rem" id="riskGrid">
+      <div>
+        <h4 style="margin:0 0 .4rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="وصف الخطر" data-en="Risk Description">وصف الخطر</h4>
+        <p style="margin:0;line-height:1.8" data-ar="تقلّبات حادّة وغير متوقّعة في أسعار النحاس والألمنيوم في الأسواق العالمية تنعكس مباشرة على هوامش الأرباح وقدرة الشركة على الالتزام بعقود التسعير الثابت مع كبار العملاء." data-en="Sharp, unpredictable swings in global copper and aluminum prices that directly compress margins and threaten our ability to honor fixed-price contracts with key customers.">تقلّبات حادّة وغير متوقّعة في أسعار النحاس والألمنيوم في الأسواق العالمية تنعكس مباشرة على هوامش الأرباح وقدرة الشركة على الالتزام بعقود التسعير الثابت مع كبار العملاء.</p>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem">
+        <div>
+          <h4 style="margin:0 0 .4rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="السبب المحتمل" data-en="Potential Cause">السبب المحتمل</h4>
+          <p style="margin:0;line-height:1.7;font-size:.875rem" data-ar="توترات جيوسياسية، تغيّرات في الطلب من الصين، اضطرابات الإمداد من تشيلي وبيرو." data-en="Geopolitical tensions, shifts in Chinese demand, supply disruptions from Chile and Peru.">توترات جيوسياسية، تغيّرات في الطلب من الصين، اضطرابات الإمداد من تشيلي وبيرو.</p>
+        </div>
+        <div>
+          <h4 style="margin:0 0 .4rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="الأثر المحتمل" data-en="Potential Impact">الأثر المحتمل</h4>
+          <p style="margin:0;line-height:1.7;font-size:.875rem" data-ar="انخفاض هامش الربح الإجمالي بنسبة 4–7%، تأخّر في تنفيذ عقود طويلة الأجل، تآكل ثقة العملاء." data-en="GP margin erosion of 4–7%, delays on long-term contracts, customer-confidence erosion.">انخفاض هامش الربح الإجمالي بنسبة 4–7%، تأخّر في تنفيذ عقود طويلة الأجل، تآكل ثقة العملاء.</p>
+        </div>
+        <div>
+          <h4 style="margin:0 0 .4rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="الضوابط الحالية" data-en="Existing Controls">الضوابط الحالية</h4>
+          <p style="margin:0;line-height:1.7;font-size:.875rem" data-ar="مراقبة يومية لأسعار LME، تقارير شهرية للجنة الاستثمار، اتفاقيات إطارية مع موردين رئيسيين." data-en="Daily LME monitoring, monthly investment-committee reporting, framework agreements with key suppliers.">مراقبة يومية لأسعار LME، تقارير شهرية للجنة الاستثمار، اتفاقيات إطارية مع موردين رئيسيين.</p>
+        </div>
+      </div>
+      <!-- Mini matrix: Inherent vs Residual -->
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+        <div>
+          <h4 style="margin:0 0 .5rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="مصفوفة الخطر الكامن" data-en="Inherent Matrix">مصفوفة الخطر الكامن</h4>
+          <div class="matrix-mini" id="matrixIn"></div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 .5rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="مصفوفة الخطر المتبقي" data-en="Residual Matrix">مصفوفة الخطر المتبقي</h4>
+          <div class="matrix-mini" id="matrixRes"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Discussions ========== -->
+  <section id="discussions" class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="message-square" style="color:var(--primary)"></i><span data-ar="النقاشات" data-en="Discussions">النقاشات</span> <span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)">3</span></h3></div>
+    <div class="card-pad" style="display:flex;flex-direction:column;gap:1rem">
+      <div style="display:flex;gap:.6rem">
+        <div style="flex-shrink:0;width:2.25rem;height:2.25rem;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">A</div>
+        <div style="flex:1">
+          <textarea class="input" rows="2" data-ar-ph="اكتب تعليقاً أو سؤالاً..." data-en-ph="Write a comment or question..." placeholder="اكتب تعليقاً..."></textarea>
+          <div style="margin-top:.5rem;display:flex;gap:.4rem;justify-content:flex-end">
+            <button class="btn btn-outline" style="padding:.4rem .8rem"><i data-lucide="help-circle" style="width:.85rem;height:.85rem"></i><span data-ar="سؤال" data-en="Question">سؤال</span></button>
+            <button class="btn btn-primary" style="padding:.4rem .9rem"><i data-lucide="send" style="width:.85rem;height:.85rem"></i><span data-ar="إرسال" data-en="Send">إرسال</span></button>
+          </div>
+        </div>
+      </div>
+      <div id="discussList" style="display:flex;flex-direction:column;gap:.85rem"></div>
+    </div>
+  </section>
+
+  <!-- ========== Email Template Modal ========== -->
+  <div id="emailModal" style="display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);align-items:center;justify-content:center;padding:1rem">
+    <div style="background:var(--card);border-radius:1rem;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.3);overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.65rem">
+        <div style="width:2.2rem;height:2.2rem;border-radius:.65rem;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center"><i data-lucide="mail" style="width:1.1rem;height:1.1rem"></i></div>
+        <div style="flex:1"><h3 style="margin:0;font-size:1rem;font-weight:700" data-ar="قالب بريد إلكتروني" data-en="Email Template">قالب بريد إلكتروني</h3><p class="muted" style="margin:.15rem 0 0;font-size:.72rem" data-ar="انسخ النص وأرسله للمسؤولين عن الخطة" data-en="Copy text and send to plan stakeholders">انسخ النص وأرسله للمسؤولين عن الخطة</p></div>
+        <button id="emailClose" style="background:none;border:0;cursor:pointer;color:var(--foreground-secondary);padding:.4rem"><i data-lucide="x"></i></button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1rem">
+        <!-- To -->
+        <div>
+          <label class="muted" style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;justify-content:space-between;align-items:center"><span data-ar="إلى" data-en="To">إلى</span><button class="email-copy" data-target="emailTo" style="background:none;border:0;color:var(--primary);font-size:.72rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="copy" style="width:.78rem;height:.78rem"></i><span data-ar="نسخ" data-en="Copy">نسخ</span></button></label>
+          <div id="emailTo" style="margin-top:.4rem;padding:.7rem .85rem;background:var(--background-tertiary);border:1px solid var(--border);border-radius:.55rem;font-family:ui-monospace,Menlo,monospace;font-size:.78rem;direction:ltr;text-align:start">m.dossari@saudicable.com; n.bagasi@saudicable.com</div>
+        </div>
+        <!-- Subject -->
+        <div>
+          <label class="muted" style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;justify-content:space-between;align-items:center"><span data-ar="الموضوع" data-en="Subject">الموضوع</span><button class="email-copy" data-target="emailSubject" style="background:none;border:0;color:var(--primary);font-size:.72rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="copy" style="width:.78rem;height:.78rem"></i><span data-ar="نسخ" data-en="Copy">نسخ</span></button></label>
+          <div id="emailSubject" style="margin-top:.4rem;padding:.7rem .85rem;background:var(--background-tertiary);border:1px solid var(--border);border-radius:.55rem;font-size:.82rem;font-weight:500">[R-001] خطة معالجة جديدة — خطة تحوّط أسعار النحاس (TP-014)</div>
+        </div>
+        <!-- Body -->
+        <div>
+          <label class="muted" style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;justify-content:space-between;align-items:center"><span data-ar="نص الرسالة" data-en="Body">نص الرسالة</span><button class="email-copy" data-target="emailBody" style="background:none;border:0;color:var(--primary);font-size:.72rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="copy" style="width:.78rem;height:.78rem"></i><span data-ar="نسخ" data-en="Copy">نسخ</span></button></label>
+          <div id="emailBody" style="margin-top:.4rem;padding:.85rem;background:var(--background-tertiary);border:1px solid var(--border);border-radius:.55rem;font-size:.82rem;line-height:1.75;white-space:pre-wrap">السلام عليكم،
+
+تم اعتماد خطة معالجة جديدة على نظام إدارة المخاطر المؤسسية:
+
+• رقم الخطر: R-001 — تقلبات أسعار النحاس والألمنيوم
+• رقم الخطة: TP-014 — خطة تحوّط أسعار النحاس
+• الاستراتيجية: تقليل (Reduce)
+• المسؤول عن الخطة: ماجد الدوسري
+• تاريخ الاستحقاق: 2026-08-31
+• عدد المهام: 4 (3 مكتملة، 1 قيد التنفيذ)
+• التقدم الحالي: 75%
+
+يمكنك مراجعة كامل تفاصيل الخطة والمهام عبر الرابط:
+https://erm-system-jet.vercel.app/treatment/TP-014
+
+نرجو متابعة المهام المسندة لك ضمن الخطة وتحديث حالتها أولاً بأول.
+
+شكراً،
+عبدالإله سجيني
+مدير المخاطر — شركة الكابلات السعودية</div>
+        </div>
+      </div>
+      <div style="padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-end">
+        <button class="btn btn-outline" id="emailCopyAll"><i data-lucide="copy" style="width:.9rem;height:.9rem"></i><span data-ar="نسخ الكل" data-en="Copy All">نسخ الكل</span></button>
+        <button class="btn btn-primary" id="emailOpen"><i data-lucide="external-link" style="width:.9rem;height:.9rem"></i><span data-ar="فتح في تطبيق البريد" data-en="Open in Email App">فتح في تطبيق البريد</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Change Log ========== -->
+  <section id="log" class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="history" style="color:var(--primary)"></i><span data-ar="سجل التعديلات" data-en="Change Log">سجل التعديلات</span></h3></div>
+    <div class="card-pad">
+      <div id="logList" style="position:relative;display:flex;flex-direction:column;gap:1.1rem"></div>
+    </div>
+  </section>
+
+</div>
+<script>
+window.ermInit=function(){
+  // ===== Tasks =====
+  const STATUS_LBL={completed:['مكتملة','Completed','#10b981','check-circle-2'],inProgress:['قيد التنفيذ','In Progress','#3b82f6','play'],notStarted:['لم تبدأ','Not Started','#64748b','circle-dot']};
+  const TASKS=[
+    {n:1,ta:'تحليل تقلبات أسعار النحاس على آخر 18 شهراً',te:'Analyze copper price volatility over last 18 months',status:'completed',prio:'high',assignee:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],monitor:['نواف باقاسي','Nawaf Bagasi','n.bagasi@saudicable.com'],due:'2026-02-28',done:'2026-02-25',att:'تحليل-LME-Q1.xlsx',steps:[{t:'سحب بيانات LME',s:'completed'},{t:'بناء نموذج تذبذب',s:'completed'},{t:'تقرير ملخص للجنة',s:'completed'}],upd:2},
+    {n:2,ta:'التفاوض على عقود تحوّط ستة أشهر — 60% من الاحتياج',te:'Negotiate 6-month hedge contracts — 60% of demand',status:'completed',prio:'high',assignee:['أحلام تركستاني','Ahlam Turkistani','a.turkistani@saudicable.com'],monitor:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],due:'2026-04-15',done:'2026-04-10',att:'Hedge-Contracts-Signed.pdf',steps:[{t:'اختيار البنوك الوسيطة',s:'completed'},{t:'مراجعة الشروط من القانونية',s:'completed'},{t:'توقيع وإيداع',s:'completed'}],upd:4},
+    {n:3,ta:'مراجعة سياسة التسعير مع كبار العملاء',te:'Revise pricing policy with key customers',status:'completed',prio:'medium',assignee:['نورة الغامدي','Nora Al-Ghamdi','n.ghamdi@saudicable.com'],monitor:['نواف باقاسي','Nawaf Bagasi','n.bagasi@saudicable.com'],due:'2026-05-30',done:'2026-05-22',att:'Pricing-Policy-v3.docx',steps:[{t:'مسوّدة جديدة',s:'completed'},{t:'موافقة لجنة الاستثمار',s:'completed'}],upd:3},
+    {n:4,ta:'بناء لوحة متابعة شهرية للجنة المخاطر',te:'Build monthly risk-committee dashboard',status:'inProgress',prio:'high',assignee:['فهد الشمري','Fahad Al-Shamri','f.shamri@saudicable.com'],monitor:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],due:'2026-07-31',done:null,att:null,steps:[{t:'تجميع مصادر البيانات',s:'completed'},{t:'تصميم البصريات',s:'inProgress'},{t:'اختبار وتسليم',s:'pending'}],upd:1},
+  ];
+
+  document.getElementById('tasksList').innerHTML = TASKS.map(t=>{
+    const[sa,se,sc,si]=STATUS_LBL[t.status];
+    const prioC=t.prio==='high'?'#ef4444':t.prio==='low'?'#10b981':'#F39200';
+    const prioA=t.prio==='high'?'عالية':t.prio==='low'?'منخفضة':'متوسطة';
+    const prioE=t.prio==='high'?'High':t.prio==='low'?'Low':'Medium';
+    const stepDone=t.steps.filter(s=>s.s==='completed').length;
+    return `
+    <div class="task-card">
+      <div class="task-head">
+        <div style="display:flex;align-items:flex-start;gap:.85rem">
+          <div class="task-num">${t.n}</div>
+          <div style="flex:1;min-width:0">
+            <h4 style="margin:0;font-size:.95rem;font-weight:700;line-height:1.4" data-ar="${t.ta}" data-en="${t.te}">${t.ta}</h4>
+          </div>
+          <div style="display:flex;gap:.35rem;flex-shrink:0">
+            ${t.status==='completed'
+              ? `<button class="btn btn-outline" style="padding:.35rem .6rem;border-color:#F39200;color:#F39200" title="إعادة فتح"><i data-lucide="play" style="width:.85rem;height:.85rem"></i><span data-ar="إعادة فتح" data-en="Reopen">إعادة فتح</span></button>`
+              : `<button class="btn" style="padding:.35rem .6rem;background:#10b981;color:#fff" title="إنجاز"><i data-lucide="check-circle-2" style="width:.85rem;height:.85rem"></i><span data-ar="إنجاز" data-en="Complete">إنجاز</span></button>`
+            }
+            <button class="icon-btn" title="تعديل المهمة"><i data-lucide="pencil" style="width:.85rem;height:.85rem"></i></button>
+            <button class="icon-btn danger" title="حذف المهمة"><i data-lucide="trash-2" style="width:.85rem;height:.85rem"></i></button>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem">
+          <span class="chip" style="background:${sc}1f;color:${sc}"><i data-lucide="${si}" style="width:.8rem;height:.8rem"></i><span data-ar="${sa}" data-en="${se}">${sa}</span></span>
+          <span class="chip" style="background:${prioC}1f;color:${prioC}" data-ar="${prioA}" data-en="${prioE}">${prioA}</span>
+          <span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)"><i data-lucide="calendar" style="width:.8rem;height:.8rem"></i>${t.due}</span>
+          ${t.att?`<a href="#" class="chip" style="background:rgba(14,165,233,.1);color:#0ea5e9;text-decoration:none"><i data-lucide="paperclip" style="width:.8rem;height:.8rem"></i>${t.att}</a>`:''}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:.75rem;font-size:.78rem" class="muted">
+          <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="المكلف" data-en="Assignee">المكلف</span>: <span data-ar="${t.assignee[0]}" data-en="${t.assignee[1]}">${t.assignee[0]}</span> · ${t.assignee[2]}</span>
+          <span><i data-lucide="eye" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="المتابع" data-en="Monitor">المتابع</span>: <span data-ar="${t.monitor[0]}" data-en="${t.monitor[1]}">${t.monitor[0]}</span></span>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr;gap:0">
+        <div style="padding:.85rem 1rem;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem">
+            <i data-lucide="list-ordered" style="width:1rem;height:1rem;color:#10b981"></i>
+            <span style="font-size:.8rem;font-weight:700;color:#10b981" data-ar="خطوات سير العمل" data-en="Workflow Steps">خطوات سير العمل</span>
+            <span class="chip" style="background:rgba(16,185,129,.1);color:#10b981">${stepDone}/${t.steps.length}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.4rem">
+            ${t.steps.map((s,si)=>{const c=s.s==='completed'?'#10b981':s.s==='inProgress'?'#3b82f6':'#94A3B8';const ic=s.s==='completed'?'check-circle-2':s.s==='inProgress'?'play':'circle-dot';return `
+              <div class="step-row">
+                <i data-lucide="${ic}" style="width:1rem;height:1rem;color:${c}"></i>
+                <span style="flex:1;font-size:.85rem;${s.s==='completed'?'text-decoration:line-through;opacity:.7':''}">${si+1}. ${s.t}</span>
+              </div>`}).join('')}
+          </div>
+        </div>
+        <div style="padding:.85rem 1rem">
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <i data-lucide="message-square" style="width:1rem;height:1rem;color:#3b82f6"></i>
+            <span style="font-size:.8rem;font-weight:700;color:#3b82f6" data-ar="التحديثات" data-en="Updates">التحديثات</span>
+            <span class="chip" style="background:rgba(59,130,246,.1);color:#3b82f6">${t.upd}</span>
+          </div>
+          <p class="muted" style="margin:0;font-size:.78rem" data-ar="${t.upd} تحديث/تحديثات على هذه المهمة" data-en="${t.upd} update(s) on this task">${t.upd} تحديث/تحديثات على هذه المهمة</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ===== Mini matrices =====
+  const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
+  const buildMini=(highlightL,highlightI)=>{
+    let h='';
+    for(let l=5;l>=1;l--) for(let i=1;i<=5;i++){
+      const isHi=(l===highlightL&&i===highlightI);
+      h+=`<div class="matrix-mini-cell" style="background:${col(l,i)};${isHi?'box-shadow:0 0 0 3px #fff,0 0 0 5px var(--primary);transform:scale(1.05)':''}">${l*i}</div>`;
+    }
+    return h;
+  };
+  document.getElementById('matrixIn').innerHTML=buildMini(5,5);
+  document.getElementById('matrixRes').innerHTML=buildMini(3,5);
+
+  // ===== Discussions =====
+  const DISC=[
+    {a:'N',ar:'نواف باقاسي',en:'Nawaf Bagasi',ago:'منذ ساعتين',ago_en:'2h ago',type:'question',ta:'هل تم تأكيد تغطية النسبة الكاملة 60% أم أن آخر دفعة بانتظار اعتماد لجنة الاستثمار؟',te:'Has the full 60% coverage been confirmed, or is the last batch still pending investment-committee approval?',resolved:false},
+    {a:'M',ar:'ماجد الدوسري',en:'Majed Al-Dossari',ago:'منذ ساعة',ago_en:'1h ago',type:'reply',ta:'تم اعتمادها صباح اليوم، وثيقة التوقيع مرفقة في المهمة #2.',te:'Approved this morning — signed document attached to task #2.',resolved:false},
+    {a:'A',ar:'أحلام تركستاني',en:'Ahlam Turkistani',ago:'منذ 3 أيام',ago_en:'3d ago',type:'decision',ta:'لجنة الاستثمار وافقت على تمديد نسبة التحوّط إلى 70% في الربع الرابع بناءً على توقعات LME.',te:'Investment committee approved extending hedge to 70% in Q4 based on LME outlook.',resolved:true},
+  ];
+  document.getElementById('discussList').innerHTML=DISC.map(d=>{
+    const typeCfg={question:['سؤال','Question','#3b82f6','help-circle'],decision:['قرار','Decision','#a855f7','flag'],reply:['رد','Reply','#64748b','corner-down-left'],comment:['تعليق','Comment','#64748b','message-square']}[d.type];
+    return `<div class="update-bubble" style="${d.type==='reply'?'margin-inline-start:2.5rem':''}">
+      <div style="display:flex;align-items:flex-start;gap:.6rem">
+        <div style="flex-shrink:0;width:2rem;height:2rem;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem">${d.a}</div>
+        <div style="flex:1">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-bottom:.3rem">
+            <span style="font-weight:600;font-size:.85rem" data-ar="${d.ar}" data-en="${d.en}">${d.ar}</span>
+            <span class="chip" style="background:${typeCfg[2]}1f;color:${typeCfg[2]}"><i data-lucide="${typeCfg[3]}" style="width:.7rem;height:.7rem"></i><span data-ar="${typeCfg[0]}" data-en="${typeCfg[1]}">${typeCfg[0]}</span></span>
+            ${d.resolved?'<span class="chip" style="background:rgba(16,185,129,.1);color:#10b981"><i data-lucide="check" style="width:.7rem;height:.7rem"></i><span data-ar="محلول" data-en="Resolved">محلول</span></span>':''}
+            <span class="muted" style="font-size:.7rem" data-ar="${d.ago}" data-en="${d.ago_en}">${d.ago}</span>
+          </div>
+          <p style="margin:0;line-height:1.6;font-size:.875rem" data-ar="${d.ta}" data-en="${d.te}">${d.ta}</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ===== Change Log =====
+  const LOG=[
+    {ic:'check-circle-2',c:'#10b981',ta:'إنجاز المهمة #3',te:'Completed task #3',sub_ar:'نورة الغامدي · مراجعة سياسة التسعير',sub_en:'Nora Al-Ghamdi · pricing policy revision',ago:'منذ ساعة',ago_en:'1h ago'},
+    {ic:'pencil',c:'#3b82f6',ta:'تحديث تاريخ الاستحقاق للمهمة #4',te:'Updated due date for task #4',sub_ar:'تم تغيير 2026-07-15 → 2026-07-31',sub_en:'Changed 2026-07-15 → 2026-07-31',ago:'منذ 5 ساعات',ago_en:'5h ago'},
+    {ic:'message-square-plus',c:'#a855f7',ta:'إضافة نقاش جديد',te:'New discussion added',sub_ar:'نواف باقاسي · سؤال عن تغطية التحوّط',sub_en:'Nawaf Bagasi · question on hedge coverage',ago:'منذ ساعتين',ago_en:'2h ago'},
+    {ic:'trending-down',c:'#F39200',ta:'تعديل تقييم الخطر المتبقي المتوقع',te:'Updated expected residual rating',sub_ar:'من 9 (متوسط) إلى 6 (متوسط)',sub_en:'9 (Moderate) → 6 (Moderate)',ago:'منذ يوم',ago_en:'1d ago'},
+    {ic:'user-plus',c:'#0ea5e9',ta:'تعيين متابع جديد للمهمة #4',te:'New monitor assigned to task #4',sub_ar:'ماجد الدوسري',sub_en:'Majed Al-Dossari',ago:'منذ يومين',ago_en:'2d ago'},
+    {ic:'plus-circle',c:'#10b981',ta:'إنشاء خطة المعالجة',te:'Treatment plan created',sub_ar:'ماجد الدوسري — استراتيجية: تقليل',sub_en:'Majed Al-Dossari — strategy: Reduce',ago:'2026-01-15',ago_en:'2026-01-15'},
+  ];
+  document.getElementById('logList').innerHTML=LOG.map((l,i)=>`
+    <div style="display:flex;gap:.85rem;position:relative">
+      <div class="timeline-dot" style="background:${l.c}"><i data-lucide="${l.ic}" style="width:1rem;height:1rem"></i></div>
+      ${i<LOG.length-1?'<div class="timeline-line"></div>':''}
+      <div style="flex:1;padding-bottom:.4rem">
+        <p style="margin:0;font-weight:600;font-size:.9rem" data-ar="${l.ta}" data-en="${l.te}">${l.ta}</p>
+        <p class="muted" style="margin:.2rem 0 0;font-size:.78rem" data-ar="${l.sub_ar}" data-en="${l.sub_en}">${l.sub_ar}</p>
+        <p class="muted" style="margin:.15rem 0 0;font-size:.7rem" data-ar="${l.ago}" data-en="${l.ago_en}">${l.ago}</p>
+      </div>
+    </div>
+  `).join('');
+
+  // ===== Section nav highlight =====
+  document.querySelectorAll('.nav-pill').forEach(p=>{
+    p.addEventListener('click',e=>{
+      document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+    });
+  });
+
+  // ===== Email modal =====
+  const m=document.getElementById('emailModal');
+  document.getElementById('emailBtn').addEventListener('click',()=>{m.style.display='flex';});
+  document.getElementById('emailClose').addEventListener('click',()=>{m.style.display='none';});
+  m.addEventListener('click',e=>{if(e.target===m) m.style.display='none';});
+  function flash(btn){const orig=btn.innerHTML;btn.innerHTML='<i data-lucide="check" style="width:.78rem;height:.78rem"></i><span data-ar="تم" data-en="Done">تم</span>';btn.style.color='#10b981';if(window.lucide) lucide.createIcons();setTimeout(()=>{btn.innerHTML=orig;btn.style.color='';if(window.lucide) lucide.createIcons();},1400);}
+  document.querySelectorAll('.email-copy').forEach(b=>b.addEventListener('click',()=>{
+    const t=document.getElementById(b.dataset.target);
+    navigator.clipboard?.writeText(t.textContent).then(()=>flash(b)).catch(()=>flash(b));
+  }));
+  document.getElementById('emailCopyAll').addEventListener('click',function(){
+    const all=`To: ${document.getElementById('emailTo').textContent}\nSubject: ${document.getElementById('emailSubject').textContent}\n\n${document.getElementById('emailBody').textContent}`;
+    navigator.clipboard?.writeText(all);
+    const orig=this.innerHTML;this.innerHTML='<i data-lucide="check" style="width:.9rem;height:.9rem"></i><span data-ar="تم النسخ" data-en="Copied">تم النسخ</span>';if(window.lucide) lucide.createIcons();setTimeout(()=>{this.innerHTML=orig;if(window.lucide) lucide.createIcons();},1400);
+  });
+  document.getElementById('emailOpen').addEventListener('click',()=>{
+    const to=document.getElementById('emailTo').textContent;
+    const subj=encodeURIComponent(document.getElementById('emailSubject').textContent);
+    const body=encodeURIComponent(document.getElementById('emailBody').textContent);
+    window.location.href=`mailto:${to}?subject=${subj}&body=${body}`;
+  });
+
+  if(window.lucide) lucide.createIcons();
+  window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

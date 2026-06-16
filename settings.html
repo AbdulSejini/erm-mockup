@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الإعدادات | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="settings.html">
+<div id="app">
+  <div>
+    <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="settings" style="color:var(--primary)"></i><span data-ar="الإعدادات" data-en="Settings">الإعدادات</span></h1>
+    <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="إدارة النظام والمستخدمين والبيانات الأساسية" data-en="Manage system, users and master data">إدارة النظام والمستخدمين والبيانات الأساسية</p>
+  </div>
+  <div class="grid" style="grid-template-columns:1fr;gap:1.5rem" id="settingsGrid">
+    <div class="card" style="align-self:start"><div class="card-pad" style="padding:.5rem" id="tabs"></div></div>
+    <div id="panel"></div>
+  </div>
+</div>
+<script>
+window.ermInit=function(){
+  const st=document.createElement('style');st.textContent=`@media(min-width:1024px){#settingsGrid{grid-template-columns:240px 1fr!important;}}`;document.head.appendChild(st);
+  const TABS=[['user','الملف الشخصي','Profile'],['lock','كلمة المرور','Password'],['users','المستخدمون','Users'],['shield-check','الصلاحيات','Permissions'],['building-2','الإدارات','Departments'],['tag','التصنيفات','Categories'],['git-branch','مصادر المخاطر','Risk Sources'],['shield','حالات المخاطر','Risk Statuses'],['user-circle','ملاك المخاطر','Risk Owners'],['bell','الإشعارات','Notifications'],['database','إدارة البيانات','Data Management'],['save','النسخ الاحتياطي','Backup'],['history','سجل النشاط','Activity Log']];
+  let active=0;
+  function drawTabs(){
+    document.getElementById('tabs').innerHTML=TABS.map(([ic,ar,en],i)=>`<button class="set-tab" data-i="${i}" style="width:100%;display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:.6rem;border:0;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:500;text-align:start;margin-bottom:.15rem;${i===active?'background:var(--primary-light);color:var(--primary)':'background:transparent;color:var(--foreground-secondary)'}"><i data-lucide="${ic}" style="width:1.05rem;height:1.05rem"></i><span data-ar="${ar}" data-en="${en}">${ar}</span></button>`).join('');
+  }
+  function drawPanel(){
+    if(active===0){
+      document.getElementById('panel').innerHTML=`<div class="card"><div class="card-head"><h3 class="h-title"><i data-lucide="user" style="color:var(--primary)"></i><span data-ar="الملف الشخصي" data-en="Profile">الملف الشخصي</span></h3></div><div class="card-pad" style="display:flex;flex-direction:column;gap:1rem">
+        <div style="display:flex;align-items:center;gap:1rem"><div style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-hover))">A</div><button class="btn btn-outline"><i data-lucide="upload" style="width:1rem;height:1rem"></i><span data-ar="تغيير الصورة" data-en="Change Photo">تغيير الصورة</span></button></div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+          <div><label style="display:block;font-size:.8rem;font-weight:600;margin-bottom:.4rem;color:var(--foreground-secondary)" data-ar="الاسم (عربي)" data-en="Name (Arabic)">الاسم (عربي)</label><input class="input" value="عبدالإله سجيني"></div>
+          <div><label style="display:block;font-size:.8rem;font-weight:600;margin-bottom:.4rem;color:var(--foreground-secondary)" data-ar="الاسم (إنجليزي)" data-en="Name (English)">الاسم (إنجليزي)</label><input class="input" value="Abdulelah Sejini"></div>
+          <div><label style="display:block;font-size:.8rem;font-weight:600;margin-bottom:.4rem;color:var(--foreground-secondary)" data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</label><input class="input" value="a.sejini@saudicable.com"></div>
+          <div><label style="display:block;font-size:.8rem;font-weight:600;margin-bottom:.4rem;color:var(--foreground-secondary)" data-ar="الدور" data-en="Role">الدور</label><input class="input" disabled value="مدير المخاطر · Risk Manager"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary"><i data-lucide="check" style="width:1rem;height:1rem"></i><span data-ar="حفظ التغييرات" data-en="Save Changes">حفظ التغييرات</span></button></div>
+      </div></div>`;
+    } else if(active===2){
+      const U=[['عبدالإله سجيني','Abdulelah Sejini','مدير المخاطر','Risk Manager','#10b981'],['سعاد البيشي','Suaad Al-Bishi','محلل المخاطر','Risk Analyst','#3b82f6'],['ماجد الدوسري','Majed Al-Dossari','رائد المخاطر','Risk Champion','#a855f7'],['نواف العتيبي','Nawaf Al-Otaibi','مدير النظام','Admin','#f97316']];
+      document.getElementById('panel').innerHTML=`<div class="card"><div class="card-head"><h3 class="h-title"><i data-lucide="users" style="color:var(--primary)"></i><span data-ar="المستخدمون" data-en="Users">المستخدمون</span></h3><button class="btn btn-primary" style="padding:.5rem .9rem"><i data-lucide="user-plus" style="width:1rem;height:1rem"></i><span data-ar="إضافة" data-en="Add">إضافة</span></button></div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th data-ar="المستخدم" data-en="User">المستخدم</th><th data-ar="الدور" data-en="Role">الدور</th><th data-ar="الحالة" data-en="Status">الحالة</th><th></th></tr></thead><tbody>${U.map(([na,ne,ra,re,c])=>`<tr><td><div style="display:flex;align-items:center;gap:.6rem"><div style="width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700;background:${c}">${na.charAt(0)}</div><span style="font-weight:500;color:var(--foreground)" data-ar="${na}" data-en="${ne}">${na}</span></div></td><td class="muted" data-ar="${ra}" data-en="${re}">${ra}</td><td><span class="chip" style="background:#10b9811f;color:#10b981" data-ar="نشط" data-en="Active">نشط</span></td><td><button class="btn btn-outline" style="padding:.3rem .5rem"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
+    } else if(active===3){
+      // ===== Permissions Tab =====
+      const USERS=[
+        {n:'محمد باحويرث',ne:'Mohammed Bawerath',role:'رائد المخاطر',roleEn:'Risk Champion',home:'ضمان الجودة',homeEn:'QA',granted:['ضمان الجودة','مراقبة الجودة','الموظفين','تقنية المعلومات','ERP'],c:'#a855f7'},
+        {n:'تركي أبو طالب',ne:'Turki Abu Talib',role:'رائد المخاطر',roleEn:'Risk Champion',home:'المشتريات',homeEn:'Procurement',granted:['المشتريات','الشحن','اللوجستيات','التخطيط'],c:'#3b82f6'},
+        {n:'نواف باقاسي',ne:'Nawaf Bagasi',role:'رائد المخاطر',roleEn:'Risk Champion',home:'المالية',homeEn:'Finance',granted:['المالية','الخزينة'],c:'#10b981'},
+      ];
+      const ALL_DEPTS=['المالية','الخزينة','المشتريات','الموارد البشرية','الإنتاج','تقنية المعلومات','ERP','السلامة المهنية HSE','أمن المنشأة','المبيعات','التسويق','اللوجستيات','الشحن','سلسلة التوريد','ضمان الجودة','مراقبة الجودة','الموظفين','التخطيط','القانونية'];
+      let selectedUser=0;
+      function drawPermPanel(){
+        const u=USERS[selectedUser];
+        document.getElementById('panel').innerHTML=`
+        <div class="card"><div class="card-head"><h3 class="h-title"><i data-lucide="shield-check" style="color:var(--primary)"></i><span data-ar="الصلاحيات" data-en="Permissions">الصلاحيات</span></h3></div>
+          <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:1.5rem">
+            <!-- User picker -->
+            <div>
+              <label class="muted" style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;display:block" data-ar="المستخدم" data-en="User">المستخدم</label>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="userPicker">
+                ${USERS.map((u,i)=>`<button class="user-chip" data-i="${i}" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .85rem;border-radius:.6rem;border:1px solid ${i===selectedUser?'var(--primary)':'var(--border)'};background:${i===selectedUser?'var(--primary-light)':'var(--card)'};color:${i===selectedUser?'var(--primary)':'var(--foreground)'};cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:500"><div style="width:1.5rem;height:1.5rem;border-radius:50%;background:${u.c};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700">${u.n.charAt(0)}</div><span data-ar="${u.n}" data-en="${u.ne}">${u.n}</span></button>`).join('')}
+              </div>
+            </div>
+            <!-- User card -->
+            <div style="padding:1rem;background:linear-gradient(135deg,${u.c}11,${u.c}05);border:1px solid ${u.c}33;border-radius:.85rem;display:flex;gap:.85rem;align-items:center">
+              <div style="width:3rem;height:3rem;border-radius:50%;background:${u.c};color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800">${u.n.charAt(0)}</div>
+              <div style="flex:1"><p style="margin:0;font-weight:700" data-ar="${u.n}" data-en="${u.ne}">${u.n}</p><p class="muted" style="margin:.15rem 0 0;font-size:.78rem" data-ar="${u.role} · القسم الأم: ${u.home}" data-en="${u.roleEn} · Home: ${u.homeEn}">${u.role} · القسم الأم: ${u.home}</p></div>
+              <span class="chip" style="background:${u.c}1f;color:${u.c}">${u.granted.length} <span data-ar="قسم" data-en="depts">قسم</span></span>
+            </div>
+            <!-- Department picker -->
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+                <label class="muted" style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em" data-ar="الأقسام التي يستطيع المستخدم الاطلاع عليها" data-en="Departments user can access">الأقسام التي يستطيع المستخدم الاطلاع عليها</label>
+                <div style="display:flex;gap:.4rem">
+                  <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.75rem" id="selAll"><span data-ar="اختيار الكل" data-en="Select All">اختيار الكل</span></button>
+                  <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.75rem" id="clearAll"><span data-ar="مسح" data-en="Clear">مسح</span></button>
+                </div>
+              </div>
+              <div style="position:relative;margin-bottom:.75rem"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input class="input" style="padding-inline-start:2.25rem" data-ar-ph="ابحث عن قسم..." data-en-ph="Search department..." placeholder="بحث..." id="deptSearch"></div>
+              <div id="deptGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem"></div>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;padding-top:1rem;border-top:1px solid var(--border)">
+              <button class="btn btn-outline"><span data-ar="إلغاء" data-en="Cancel">إلغاء</span></button>
+              <button class="btn btn-primary"><i data-lucide="check" style="width:1rem;height:1rem"></i><span data-ar="حفظ التغييرات" data-en="Save Changes">حفظ التغييرات</span></button>
+            </div>
+          </div>
+        </div>`;
+
+        function drawGrid(filter){
+          const u=USERS[selectedUser];
+          document.getElementById('deptGrid').innerHTML=ALL_DEPTS.filter(d=>!filter||d.includes(filter)).map(d=>{
+            const isGranted=u.granted.includes(d);
+            const isHome=d===u.home;
+            return `<button class="dept-chip" data-d="${d}" ${isHome?'disabled':''} style="display:flex;align-items:center;gap:.5rem;padding:.55rem .75rem;border-radius:.6rem;border:1px solid ${isGranted?u.c:'var(--border)'};background:${isGranted?u.c+'14':'var(--card)'};color:${isGranted?u.c:'var(--foreground)'};cursor:${isHome?'not-allowed':'pointer'};opacity:${isHome?'.7':'1'};font-family:inherit;font-size:.78rem;font-weight:500;text-align:start"><i data-lucide="${isGranted?'check-circle-2':'circle'}" style="width:.95rem;height:.95rem;flex-shrink:0"></i><span style="flex:1">${d}</span>${isHome?'<span style="font-size:.65rem;background:var(--background-tertiary);padding:.1rem .35rem;border-radius:.25rem" title="قسم المستخدم الأم">A</span>':''}</button>`;
+          }).join('');
+          if(window.lucide) lucide.createIcons();
+          document.querySelectorAll('.dept-chip').forEach(c=>{
+            c.addEventListener('click',()=>{
+              const d=c.dataset.d;
+              const u=USERS[selectedUser];
+              if(d===u.home) return;
+              if(u.granted.includes(d)) u.granted=u.granted.filter(x=>x!==d);
+              else u.granted.push(d);
+              drawGrid(document.getElementById('deptSearch').value);
+              const chip=document.querySelector('.card-pad .chip');
+              if(chip) chip.firstChild.textContent=u.granted.length+' ';
+            });
+          });
+        }
+        drawGrid('');
+        document.getElementById('deptSearch').addEventListener('input',e=>drawGrid(e.target.value));
+        document.getElementById('selAll').addEventListener('click',()=>{USERS[selectedUser].granted=[...ALL_DEPTS];drawGrid('');});
+        document.getElementById('clearAll').addEventListener('click',()=>{const u=USERS[selectedUser];u.granted=[u.home];drawGrid('');});
+        document.querySelectorAll('.user-chip').forEach(b=>b.addEventListener('click',()=>{selectedUser=+b.dataset.i;drawPermPanel();}));
+        if(window.lucide) lucide.createIcons();
+        window.ermApplyLang();
+      }
+      drawPermPanel();
+      return;
+    } else {
+      const t=TABS[active];
+      document.getElementById('panel').innerHTML=`<div class="card"><div class="card-head"><h3 class="h-title"><i data-lucide="${t[0]}" style="color:var(--primary)"></i><span data-ar="${t[1]}" data-en="${t[2]}">${t[1]}</span></h3></div><div class="card-pad" style="padding:3rem 1.5rem;text-align:center"><div style="width:64px;height:64px;border-radius:1rem;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="${t[0]}" style="width:1.8rem;height:1.8rem"></i></div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="${t[1]}" data-en="${t[2]}">${t[1]}</p><p class="muted" style="margin:.4rem 0 0;font-size:.85rem" data-ar="إدارة ${t[1]} من هذه الصفحة" data-en="Manage ${t[2]} from this section">إدارة ${t[1]} من هذه الصفحة</p></div></div>`;
+    }
+    if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+  }
+  document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('.set-tab');if(!b)return;active=+b.dataset.i;drawTabs();drawPanel();});
+  drawTabs();drawPanel();
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

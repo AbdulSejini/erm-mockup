@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تسجيل خطر جديد | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  .step{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0}
+  .step-num{flex-shrink:0;width:2.25rem;height:2.25rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;transition:all .25s}
+  .step-num.done{background:#10b981;color:#fff}
+  .step-num.active{background:var(--primary);color:#fff;box-shadow:0 0 0 4px var(--primary-light)}
+  .step-num.pending{background:var(--background-tertiary);color:var(--foreground-muted)}
+  .step-bar{flex:1;height:3px;background:var(--background-tertiary);border-radius:2px;overflow:hidden;min-width:1.5rem}
+  .step-bar>span{display:block;height:100%;background:#10b981;width:0;transition:width .35s}
+  .matrix-pick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:380px}
+  .matrix-pick-cell{aspect-ratio:1;border-radius:.4rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;cursor:pointer;border:2px solid transparent;transition:transform .15s}
+  .matrix-pick-cell:hover{transform:scale(1.08)}
+  .matrix-pick-cell.selected{border-color:#fff;box-shadow:0 0 0 3px var(--primary);transform:scale(1.1)}
+  .field-label{display:block;font-size:.8rem;font-weight:600;margin-bottom:.4rem;color:var(--foreground-secondary)}
+  .required:after{content:" *";color:#ef4444}
+</style>
+</head>
+<body data-page="risks.html">
+<div id="app">
+
+  <!-- Page header -->
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="alert-triangle" style="color:var(--primary)"></i><span data-ar="تسجيل خطر جديد" data-en="Register New Risk">تسجيل خطر جديد</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="املأ التفاصيل ثم سيُرسل الخطر لمدير المخاطر للموافقة" data-en="Fill in details — the risk will be sent to the Risk Manager for approval">املأ التفاصيل ثم سيُرسل الخطر لمدير المخاطر للموافقة</p>
+    </div>
+    <a href="risks.html" class="btn btn-outline"><i data-lucide="x" style="width:1rem;height:1rem"></i><span data-ar="إلغاء" data-en="Cancel">إلغاء</span></a>
+  </div>
+
+  <!-- Stepper -->
+  <div class="card">
+    <div class="card-pad" style="display:flex;align-items:center;gap:.5rem">
+      <div class="step">
+        <div class="step-num active" id="num-1">1</div>
+        <div><p style="margin:0;font-size:.8rem;font-weight:600" data-ar="الأساسيات" data-en="Basics">الأساسيات</p><p class="muted" style="margin:0;font-size:.7rem" data-ar="العنوان والإدارة" data-en="Title & department">العنوان والإدارة</p></div>
+      </div>
+      <div class="step-bar" id="bar-1"><span></span></div>
+      <div class="step">
+        <div class="step-num pending" id="num-2">2</div>
+        <div><p style="margin:0;font-size:.8rem;font-weight:600" data-ar="التقييم" data-en="Assessment">التقييم</p><p class="muted" style="margin:0;font-size:.7rem" data-ar="الكامن والمتبقي" data-en="Inherent & residual">الكامن والمتبقي</p></div>
+      </div>
+      <div class="step-bar" id="bar-2"><span></span></div>
+      <div class="step">
+        <div class="step-num pending" id="num-3">3</div>
+        <div><p style="margin:0;font-size:.8rem;font-weight:600" data-ar="المراجعة" data-en="Review">المراجعة</p><p class="muted" style="margin:0;font-size:.7rem" data-ar="المعاينة والإرسال" data-en="Preview & submit">المعاينة والإرسال</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step panels -->
+  <div id="panel"></div>
+
+  <!-- Footer actions -->
+  <div class="card">
+    <div class="card-pad" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <button class="btn btn-outline" id="prevBtn" disabled style="opacity:.5;cursor:not-allowed"><i data-lucide="chevron-right" class="flip-x" style="width:1rem;height:1rem"></i><span data-ar="السابق" data-en="Previous">السابق</span></button>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-outline"><i data-lucide="save" style="width:1rem;height:1rem"></i><span data-ar="حفظ كمسودة" data-en="Save as Draft">حفظ كمسودة</span></button>
+        <button class="btn btn-primary" id="nextBtn"><span data-ar="التالي" data-en="Next">التالي</span><i data-lucide="chevron-left" class="flip-x" style="width:1rem;height:1rem"></i></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+let step=1, sel={l:null,i:null}, selRes={l:null,i:null};
+
+function panelBasics(){return `
+  <div class="card animate-fadeIn">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="info" style="color:var(--primary)"></i><span data-ar="الخطوة 1 — الأساسيات" data-en="Step 1 — Basics">الخطوة 1 — الأساسيات</span></h3></div>
+    <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:1rem">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem">
+        <div><label class="field-label required" data-ar="عنوان الخطر (عربي)" data-en="Risk Title (Arabic)">عنوان الخطر (عربي)</label><input class="input" placeholder="مثال: تقلبات أسعار النحاس..."></div>
+        <div><label class="field-label" data-ar="عنوان الخطر (إنجليزي)" data-en="Risk Title (English)">عنوان الخطر (إنجليزي)</label><input class="input" placeholder="Example: Copper price volatility..."></div>
+        <div><label class="field-label required" data-ar="الإدارة المعنية" data-en="Department">الإدارة المعنية</label><select class="select"><option>اختر إدارة...</option><option>المالية — الخزينة</option><option>المشتريات</option><option>الإنتاج</option><option>الموارد البشرية</option><option>السلامة والأمن HSE</option><option>تقنية المعلومات</option><option>اللوجستيات</option></select></div>
+        <div><label class="field-label required" data-ar="التصنيف" data-en="Category">التصنيف</label><select class="select"><option>اختر تصنيفاً...</option><option>مالي</option><option>تشغيلي</option><option>استراتيجي</option><option>امتثال</option><option>سمعة</option><option>تقني</option></select></div>
+        <div><label class="field-label" data-ar="مصدر الخطر" data-en="Source">مصدر الخطر</label><select class="select"><option>ورشة المخاطر السنوية</option><option>مراجعة تدقيق داخلي</option><option>حادث</option><option>تنبيه إداري</option><option>مراجعة عملية</option></select></div>
+        <div><label class="field-label required" data-ar="مالك الخطر" data-en="Risk Owner">مالك الخطر</label><select class="select"><option>اختر المالك...</option><option>أحلام تركستاني</option><option>هدى الصافي</option><option>محمد عشرم</option><option>فيصل الزغيبي</option></select></div>
+        <div><label class="field-label required" data-ar="رائد المخاطر (Champion)" data-en="Risk Champion">رائد المخاطر (Champion)</label><select class="select"><option>اختر رائداً...</option><option>نواف باقاسي</option><option>حسام المالكي</option><option>تركي أبو طالب</option><option>أكرم زهير</option></select></div>
+        <div><label class="field-label" data-ar="العملية الفرعية" data-en="Sub-process">العملية الفرعية</label><input class="input" placeholder="مثال: عملية التسعير لكبار العملاء"></div>
+      </div>
+      <div><label class="field-label" data-ar="وصف الخطر" data-en="Risk Description">وصف الخطر</label><textarea class="input" rows="3" placeholder="صف الخطر بالتفصيل..."></textarea></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem">
+        <div><label class="field-label required" data-ar="السبب المحتمل" data-en="Potential Cause">السبب المحتمل</label><textarea class="input" rows="3" placeholder="ما الذي يُتوقع أن يُسبب هذا الخطر؟"></textarea></div>
+        <div><label class="field-label required" data-ar="الأثر المحتمل" data-en="Potential Impact">الأثر المحتمل</label><textarea class="input" rows="3" placeholder="ما هو الأثر المتوقع على الشركة؟"></textarea></div>
+      </div>
+      <div><label class="field-label" data-ar="الضوابط الحالية" data-en="Existing Controls">الضوابط الحالية</label><textarea class="input" rows="3" placeholder="اذكر الضوابط القائمة حالياً..."></textarea></div>
+    </div>
+  </div>`;
+}
+
+function buildMatrix(target, isResidual){
+  const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
+  let h='';
+  for(let l=5;l>=1;l--) for(let i=1;i<=5;i++){
+    h+=`<div class="matrix-pick-cell" data-l="${l}" data-i="${i}" style="background:${col(l,i)}">${l*i}</div>`;
+  }
+  document.getElementById(target).innerHTML=h;
+  document.querySelectorAll('#'+target+' .matrix-pick-cell').forEach(c=>{
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('#'+target+' .matrix-pick-cell').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+      const l=+c.dataset.l,i=+c.dataset.i;
+      if(isResidual){selRes={l,i};document.getElementById('resScore').textContent=l*i;document.getElementById('resPair').textContent=`${l} × ${i}`;document.getElementById('resRating').textContent=rating(l*i);}
+      else{sel={l,i};document.getElementById('inScore').textContent=l*i;document.getElementById('inPair').textContent=`${l} × ${i}`;document.getElementById('inRating').textContent=rating(l*i);}
+    });
+  });
+}
+function rating(s){return s>=20?'حرج':s>=15?'رئيسي':s>=10?'متوسط':s>=5?'ثانوي':'ضئيل';}
+
+function panelAssessment(){return `
+  <div class="card animate-fadeIn">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="bar-chart-3" style="color:var(--primary)"></i><span data-ar="الخطوة 2 — التقييم" data-en="Step 2 — Assessment">الخطوة 2 — التقييم</span></h3></div>
+    <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:1.5rem">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem">
+        <div>
+          <h4 style="margin:0 0 .6rem;font-weight:700;color:#ef4444;display:flex;align-items:center;gap:.4rem"><i data-lucide="alert-octagon" style="width:1rem;height:1rem"></i><span data-ar="الخطر الكامن (قبل الضوابط)" data-en="Inherent (before controls)">الخطر الكامن (قبل الضوابط)</span></h4>
+          <p class="muted" style="margin:0 0 .6rem;font-size:.78rem" data-ar="اضغط على الخلية المناسبة من المصفوفة" data-en="Click a cell on the matrix">اضغط على الخلية المناسبة من المصفوفة</p>
+          <div class="matrix-pick" id="matrixA"></div>
+          <div style="margin-top:.85rem;padding:.85rem;background:var(--background-tertiary);border-radius:.6rem;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--foreground-secondary)"><span data-ar="الاحتمالية × الأثر" data-en="L × I">الاحتمالية × الأثر</span><span id="inPair">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem"><span class="muted" style="font-size:.78rem" data-ar="النتيجة" data-en="Score">النتيجة</span><span id="inScore" style="font-size:1.5rem;font-weight:800;color:#ef4444">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--foreground-secondary);margin-top:.2rem"><span data-ar="التصنيف" data-en="Rating">التصنيف</span><span id="inRating">—</span></div>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 .6rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:.4rem"><i data-lucide="shield" style="width:1rem;height:1rem"></i><span data-ar="الخطر المتبقي (بعد الضوابط الحالية)" data-en="Residual (after current controls)">الخطر المتبقي (بعد الضوابط الحالية)</span></h4>
+          <p class="muted" style="margin:0 0 .6rem;font-size:.78rem" data-ar="اضغط على الخلية المناسبة من المصفوفة" data-en="Click a cell on the matrix">اضغط على الخلية المناسبة من المصفوفة</p>
+          <div class="matrix-pick" id="matrixB"></div>
+          <div style="margin-top:.85rem;padding:.85rem;background:var(--background-tertiary);border-radius:.6rem;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--foreground-secondary)"><span data-ar="الاحتمالية × الأثر" data-en="L × I">الاحتمالية × الأثر</span><span id="resPair">—</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem"><span class="muted" style="font-size:.78rem" data-ar="النتيجة" data-en="Score">النتيجة</span><span id="resScore" style="font-size:1.5rem;font-weight:800;color:var(--primary)">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--foreground-secondary);margin-top:.2rem"><span data-ar="التصنيف" data-en="Rating">التصنيف</span><span id="resRating">—</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:.85rem;background:rgba(243,146,0,.08);border:1px solid rgba(243,146,0,.25);border-radius:.75rem;display:flex;align-items:flex-start;gap:.6rem">
+        <i data-lucide="info" style="width:1.1rem;height:1.1rem;color:var(--primary);flex-shrink:0;margin-top:.15rem"></i>
+        <p style="margin:0;font-size:.85rem;line-height:1.6" data-ar="ملاحظة: الخطر المتبقي قابل للتعديل لاحقاً فقط عبر خطة معالجة معتمدة. مدير المخاطر سيراجع التقييم قبل الاعتماد." data-en="Note: Residual risk can only be modified later through an approved treatment plan. The Risk Manager will review this assessment before approval.">ملاحظة: الخطر المتبقي قابل للتعديل لاحقاً فقط عبر خطة معالجة معتمدة. مدير المخاطر سيراجع التقييم قبل الاعتماد.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function panelReview(){return `
+  <div class="card animate-fadeIn">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="check-circle-2" style="color:var(--primary)"></i><span data-ar="الخطوة 3 — مراجعة وإرسال" data-en="Step 3 — Review & Submit">الخطوة 3 — مراجعة وإرسال</span></h3></div>
+    <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:1rem">
+      <div style="padding:1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.25);border-radius:.75rem;display:flex;gap:.75rem;align-items:center">
+        <div style="flex-shrink:0;width:2.5rem;height:2.5rem;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center"><i data-lucide="check" style="width:1.2rem;height:1.2rem"></i></div>
+        <div>
+          <p style="margin:0;font-weight:600" data-ar="جاهز للإرسال إلى مدير المخاطر" data-en="Ready to send to Risk Manager">جاهز للإرسال إلى مدير المخاطر</p>
+          <p class="muted" style="margin:.15rem 0 0;font-size:.78rem" data-ar="ستصل إشعارات لجميع مدراء المخاطر فور الإرسال" data-en="Notifications will be sent to all Risk Managers immediately">ستصل إشعارات لجميع مدراء المخاطر فور الإرسال</p>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.75rem">
+        <div style="padding:.85rem;border:1px solid var(--border);border-radius:.6rem"><p class="muted" style="margin:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600" data-ar="العنوان" data-en="Title">العنوان</p><p style="margin:.3rem 0 0;font-weight:600">— سيظهر بعد ملء الخطوة 1 —</p></div>
+        <div style="padding:.85rem;border:1px solid var(--border);border-radius:.6rem"><p class="muted" style="margin:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600" data-ar="الإدارة" data-en="Department">الإدارة</p><p style="margin:.3rem 0 0;font-weight:600">المالية — الخزينة</p></div>
+        <div style="padding:.85rem;border:1px solid var(--border);border-radius:.6rem"><p class="muted" style="margin:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600" data-ar="مالك الخطر" data-en="Risk Owner">مالك الخطر</p><p style="margin:.3rem 0 0;font-weight:600">أحلام تركستاني</p></div>
+        <div style="padding:.85rem;border:1px solid var(--border);border-radius:.6rem"><p class="muted" style="margin:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600" data-ar="الخطر الكامن" data-en="Inherent">الخطر الكامن</p><p style="margin:.3rem 0 0;font-weight:800;color:#ef4444">${sel.l?sel.l*sel.i+' ('+rating(sel.l*sel.i)+')':'—'}</p></div>
+        <div style="padding:.85rem;border:1px solid var(--border);border-radius:.6rem"><p class="muted" style="margin:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600" data-ar="الخطر المتبقي" data-en="Residual">الخطر المتبقي</p><p style="margin:.3rem 0 0;font-weight:800;color:var(--primary)">${selRes.l?selRes.l*selRes.i+' ('+rating(selRes.l*selRes.i)+')':'—'}</p></div>
+        <div style="padding:.85rem;border:1px solid var(--border);border-radius:.6rem"><p class="muted" style="margin:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600" data-ar="المُسجِّل" data-en="Submitted by">المُسجِّل</p><p style="margin:.3rem 0 0;font-weight:600" data-ar="عبدالإله سجيني" data-en="Abdulelah Sejini">عبدالإله سجيني</p></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:.85rem;font-size:1rem"><i data-lucide="send" style="width:1.1rem;height:1.1rem"></i><span data-ar="إرسال لمدير المخاطر للموافقة" data-en="Send to Risk Manager for Approval">إرسال لمدير المخاطر للموافقة</span></button>
+    </div>
+  </div>`;
+}
+
+function render(){
+  for(let i=1;i<=3;i++){
+    const num=document.getElementById('num-'+i);
+    num.classList.remove('done','active','pending');
+    if(i<step){num.classList.add('done');num.innerHTML='<i data-lucide="check" style="width:1rem;height:1rem"></i>';}
+    else if(i===step){num.classList.add('active');num.textContent=i;}
+    else{num.classList.add('pending');num.textContent=i;}
+  }
+  for(let i=1;i<=2;i++){
+    const bar=document.querySelector('#bar-'+i+' span');
+    bar.style.width=(step>i?'100%':'0');
+  }
+  let html='';
+  if(step===1) html=panelBasics();
+  else if(step===2) html=panelAssessment();
+  else html=panelReview();
+  document.getElementById('panel').innerHTML=html;
+  if(step===2){buildMatrix('matrixA',false);buildMatrix('matrixB',true);}
+  document.getElementById('prevBtn').disabled=step===1;
+  document.getElementById('prevBtn').style.opacity=step===1?'.5':'1';
+  document.getElementById('prevBtn').style.cursor=step===1?'not-allowed':'pointer';
+  document.getElementById('nextBtn').innerHTML=step===3?'<i data-lucide="send" style="width:1rem;height:1rem"></i><span data-ar="إرسال" data-en="Submit">إرسال</span>':'<span data-ar="التالي" data-en="Next">التالي</span><i data-lucide="chevron-left" class="flip-x" style="width:1rem;height:1rem"></i>';
+  if(window.lucide) lucide.createIcons();
+  window.ermApplyLang();
+}
+
+window.ermInit=function(){
+  document.getElementById('prevBtn').addEventListener('click',()=>{if(step>1){step--;render();}});
+  document.getElementById('nextBtn').addEventListener('click',()=>{if(step<3){step++;render();}else{alert(window.ermLang()==='ar'?'تم الإرسال بنجاح إلى مدير المخاطر للموافقة':'Successfully sent to Risk Manager for approval');window.location.href='risks.html';}});
+  render();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

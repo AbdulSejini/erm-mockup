@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>موافقات المخاطر | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="risk-approvals.html">
+<div id="app">
+  <div>
+    <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="check-square" style="color:var(--primary)"></i><span data-ar="موافقات المخاطر" data-en="Risk Approvals">موافقات المخاطر</span><span class="chip" style="background:#ef44441f;color:#ef4444">3</span></h1>
+    <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="مراجعة المخاطر الجديدة المُرسَلة للاعتماد" data-en="Review newly submitted risks pending approval">مراجعة المخاطر الجديدة المُرسَلة للاعتماد</p>
+  </div>
+  <div id="cards" style="display:flex;flex-direction:column;gap:1rem"></div>
+</div>
+<script>
+window.ermInit=function(){
+  const C=[
+    ['R-049','نقص قطع الغيار الحرجة للمعدات','Critical equipment spare-parts shortage','تشغيلي','Operational','خالد الزهراني','Khaled Al-Zahrani','2026-06-15',16,'رئيسي','Major','#f97316'],
+    ['R-050','مخاطر تذبذب أسعار الطاقة','Energy price volatility','مالي','Financial','سعاد البيشي','Suaad Al-Bishi','2026-06-14',20,'حرج','Critical','#ef4444'],
+    ['R-051','ضعف تغطية التأمين على الأصول','Insufficient asset insurance coverage','مالي','Financial','هند السبيعي','Hind Al-Subaie','2026-06-13',12,'رئيسي','Major','#f97316'],
+  ];
+  const btn=(ic,ar,en,bg,fg)=>`<button class="btn" style="background:${bg};color:${fg};border:1px solid ${fg}33"><i data-lucide="${ic}" style="width:1rem;height:1rem"></i><span data-ar="${ar}" data-en="${en}">${ar}</span></button>`;
+  document.getElementById('cards').innerHTML=C.map(([id,ta,te,ca,ce,ra,re,date,score,lvа,lve,c])=>`
+    <div class="card"><div class="card-pad">
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-start;justify-content:space-between">
+        <div style="flex:1;min-width:240px">
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem"><code class="mono">${id}</code><span class="chip" style="background:${c}1f;color:${c}" data-ar="${lvа}" data-en="${lve}">${lvа}</span><span class="chip" style="background:#f59e0b1f;color:#d97706" data-ar="بانتظار الموافقة" data-en="Pending">بانتظار الموافقة</span></div>
+          <p style="margin:0;font-size:1.05rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:1.25rem;margin-top:.6rem;font-size:.8rem" class="muted">
+            <span><i data-lucide="tag" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${ca}" data-en="${ce}">${ca}</span></span>
+            <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${ra}" data-en="${re}">${ra}</span></span>
+            <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${date}</span>
+          </div>
+        </div>
+        <div style="text-align:center"><div style="width:64px;height:64px;border-radius:1rem;background:${c};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:1.4rem;font-weight:700">${score}</span><span style="font-size:.6rem;opacity:.85" data-ar="الدرجة" data-en="Score">الدرجة</span></div></div>
+      </div>
+      <div style="margin-top:1rem"><textarea class="input" rows="2" data-ar-ph="ملاحظات المراجع (اختياري)..." data-en-ph="Reviewer notes (optional)..." placeholder=""></textarea></div>
+      <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem">
+        ${btn('check','قبول','Approve','#10b9811f','#059669')}
+        ${btn('x','رفض','Reject','#ef44441f','#dc2626')}
+        ${btn('edit-3','طلب تعديل','Request Revision','#3b82f61f','#2563eb')}
+        ${btn('clock','تأجيل','Defer','#64748b1f','#475569')}
+      </div>
+    </div></div>`).join('');
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

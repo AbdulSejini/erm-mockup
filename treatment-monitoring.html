@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مراقبة المعالجة | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="treatment-monitoring.html">
+<div id="app">
+  <div>
+    <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="activity" style="color:var(--primary)"></i><span data-ar="مراقبة المعالجة" data-en="Treatment Monitoring">مراقبة المعالجة</span></h1>
+    <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="متابعة شاملة لتقدّم خطط المعالجة" data-en="Comprehensive treatment progress tracking">متابعة شاملة لتقدّم خطط المعالجة</p>
+  </div>
+  <div class="card">
+    <div class="card-head" style="flex-wrap:wrap">
+      <h3 class="h-title"><i data-lucide="list-checks" style="color:var(--primary)"></i><span data-ar="حالة الخطط" data-en="Plans Status">حالة الخطط</span></h3>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <select class="select" style="width:auto"><option data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option><option data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</option><option data-ar="متأخرة" data-en="Overdue">متأخرة</option></select>
+        <select class="select" style="width:auto"><option data-ar="كل الأولويات" data-en="All Priorities">كل الأولويات</option><option data-ar="عالية" data-en="High">عالية</option><option data-ar="متوسطة" data-en="Medium">متوسطة</option></select>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+      <th data-ar="الخطة" data-en="Plan">الخطة</th><th data-ar="الخطر" data-en="Risk">الخطر</th><th data-ar="المسؤول" data-en="Responsible">المسؤول</th><th data-ar="الأولوية" data-en="Priority">الأولوية</th><th data-ar="التقدم" data-en="Progress">التقدم</th><th data-ar="الاستحقاق" data-en="Due">الاستحقاق</th><th data-ar="الحالة" data-en="Status">الحالة</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+</div>
+<script>
+window.ermInit=function(){
+  const PR={high:['عالية','High','#ef4444'],med:['متوسطة','Medium','#f59e0b'],low:['منخفضة','Low','#10b981']};
+  const ST={prog:['قيد التنفيذ','In Progress','#3b82f6'],over:['متأخرة','Overdue','#ef4444'],done:['مكتملة','Completed','#10b981'],ns:['لم يبدأ','Not Started','#64748b']};
+  const R=[
+    ['خطة تحوّط أسعار النحاس','Copper hedging','R-001','ماجد الدوسري','Majed Al-Dossari','high',75,'2026-08-31','prog'],
+    ['تنويع قاعدة الموردين','Supplier diversification','R-002','سعاد البيشي','Suaad Al-Bishi','high',40,'2026-07-15','prog'],
+    ['تحديث ضوابط الأمن','Cyber controls upgrade','R-006','فهد الشمري','Fahad Al-Shamri','high',60,'2026-06-10','over'],
+    ['تأمين شامل على الأصول','Asset insurance','R-003','خالد الزهراني','Khaled Al-Zahrani','med',100,'2026-05-20','done'],
+    ['برنامج السلامة المعزّز','Enhanced HSE','R-005','ياسر الشهراني','Yasser Al-Shahrani','med',20,'2026-09-01','prog'],
+    ['تحديث خطط الطوارئ','Emergency plans update','R-009','ماجد الدوسري','Majed Al-Dossari','low',0,'2026-10-01','ns'],
+  ];
+  document.getElementById('rows').innerHTML=R.map(([ta,te,rn,oa,oe,pr,prog,due,st])=>{const[pa,pe,pc]=PR[pr];const[sa,se,sc]=ST[st];const bc=prog>=80?'#10b981':prog>=40?'#f59e0b':'#ef4444';return `
+    <tr><td><span style="font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</span></td>
+    <td><code class="mono">${rn}</code></td>
+    <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
+    <td><span class="chip" style="background:${pc}1f;color:${pc}" data-ar="${pa}" data-en="${pe}">${pa}</span></td>
+    <td><div style="display:flex;align-items:center;gap:.5rem;min-width:120px"><div class="progress" style="flex:1"><span style="width:${prog}%;background:${bc}"></span></div><span style="font-size:.75rem;font-weight:600">${prog}%</span></div></td>
+    <td class="muted">${due}</td>
+    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td></tr>`;}).join('');
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

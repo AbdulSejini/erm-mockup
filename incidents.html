@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الحوادث | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="incidents.html">
+<div id="app">
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="alert-circle" style="color:var(--primary)"></i><span data-ar="سجل الحوادث" data-en="Incidents Log">سجل الحوادث</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="تسجيل ومتابعة الحوادث وقُرب الحوادث" data-en="Log and track incidents and near-misses">تسجيل ومتابعة الحوادث وقُرب الحوادث</p>
+    </div>
+    <button class="btn btn-primary"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="تسجيل حادث" data-en="Report Incident">تسجيل حادث</span></button>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem">
+    <div class="stat-tile"><div class="glow" style="background:#ef4444"></div><div style="position:relative"><p class="muted" style="margin:0;font-size:.8rem" data-ar="حرجة" data-en="Critical">حرجة</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:#ef4444">1</p></div></div>
+    <div class="stat-tile"><div class="glow" style="background:#f97316"></div><div style="position:relative"><p class="muted" style="margin:0;font-size:.8rem" data-ar="عالية" data-en="High">عالية</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:#f97316">3</p></div></div>
+    <div class="stat-tile"><div class="glow" style="background:#eab308"></div><div style="position:relative"><p class="muted" style="margin:0;font-size:.8rem" data-ar="متوسطة" data-en="Medium">متوسطة</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:#ca8a04">5</p></div></div>
+    <div class="stat-tile"><div class="glow" style="background:#10b981"></div><div style="position:relative"><p class="muted" style="margin:0;font-size:.8rem" data-ar="مغلقة" data-en="Resolved">مغلقة</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:#10b981">14</p></div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="clipboard-list" style="color:var(--primary)"></i><span data-ar="الحوادث المسجّلة" data-en="Recorded Incidents">الحوادث المسجّلة</span></h3></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+      <th data-ar="المعرّف" data-en="ID">المعرّف</th><th data-ar="الحادث" data-en="Incident">الحادث</th><th data-ar="الإدارة" data-en="Department">الإدارة</th><th data-ar="الخطورة" data-en="Severity">الخطورة</th><th data-ar="التاريخ" data-en="Date">التاريخ</th><th data-ar="الحالة" data-en="Status">الحالة</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+</div>
+<script>
+window.ermInit=function(){
+  const SEV={crit:['حرجة','Critical','#ef4444'],high:['عالية','High','#f97316'],med:['متوسطة','Medium','#eab308'],low:['منخفضة','Low','#10b981']};
+  const ST={open:['مفتوح','Open','#3b82f6'],inv:['قيد التحقيق','Investigating','#f59e0b'],closed:['مغلق','Closed','#10b981']};
+  const R=[
+    ['INC-031','توقف خط إنتاج بسبب عطل كهربائي','Production line halt — electrical fault','الإنتاج','Production','high','2026-06-11','inv'],
+    ['INC-030','تسرّب زيت في منطقة التشحيم','Oil leak in lubrication area','الصيانة','Maintenance','med','2026-06-09','closed'],
+    ['INC-029','محاولة تصيّد إلكتروني على البريد','Phishing attempt on corporate email','تقنية المعلومات','IT','high','2026-06-07','closed'],
+    ['INC-028','إصابة طفيفة أثناء المناولة','Minor injury during handling','السلامة','HSE','med','2026-06-05','closed'],
+    ['INC-027','انقطاع مؤقت في التيار الرئيسي','Temporary main power outage','المرافق','Utilities','crit','2026-06-02','open'],
+    ['INC-026','قُرب حادث — سقوط حمولة','Near miss — load drop','المستودعات','Warehouse','low','2026-05-30','closed'],
+  ];
+  document.getElementById('rows').innerHTML=R.map(([id,ta,te,da,de,sev,date,st])=>{const[va,ve,vc]=SEV[sev];const[sa,se,sc]=ST[st];return `
+    <tr><td><code class="mono">${id}</code></td>
+    <td><span style="font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</span></td>
+    <td class="muted" data-ar="${da}" data-en="${de}">${da}</td>
+    <td><span class="chip" style="background:${vc}1f;color:${vc}" data-ar="${va}" data-en="${ve}">${va}</span></td>
+    <td class="muted">${date}</td>
+    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td></tr>`;}).join('');
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

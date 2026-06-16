@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>خطط المعالجة | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="treatment.html">
+<div id="app">
+
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="wrench" style="color:var(--primary)"></i><span data-ar="خطط المعالجة" data-en="Treatment Plans">خطط المعالجة</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="استراتيجيات الاستجابة للمخاطر ومتابعة تنفيذها" data-en="Risk response strategies and execution tracking">استراتيجيات الاستجابة للمخاطر ومتابعة تنفيذها</p>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn btn-outline"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تصدير Excel" data-en="Export Excel">تصدير Excel</span></button>
+      <button class="btn btn-primary"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="خطة جديدة" data-en="New Plan">خطة جديدة</span></button>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem" id="tstats"></div>
+
+  <div class="card">
+    <div class="card-pad" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
+      <div style="position:relative;flex:1;min-width:220px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input class="input" style="padding-inline-start:2.25rem" data-ar-ph="ابحث برقم الخطر، عنوان، أو مسؤول..." data-en-ph="Search by risk number, title, or responsible..." placeholder="بحث..."></div>
+      <select class="select" style="width:auto">
+        <option data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option>
+        <option data-ar="لم تبدأ" data-en="Not Started">لم تبدأ</option>
+        <option data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</option>
+        <option data-ar="مكتملة" data-en="Completed">مكتملة</option>
+        <option data-ar="متأخرة" data-en="Overdue">متأخرة</option>
+      </select>
+      <select class="select" style="width:auto">
+        <option data-ar="كل الاستراتيجيات" data-en="All Strategies">كل الاستراتيجيات</option>
+        <option data-ar="تجنّب" data-en="Avoid">تجنّب</option>
+        <option data-ar="تقليل" data-en="Reduce">تقليل</option>
+        <option data-ar="تحويل" data-en="Transfer">تحويل</option>
+        <option data-ar="قبول" data-en="Accept">قبول</option>
+      </select>
+      <select class="select" style="width:auto">
+        <option data-ar="كل الإدارات" data-en="All Departments">كل الإدارات</option>
+        <option>المالية</option><option>المشتريات</option><option>الموارد البشرية</option>
+        <option>الإنتاج</option><option>السلامة والأمن</option><option>اللوجستيات</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1rem" id="plans"></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .25rem">
+    <span class="muted" style="font-size:.8rem" data-ar="عرض 1–6 من 552" data-en="Showing 1–6 of 552">عرض 1–6 من 552</span>
+    <div style="display:flex;gap:.25rem">
+      <button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="chevron-right" class="flip-x" style="width:1rem;height:1rem"></i></button>
+      <button class="btn btn-primary" style="padding:.4rem .8rem">1</button>
+      <button class="btn btn-outline" style="padding:.4rem .8rem">2</button>
+      <button class="btn btn-outline" style="padding:.4rem .8rem">3</button>
+      <button class="btn btn-outline" style="padding:.4rem .8rem">…</button>
+      <button class="btn btn-outline" style="padding:.4rem .8rem">92</button>
+      <button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="chevron-left" class="flip-x" style="width:1rem;height:1rem"></i></button>
+    </div>
+  </div>
+
+</div>
+<script>
+window.ermInit=function(){
+  document.getElementById('tstats').innerHTML=[
+    ['الإجمالي','Total',552,'#F39200','clipboard-list'],
+    ['قيد التنفيذ','In Progress',218,'#3b82f6','play'],
+    ['مكتملة','Completed',287,'#10b981','check-circle'],
+    ['متأخرة','Overdue',47,'#ef4444','clock']
+  ].map(([ar,en,v,c,ic])=>`<div class="stat-tile"><div class="glow" style="background:${c}"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c}">${v}</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:${c}1f;color:${c}"><i data-lucide="${ic}"></i></div></div></div>`).join('');
+
+  const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
+  const P=[
+    ['TP-014','خطة تحوّط أسعار النحاس','Copper price hedging plan','R-001','reduce',75,3,4,'ماجد الدوسري','Majed Al-Dossari','2026-08-31','قيد التنفيذ','In Progress','#3b82f6'],
+    ['TP-015','تنويع قاعدة الموردين','Supplier base diversification','R-002','reduce',40,2,5,'سعاد البيشي','Suaad Al-Bishi','2026-07-15','قيد التنفيذ','In Progress','#3b82f6'],
+    ['TP-016','تحديث ضوابط الأمن السيبراني','Cybersecurity controls upgrade','R-006','reduce',60,3,5,'فهد الشمري','Fahad Al-Shamri','2026-06-10','متأخرة','Overdue','#ef4444'],
+    ['TP-017','بوليصة تأمين شاملة على الأصول','Comprehensive asset insurance','R-003','transfer',100,4,4,'خالد الزهراني','Khaled Al-Zahrani','2026-05-20','مكتملة','Completed','#10b981'],
+    ['TP-018','برنامج السلامة المهنية المعزّز','Enhanced HSE program','R-005','reduce',20,1,6,'ياسر الشهراني','Yasser Al-Shahrani','2026-09-01','قيد التنفيذ','In Progress','#3b82f6'],
+    ['TP-019','قبول مخاطر تركّز العملاء','Accept customer concentration','R-007','accept',100,1,1,'نورة الغامدي','Nora Al-Ghamdi','2026-04-30','مكتملة','Completed','#10b981'],
+  ];
+  document.getElementById('plans').innerHTML=P.map(([id,ta,te,rn,str,prog,td,tt,oa,oe,due,sa,se,sc])=>{const[sar,sen,strc]=STR[str];const pc=prog>=80?'#10b981':prog>=40?'#F39200':'#ef4444';return `
+    <a href="treatment-detail.html?id=${id}" class="card" style="display:block;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''"><div class="card-pad">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+        <div style="display:flex;align-items:center;gap:.5rem"><code class="mono">${id}</code><span class="chip" style="background:${strc}1f;color:${strc}" data-ar="${sar}" data-en="${sen}">${sar}</span></div>
+        <span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span>
+      </div>
+      <p style="margin:0 0 .35rem;font-size:1rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem" class="muted"><i data-lucide="link" style="width:.85rem;height:.85rem"></i><span data-ar="مرتبطة بـ" data-en="Linked to">مرتبطة بـ</span> <code class="mono">${rn}</code></div>
+      <div style="margin-top:.75rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.25rem" class="muted"><span data-ar="التقدم" data-en="Progress">التقدم</span><span>${prog}%</span></div><div class="progress"><span style="width:${prog}%;background:${pc}"></span></div></div>
+      <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:1rem;font-size:.78rem" class="muted">
+        <span><i data-lucide="check-square" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="المهام" data-en="Tasks">المهام</span>: ${td}/${tt}</span>
+        <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${oa}" data-en="${oe}">${oa}</span></span>
+        <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${due}</span>
+      </div>
+    </div></a>`;}).join('');
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

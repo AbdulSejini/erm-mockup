@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>متابعة المخاطر | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="tracking.html">
+<div id="app">
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="target" style="color:var(--primary)"></i><span data-ar="متابعة المخاطر" data-en="Risk Tracking">متابعة المخاطر</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="توزيع المخاطر ومعدلات المعالجة حسب الإدارة" data-en="Risk distribution and treatment rates by department">توزيع المخاطر ومعدلات المعالجة حسب الإدارة</p>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <select class="select" style="width:auto"><option data-ar="كل الفترات" data-en="All Periods">كل الفترات</option><option data-ar="آخر 30 يوماً" data-en="Last 30 days">آخر 30 يوماً</option><option data-ar="الربع الحالي" data-en="Current Quarter">الربع الحالي</option></select>
+      <button class="btn btn-outline"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تصدير" data-en="Export">تصدير</span></button>
+    </div>
+  </div>
+
+  <!-- Top stats -->
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem" id="stats"></div>
+
+  <!-- Stacked breakdown chart -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="bar-chart-3" style="color:var(--primary)"></i><span data-ar="توزيع تصنيفات المخاطر حسب الإدارة" data-en="Risk Ratings by Department">توزيع تصنيفات المخاطر حسب الإدارة</span></h3></div>
+    <div class="card-pad" style="display:flex;flex-direction:column;gap:.85rem" id="chart"></div>
+    <div class="card-pad" style="border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:1rem;justify-content:center" id="chartLegend"></div>
+  </div>
+
+  <!-- Per-dept cards -->
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem" id="depts"></div>
+</div>
+
+<script>
+window.ermInit=function(){
+  // Department data: [name_ar, name_en, total, mitigated, color, critical, major, moderate, minor]
+  const D=[
+    ['الإنتاج','Production',68,42,'#f97316',6,18,30,14],
+    ['المالية','Finance',143,98,'#3b82f6',8,32,68,35],
+    ['المشتريات','Procurement',19,11,'#a855f7',2,5,8,4],
+    ['تقنية المعلومات','IT',24,15,'#10b981',3,7,10,4],
+    ['السلامة والأمن HSE','HSE',37,22,'#22c55e',4,9,16,8],
+    ['المبيعات والتسويق','Sales & Marketing',29,17,'#eab308',3,8,12,6],
+    ['الموارد البشرية','HR',70,48,'#06b6d4',5,16,32,17],
+    ['اللوجستيات','Logistics',16,10,'#ec4899',2,4,7,3],
+    ['سلسلة التوريد','Supply Chain',4,2,'#8b5cf6',1,1,1,1],
+    ['ضمان ومراقبة الجودة','QA/QC',18,11,'#f43f5e',2,5,8,3],
+    ['الموظفين','Staff',23,15,'#0ea5e9',2,6,10,5],
+    ['الشحن','Shipping',1,1,'#84cc16',0,0,1,0],
+  ];
+
+  // Top stats
+  const totalRisks=D.reduce((a,d)=>a+d[2],0);
+  const totalMit=D.reduce((a,d)=>a+d[3],0);
+  const overallRate=Math.round(totalMit/totalRisks*100);
+  const totalCritical=D.reduce((a,d)=>a+d[5],0);
+  document.getElementById('stats').innerHTML=[
+    ['إجمالي المخاطر','Total Risks',totalRisks,'#F39200','layers'],
+    ['مُعالَجة','Mitigated',totalMit,'#10b981','shield-check'],
+    ['نشطة','Active',totalRisks-totalMit,'#3b82f6','play'],
+    ['حرجة','Critical',totalCritical,'#ef4444','alert-octagon'],
+    ['معدّل المعالجة','Treatment Rate',overallRate+'%','#F39200','target'],
+  ].map(([ar,en,v,c,ic])=>`<div class="stat-tile"><div class="glow" style="background:${c}"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c}">${v}</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:${c}1f;color:${c}"><i data-lucide="${ic}"></i></div></div></div>`).join('');
+
+  // Stacked chart
+  const RATING_COLORS=['#dc2626','#f97316','#eab308','#22c55e'];
+  document.getElementById('chart').innerHTML=D.map(d=>{
+    const sum=d[5]+d[6]+d[7]+d[8];
+    return `<div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <span style="font-weight:600;font-size:.85rem" data-ar="${d[0]}" data-en="${d[1]}">${d[0]}</span>
+        <span class="muted" style="font-size:.78rem">${d[2]} <span data-ar="خطر" data-en="risks">خطر</span></span>
+      </div>
+      <div style="display:flex;height:1.25rem;border-radius:.4rem;overflow:hidden;background:var(--background-tertiary)">
+        ${[d[5],d[6],d[7],d[8]].map((v,i)=>v>0?`<div style="width:${v/sum*100}%;background:${RATING_COLORS[i]};display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:700" title="${v}">${v>2?v:''}</div>`:'').join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('chartLegend').innerHTML=[['#dc2626','حرج','Critical'],['#f97316','رئيسي','Major'],['#eab308','متوسط','Moderate'],['#22c55e','ثانوي','Minor']].map(([c,ar,en])=>`<div style="display:flex;align-items:center;gap:.4rem"><div style="width:.85rem;height:.85rem;border-radius:.2rem;background:${c}"></div><span style="font-size:.78rem" data-ar="${ar}" data-en="${en}">${ar}</span></div>`).join('');
+
+  // Per-dept cards
+  document.getElementById('depts').innerHTML=D.map(d=>{
+    const pct=Math.round(d[3]/d[2]*100);
+    return `<div class="card"><div class="card-pad">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <div style="display:flex;align-items:center;gap:.6rem"><div style="width:2.5rem;height:2.5rem;border-radius:.75rem;display:flex;align-items:center;justify-content:center;background:${d[4]}1f;color:${d[4]}"><i data-lucide="building-2" style="width:1.25rem;height:1.25rem"></i></div><div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="${d[0]}" data-en="${d[1]}">${d[0]}</p><p class="muted" style="margin:0;font-size:.75rem"><span>${d[2]}</span> <span data-ar="خطر" data-en="risks">خطر</span> · <span data-ar="${d[5]} حرج" data-en="${d[5]} critical">${d[5]} حرج</span></p></div></div>
+        <span style="font-size:1.5rem;font-weight:700;color:${d[4]}">${pct}%</span>
+      </div>
+      <div class="progress" style="height:.6rem"><span style="width:${pct}%;background:${d[4]}"></span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:.5rem;font-size:.75rem" class="muted">
+        <span><i data-lucide="shield-check" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="مُعالج" data-en="Mitigated">مُعالج</span>: ${d[3]}</span>
+        <span><i data-lucide="play" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="نشط" data-en="Active">نشط</span>: ${d[2]-d[3]}</span>
+      </div>
+    </div></div>`;
+  }).join('');
+
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

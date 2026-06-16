@@ -1,0 +1,54 @@
+/* Dashboard dynamic content + responsive grids */
+window.ermInit = function(){
+  const L = ()=>window.ermLang();
+
+  // responsive grids
+  const st=document.createElement('style');
+  st.textContent=`
+    @media(min-width:640px){#ratingCards{grid-template-columns:repeat(5,1fr)!important;}.hero-stats{grid-template-columns:repeat(4,1fr)!important;}}
+    @media(min-width:1024px){#secondaryStats{grid-template-columns:repeat(4,1fr)!important;}#midGrid{grid-template-columns:repeat(3,1fr)!important;}#bottomGrid{grid-template-columns:repeat(2,1fr)!important;}}
+  `;
+  document.head.appendChild(st);
+
+  // hero quick stats
+  document.querySelector('.hero-stats').innerHTML = [
+    ['إجمالي المخاطر','Total Risks','48'],['خطط المعالجة','Treatment Plans','32'],
+    ['معدل الإنجاز','Completion Rate','78%'],['المخاطر الحرجة','Critical','2'],
+  ].map(([ar,en,v])=>`<div style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:1rem;padding:1rem;border:1px solid rgba(255,255,255,.2)"><p style="margin:0;color:rgba(255,255,255,.7);font-size:.75rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:#fff">${v}</p></div>`).join('');
+
+  // rating cards
+  const RT=[['حرج','Critical','20-25','#ef4444','#f43f5e',2],['رئيسي','Major','15-19','#f97316','#f59e0b',7],['متوسط','Moderate','10-14','#facc15','#fbbf24',18],['ثانوي','Minor','5-9','#10b981','#22c55e',14],['ضئيل','Negligible','1-4','#0ea5e9','#3b82f6',7]];
+  document.getElementById('ratingCards').innerHTML = RT.map(([ar,en,r,c1,c2,v])=>`<div class="card"><div style="padding:.7rem;text-align:center;background:linear-gradient(90deg,${c1},${c2})"><p style="margin:0;color:#fff;font-size:.875rem;font-weight:600" data-ar="${ar}" data-en="${en}">${ar}</p></div><div style="padding:1rem;text-align:center"><p style="margin:0;font-size:2.25rem;font-weight:700;color:${c1}">${v}</p><p class="muted" style="margin:.25rem 0 0;font-size:.75rem">${r}</p></div></div>`).join('');
+
+  // secondary
+  const SC=[['play','خطط قيد التنفيذ','In Progress',12,'#3b82f6','#6366f1'],['check-circle','خطط مكتملة','Completed',25,'#10b981','#22c55e'],['clock','خطط متأخرة','Overdue',3,'#ef4444','#f43f5e'],['users','رواد المخاطر','Risk Champions',9,'#a855f7','#8b5cf6']];
+  document.getElementById('secondaryStats').innerHTML = SC.map(([ic,ar,en,v,c1,c2])=>`<div class="stat-tile"><div class="glow" style="background:linear-gradient(135deg,${c1},${c2})"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.875rem;font-weight:500" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c1}">${v}</p></div><div style="display:flex;height:3.5rem;width:3.5rem;align-items:center;justify-content:center;border-radius:1rem;box-shadow:0 8px 16px -4px ${c1}66;background:linear-gradient(135deg,${c1},${c2})"><i data-lucide="${ic}" style="width:1.75rem;height:1.75rem;color:#fff"></i></div></div></div>`).join('');
+
+  // matrix
+  const MC={'5-5':1,'5-4':1,'4-5':1,'4-4':2,'3-4':3,'2-5':1,'3-3':4,'3-2':2,'2-3':3,'4-2':1,'2-2':5,'1-2':3,'1-1':2,'2-1':2,'1-3':1};
+  const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
+  let mh='';
+  for(let l=1;l<=5;l++){mh+=`<div style="display:flex;align-items:center"><div style="display:flex;align-items:center;justify-content:flex-end;padding-inline-end:.5rem;width:52px;height:52px"><span class="muted" style="font-size:.75rem">${l}</span></div><div style="display:flex">`;for(let i=1;i<=5;i++){const c=MC[`${l}-${i}`]||0;mh+=`<div class="matrix-cell" style="background:${col(l,i)}">${c||''}</div>`;}mh+=`</div></div>`;}
+  document.getElementById('matrix').innerHTML=mh;
+  document.getElementById('xaxis').innerHTML=[1,2,3,4,5].map(i=>`<div style="display:flex;align-items:flex-start;justify-content:center;padding-top:.5rem;width:52px"><span class="muted" style="font-size:.75rem">${i}</span></div>`).join('');
+  document.getElementById('legend').innerHTML=[['#dc2626','حرج','Critical'],['#f97316','مرتفع','High'],['#eab308','متوسط','Medium'],['#22c55e','منخفض','Low'],['#3b82f6','ضئيل','Negligible']].map(([c,ar,en])=>`<div style="display:flex;align-items:center;gap:.375rem"><div style="height:.75rem;width:.75rem;border-radius:.25rem;background:${c}"></div><span class="muted" style="font-size:.75rem" data-ar="${ar}" data-en="${en}">${ar}</span></div>`).join('');
+
+  // deadlines
+  const DL=[['خطة تنويع الموردين','Supplier diversification','R-002',40,2,'#f97316'],['تحديث ضوابط الأمن السيبراني','Update cyber controls','R-006',60,-3,'#dc2626'],['خطة تحوّط أسعار النحاس','Copper price hedging','R-001',75,5,'#eab308'],['اختبار استمرارية الأعمال','Business continuity drill','R-005',20,12,'#3b82f6']];
+  document.getElementById('deadlines').innerHTML=DL.map(([ar,en,rn,p,d,c])=>{const pc=p>=80?'#10b981':p>=50?'#f59e0b':'#ef4444';const la=d<0?`متأخر ${Math.abs(d)}d`:`${d} يوم`,le=d<0?`${Math.abs(d)}d late`:`${d}d`;return `<a href="treatment.html" style="display:block;border-radius:.75rem;padding:.75rem;text-decoration:none;border:1px solid var(--border);background:var(--background-tertiary)"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem"><div style="flex:1;min-width:0"><p style="margin:0;font-size:.875rem;font-weight:500;color:var(--foreground)" data-ar="${ar}" data-en="${en}">${ar}</p><div style="display:flex;gap:.5rem;margin-top:.25rem"><code class="mono">${rn}</code></div><div style="margin-top:.5rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.25rem" class="muted"><span data-ar="التقدم" data-en="Progress">التقدم</span><span>${p}%</span></div><div class="progress"><span style="width:${p}%;background:${pc}"></span></div></div></div><div style="flex-shrink:0;border-radius:.75rem;padding:.4rem .6rem;font-size:.75rem;font-weight:700;color:#fff;background:${c}"><span data-ar="${la}" data-en="${le}">${la}</span></div></div></a>`;}).join('');
+
+  // recent risks
+  const RK=[['R-001','تقلبات أسعار النحاس والألمنيوم','Copper & aluminum price volatility','المالية','Finance','حرج','Critical','#ef4444',1,'ماجد الدوسري','Majed Al-Dossari','2026-06-14'],['R-002','اضطرابات سلسلة الإمداد','Supply chain disruptions','المشتريات','Procurement','حرج','Critical','#ef4444',1,'سعاد البيشي','Suaad Al-Bishi','2026-06-12'],['R-003','تغيّر أسعار صرف العملات','FX rate fluctuations','الخزينة','Treasury','رئيسي','Major','#f97316',0,'خالد الزهراني','Khaled Al-Zahrani','2026-06-10'],['R-004','الامتثال البيئي والتنظيمي','Environmental & regulatory compliance','القانونية','Legal','رئيسي','Major','#f97316',1,'هند السبيعي','Hind Al-Subaie','2026-06-08'],['R-005','السلامة المهنية في الإنتاج','Occupational safety','السلامة','HSE','رئيسي','Major','#f97316',1,'ياسر الشهراني','Yasser Al-Shahrani','2026-06-05']];
+  document.getElementById('recentRisks').innerHTML=RK.map(([n,ta,te,da,de,ra,re,c,t,ca,ce,dt])=>`<tr><td><code class="mono">${n}</code></td><td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p><p class="muted" style="margin:.1rem 0 0;font-size:.75rem" data-ar="${da}" data-en="${de}">${da}</p></td><td><span class="chip" style="background:${c}1f;color:${c}" data-ar="${ra}" data-en="${re}">${ra}</span></td><td>${t?`<span style="display:inline-flex;align-items:center;gap:.25rem;color:#10b981"><i data-lucide="check-circle" style="width:1rem;height:1rem"></i><span style="font-size:.75rem" data-ar="نعم" data-en="Yes">نعم</span></span>`:`<span style="display:inline-flex;align-items:center;gap:.25rem;color:var(--foreground-muted)"><i data-lucide="x-circle" style="width:1rem;height:1rem"></i><span style="font-size:.75rem" data-ar="لا" data-en="No">لا</span></span>`}</td><td class="muted" data-ar="${ca}" data-en="${ce}">${ca}</td><td class="muted">${dt}</td></tr>`).join('');
+
+  // treatment status
+  const TS=[['لم يبدأ','Not Started',5,'#64748b','circle-dot'],['قيد التنفيذ','In Progress',12,'#3b82f6','play'],['مكتمل','Completed',25,'#10b981','check-circle-2'],['متأخر','Overdue',3,'#ef4444','clock']];
+  document.getElementById('treatmentStatus').innerHTML=TS.map(([ar,en,v,c,ic])=>`<div style="display:flex;align-items:center;gap:.75rem"><div style="padding:.5rem;border-radius:.5rem;background:${c}33"><i data-lucide="${ic}" style="width:1rem;height:1rem;color:${c}"></i></div><div style="flex:1"><div style="display:flex;justify-content:space-between;margin-bottom:.25rem"><span class="muted" style="font-size:.875rem" data-ar="${ar}" data-en="${en}">${ar}</span><span style="font-size:.875rem;font-weight:700;color:var(--foreground)">${v}</span></div><div class="progress"><span style="width:${v/45*100}%;background:${c}"></span></div></div></div>`).join('')+`<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span class="muted" style="font-size:.875rem" data-ar="معدل الإنجاز الكلي" data-en="Overall Completion Rate">معدل الإنجاز الكلي</span><span style="font-size:1.5rem;font-weight:700;color:var(--primary)">78%</span></div>`;
+
+  // quick actions
+  const QA=[['alert-triangle','تسجيل خطر جديد','Register New Risk','إضافة خطر للسجل','Add risk to register','#f97316','#f59e0b','risks.html'],['target','متابعة المخاطر','Track Risks','متابعة حسب الإدارة','Track by department','#3b82f6','#6366f1','tracking.html'],['wrench','خطط المعالجة','Treatment Plans','12 قيد التنفيذ','12 in progress','#10b981','#22c55e','treatment.html'],['file-text','التقارير','Reports','عرض تقارير المخاطر','View risk reports','#a855f7','#8b5cf6','reports.html'],['users','رواد المخاطر','Risk Champions','9 رائد نشط','9 active','#f59e0b','#eab308','champions.html']];
+  document.getElementById('quickActions').innerHTML=QA.map(([ic,ta,te,sa,se,c1,c2,href])=>`<a href="${href}" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:.75rem;text-decoration:none;border:1px solid var(--border)"><div style="display:flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:.75rem;color:#fff;box-shadow:0 4px 8px rgba(0,0,0,.15);background:linear-gradient(135deg,${c1},${c2})"><i data-lucide="${ic}" style="width:1.25rem;height:1.25rem"></i></div><div style="flex:1"><p style="margin:0;font-size:.875rem;font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p><p class="muted" style="margin:.1rem 0 0;font-size:.75rem" data-ar="${sa}" data-en="${se}">${sa}</p></div><i data-lucide="chevron-right" class="flip-x" style="width:1.25rem;height:1.25rem;color:var(--foreground-muted)"></i></a>`).join('');
+
+  if(window.lucide) lucide.createIcons();
+  window.ermApplyLang();
+};

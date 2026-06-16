@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>التقارير والتحليلات | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  .kpi-tile{position:relative;padding:1rem;border-radius:1rem;background:var(--card);border:1px solid var(--border);overflow:hidden}
+  .kpi-tile .delta{display:inline-flex;align-items:center;gap:.2rem;font-size:.7rem;font-weight:700;padding:.2rem .45rem;border-radius:999px;margin-top:.3rem}
+  .kpi-tile .delta.up{background:rgba(16,185,129,.12);color:#10b981}
+  .kpi-tile .delta.down{background:rgba(239,68,68,.12);color:#ef4444}
+  .heat-cell{aspect-ratio:1;border-radius:.4rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.78rem;position:relative}
+  .heat-cell:hover{outline:2px solid #fff;outline-offset:1px;cursor:pointer}
+  .trend-line{stroke-width:2.5;fill:none}
+  .trend-area{opacity:.15}
+  .strip-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:.6rem;background:var(--background-tertiary);border:1px solid var(--border)}
+</style>
+</head>
+<body data-page="reports.html">
+<div id="app">
+
+  <!-- Page header -->
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="file-bar-chart" style="color:var(--primary)"></i><span data-ar="التقارير التنفيذية" data-en="Executive Reports">التقارير التنفيذية</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="رؤى تحليلية شاملة لوضع المخاطر المؤسسية" data-en="Comprehensive analytics for enterprise risk posture">رؤى تحليلية شاملة لوضع المخاطر المؤسسية</p>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <select class="select" style="width:auto">
+        <option data-ar="الربع الحالي (Q2 2026)" data-en="Current Quarter (Q2 2026)">الربع الحالي (Q2 2026)</option>
+        <option data-ar="نصف سنوي" data-en="H1 2026">نصف سنوي</option>
+        <option data-ar="السنة كاملة" data-en="Full Year">السنة كاملة</option>
+      </select>
+      <button class="btn btn-outline"><i data-lucide="share-2" style="width:1rem;height:1rem"></i><span data-ar="مشاركة" data-en="Share">مشاركة</span></button>
+      <button class="btn btn-primary"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</span></button>
+    </div>
+  </div>
+
+  <!-- Executive KPIs -->
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.85rem" id="kpis"></div>
+
+  <!-- Row 1: Heatmap + Trend -->
+  <div class="grid" style="grid-template-columns:1fr;gap:1rem" id="row1">
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="grid-3x3" style="color:var(--primary)"></i><span data-ar="خريطة حرارة المخاطر — 5×5" data-en="Risk Heatmap — 5×5">خريطة حرارة المخاطر — 5×5</span></h3><span class="muted" style="font-size:.78rem" data-ar="عدد المخاطر في كل خانة" data-en="Risk count per cell">عدد المخاطر في كل خانة</span></div>
+      <div class="card-pad" style="display:flex;justify-content:center"><div>
+        <div style="display:flex">
+          <div style="writing-mode:vertical-rl;transform:rotate(180deg);padding:0 .5rem;display:flex;align-items:center"><span class="muted" style="font-size:.75rem;font-weight:600" data-ar="الاحتمالية ⬆" data-en="Likelihood ⬆">الاحتمالية ⬆</span></div>
+          <div>
+            <div id="heat" style="display:grid;grid-template-columns:repeat(5,52px);gap:5px"></div>
+            <div style="display:grid;grid-template-columns:repeat(5,52px);gap:5px;margin-top:.3rem">${[1,2,3,4,5].map(i=>`<div class="muted" style="text-align:center;font-size:.7rem;font-weight:600">${i}</div>`).join('')}</div>
+            <p class="muted" style="text-align:center;margin-top:.4rem;font-size:.75rem;font-weight:600" data-ar="الأثر ➡" data-en="Impact ➡">الأثر ➡</p>
+          </div>
+        </div>
+      </div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="trending-up" style="color:var(--primary)"></i><span data-ar="اتجاه المخاطر — آخر 12 شهراً" data-en="Risk Trend — Last 12 Months">اتجاه المخاطر — آخر 12 شهراً</span></h3></div>
+      <div class="card-pad"><div id="trendChart" style="position:relative;height:240px"></div><div id="trendLegend" style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin-top:.85rem"></div></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Donut + Department breakdown -->
+  <div class="grid" style="grid-template-columns:1fr;gap:1rem" id="row2">
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="pie-chart" style="color:var(--primary)"></i><span data-ar="التوزيع حسب التصنيف" data-en="Distribution by Rating">التوزيع حسب التصنيف</span></h3></div>
+      <div class="card-pad" style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;justify-content:center">
+        <div id="donut" style="width:190px;height:190px;border-radius:50%;flex-shrink:0;position:relative"></div>
+        <div id="donutLegend" style="display:flex;flex-direction:column;gap:.5rem"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="bar-chart-3" style="color:var(--primary)"></i><span data-ar="فعالية التخفيف — الكامن vs المتبقي حسب الإدارة" data-en="Mitigation Effectiveness — Inherent vs Residual">فعالية التخفيف — الكامن vs المتبقي حسب الإدارة</span></h3></div>
+      <div class="card-pad" style="display:flex;flex-direction:column;gap:.65rem" id="effChart"></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Top risks + Strategy mix -->
+  <div class="grid" style="grid-template-columns:1fr;gap:1rem" id="row3">
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="flame" style="color:var(--primary)"></i><span data-ar="أعلى 6 مخاطر بالدرجة" data-en="Top 6 Risks by Score">أعلى 6 مخاطر بالدرجة</span></h3><a href="risks.html" class="btn btn-ghost"><span data-ar="عرض الكل" data-en="View All">عرض الكل</span><i data-lucide="chevron-left" class="flip-x" style="width:.9rem;height:.9rem"></i></a></div>
+      <div class="card-pad" style="display:flex;flex-direction:column;gap:.5rem" id="topRisks"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="h-title"><i data-lucide="layers" style="color:var(--primary)"></i><span data-ar="مزيج الاستراتيجيات" data-en="Strategy Mix">مزيج الاستراتيجيات</span></h3></div>
+      <div class="card-pad" style="display:flex;flex-direction:column;gap:.85rem" id="strategyMix"></div>
+    </div>
+  </div>
+
+  <!-- Saved reports -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="bookmark" style="color:var(--primary)"></i><span data-ar="التقارير المحفوظة" data-en="Saved Reports">التقارير المحفوظة</span></h3><button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="plus" style="width:.9rem;height:.9rem"></i><span data-ar="تقرير جديد" data-en="New Report">تقرير جديد</span></button></div>
+    <div class="card-pad grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.85rem" id="savedReports"></div>
+  </div>
+
+</div>
+
+<script>
+window.ermInit=function(){
+  // ===== Responsive grids =====
+  const css=document.createElement('style');css.textContent=`@media(min-width:768px){#row1{grid-template-columns:1fr 1.4fr!important;}#row2{grid-template-columns:1fr 1.4fr!important;}#row3{grid-template-columns:1.6fr 1fr!important;}}`;document.head.appendChild(css);
+
+  // ===== KPIs =====
+  const KPI=[
+    {ar:'إجمالي المخاطر',en:'Total Risks',v:452,delta:'+12',dir:'up',c:'#F39200',ic:'layers'},
+    {ar:'حرجة',en:'Critical',v:38,delta:'-4',dir:'up',c:'#ef4444',ic:'alert-octagon'},
+    {ar:'لها خطة معالجة',en:'With Treatment',v:412,delta:'91%',dir:'up',c:'#10b981',ic:'shield-check'},
+    {ar:'معدل الإنجاز',en:'Completion Rate',v:'68%',delta:'+5pp',dir:'up',c:'#3b82f6',ic:'target'},
+    {ar:'نسبة التخفيف',en:'Avg Reduction',v:'42%',delta:'+3pp',dir:'up',c:'#a855f7',ic:'trending-down'},
+    {ar:'خطط متأخرة',en:'Overdue Plans',v:47,delta:'-8',dir:'up',c:'#f59e0b',ic:'clock'},
+  ];
+  document.getElementById('kpis').innerHTML=KPI.map(k=>`
+    <div class="kpi-tile">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
+        <div><p class="muted" style="margin:0;font-size:.75rem;font-weight:600" data-ar="${k.ar}" data-en="${k.en}">${k.ar}</p>
+        <p style="margin:.25rem 0 0;font-size:1.75rem;font-weight:800;color:${k.c}">${k.v}</p>
+        <span class="delta ${k.dir==='up'?'up':'down'}"><i data-lucide="${k.dir==='up'?'arrow-up':'arrow-down'}" style="width:.7rem;height:.7rem"></i>${k.delta}</span></div>
+        <div style="width:2.25rem;height:2.25rem;border-radius:.65rem;background:${k.c}1f;color:${k.c};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="${k.ic}" style="width:1.15rem;height:1.15rem"></i></div>
+      </div>
+    </div>`).join('');
+
+  // ===== Heatmap =====
+  const HEAT={'5-5':4,'5-4':5,'4-5':6,'4-4':12,'3-4':18,'2-5':3,'3-3':32,'3-2':24,'2-3':28,'4-2':9,'2-2':52,'1-2':42,'1-1':38,'2-1':35,'1-3':18,'1-4':6,'1-5':1,'4-1':4,'5-1':2,'5-2':2,'5-3':1,'2-4':24,'3-1':14,'3-5':8,'4-3':19};
+  const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
+  let html='';
+  for(let l=5;l>=1;l--){html+='';for(let i=1;i<=5;i++){const c=HEAT[`${l}-${i}`]||0;const bgc=col(l,i);html+=`<div class="heat-cell" style="background:${bgc}" title="L${l} × I${i} = ${l*i} — ${c} risks">${c||''}</div>`;}}
+  document.getElementById('heat').innerHTML=html;
+
+  // ===== Trend chart (SVG) =====
+  const MONTHS=['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  const MONTHS_AR=['يول','أغس','سبت','أكت','نوف','ديس','ينا','فبر','مار','أبر','ماي','يون'];
+  const TOTAL=[386,394,402,410,419,425,431,438,444,447,449,452];
+  const CRIT =[58,55,52,50,48,46,44,42,40,40,39,38];
+  const MIT  =[245,260,278,295,310,328,348,365,378,392,403,412];
+  const W=620,H=200,PAD={l:30,r:10,t:10,b:25};
+  const cw=W-PAD.l-PAD.r, ch=H-PAD.t-PAD.b;
+  const xs=MONTHS.map((_,i)=>PAD.l+i*(cw/(MONTHS.length-1)));
+  const mxY=460;
+  const y=v=>PAD.t+(1-v/mxY)*ch;
+  function lineSvg(data,color){
+    const pts=data.map((v,i)=>`${xs[i]},${y(v)}`).join(' ');
+    const area=`M${xs[0]},${y(0)} L ${pts} L ${xs[xs.length-1]},${y(0)} Z`;
+    return `<path d="${area}" fill="${color}" class="trend-area"/><polyline points="${pts}" stroke="${color}" class="trend-line"/>${data.map((v,i)=>`<circle cx="${xs[i]}" cy="${y(v)}" r="3" fill="${color}" stroke="#fff" stroke-width="1.5"/>`).join('')}`;
+  }
+  // grid lines
+  let grid='';for(let g=0;g<=4;g++){const yy=PAD.t+g*(ch/4);grid+=`<line x1="${PAD.l}" y1="${yy}" x2="${W-PAD.r}" y2="${yy}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3"/>`;}
+  let labels='';MONTHS.forEach((m,i)=>{labels+=`<text x="${xs[i]}" y="${H-5}" text-anchor="middle" fill="var(--foreground-secondary)" font-size="9" data-ar="${MONTHS_AR[i]}" data-en="${m}">${MONTHS_AR[i]}</text>`;});
+  let yLab='';for(let g=0;g<=4;g++){const v=Math.round(mxY*(4-g)/4);yLab+=`<text x="${PAD.l-6}" y="${PAD.t+g*(ch/4)+3}" text-anchor="end" fill="var(--foreground-secondary)" font-size="9">${v}</text>`;}
+  document.getElementById('trendChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%">${grid}${yLab}${labels}${lineSvg(TOTAL,'#F39200')}${lineSvg(MIT,'#10b981')}${lineSvg(CRIT,'#ef4444')}</svg>`;
+  document.getElementById('trendLegend').innerHTML=[['#F39200','إجمالي','Total'],['#10b981','مُعالَجة','Mitigated'],['#ef4444','حرجة','Critical']].map(([c,ar,en])=>`<div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem"><span style="width:1.2rem;height:.25rem;border-radius:.15rem;background:${c}"></span><span data-ar="${ar}" data-en="${en}">${ar}</span></div>`).join('');
+
+  // ===== Donut =====
+  const DON=[['حرج','Critical',38,'#ef4444'],['رئيسي','Major',92,'#f97316'],['متوسط','Moderate',186,'#eab308'],['ثانوي','Minor',104,'#22c55e'],['ضئيل','Negligible',32,'#3b82f6']];
+  const tot=DON.reduce((a,b)=>a+b[2],0);let acc=0;const segs=DON.map(([ar,en,v,c])=>{const s=acc/tot*360;acc+=v;const e=acc/tot*360;return `${c} ${s}deg ${e}deg`;}).join(',');
+  const d=document.getElementById('donut');
+  d.style.background=`conic-gradient(${segs})`;
+  d.innerHTML=`<div style="position:absolute;inset:32px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:1.85rem;font-weight:800;color:var(--foreground)">${tot}</span><span class="muted" style="font-size:.7rem" data-ar="خطر" data-en="risks">خطر</span></div>`;
+  document.getElementById('donutLegend').innerHTML=DON.map(([ar,en,v,c])=>`<div style="display:flex;align-items:center;gap:.6rem;font-size:.85rem;min-width:180px"><span style="width:.85rem;height:.85rem;border-radius:.25rem;background:${c};flex-shrink:0"></span><span class="muted" data-ar="${ar}" data-en="${en}" style="flex:1">${ar}</span><span style="font-weight:700;color:var(--foreground)">${v}</span><span class="muted" style="font-size:.72rem">(${Math.round(v/tot*100)}%)</span></div>`).join('');
+
+  // ===== Effectiveness (Inherent vs Residual) =====
+  const EFF=[
+    ['المالية','Finance',16.8,9.2,'#3b82f6'],
+    ['الإنتاج','Production',15.3,9.8,'#f97316'],
+    ['الموارد البشرية','HR',12.1,7.5,'#06b6d4'],
+    ['HSE','HSE',14.2,7.1,'#22c55e'],
+    ['تقنية المعلومات','IT',13.6,8.9,'#10b981'],
+    ['المشتريات','Procurement',13.2,8.5,'#a855f7'],
+    ['الموظفين','Staff',11.5,7.2,'#0ea5e9'],
+    ['QA/QC','QA/QC',12.4,7.8,'#f43f5e'],
+  ];
+  const mxScore=25;
+  document.getElementById('effChart').innerHTML=EFF.map(d=>{
+    const inhPct=d[2]/mxScore*100, resPct=d[3]/mxScore*100;
+    const reduction=Math.round((d[2]-d[3])/d[2]*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem"><span style="font-size:.82rem;font-weight:600" data-ar="${d[0]}" data-en="${d[1]}">${d[0]}</span><span class="chip" style="background:rgba(16,185,129,.12);color:#10b981;font-size:.7rem">↓ ${reduction}%</span></div>
+      <div style="position:relative;height:1.25rem;background:var(--background-tertiary);border-radius:.25rem;overflow:hidden">
+        <div style="position:absolute;inset-inline-start:0;top:0;height:100%;width:${inhPct}%;background:#ef4444;opacity:.6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:700">${d[2].toFixed(1)}</div>
+        <div style="position:absolute;inset-inline-start:0;top:0;height:100%;width:${resPct}%;background:#10b981;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:700">${d[3].toFixed(1)}</div>
+      </div>
+    </div>`;
+  }).join('')+`<div style="display:flex;gap:1rem;justify-content:center;margin-top:.4rem;font-size:.72rem" class="muted"><span><span style="display:inline-block;width:.8rem;height:.8rem;background:#ef4444;opacity:.6;border-radius:.15rem;vertical-align:-2px;margin-inline-end:.2rem"></span><span data-ar="الكامن" data-en="Inherent">الكامن</span></span><span><span style="display:inline-block;width:.8rem;height:.8rem;background:#10b981;border-radius:.15rem;vertical-align:-2px;margin-inline-end:.2rem"></span><span data-ar="المتبقي" data-en="Residual">المتبقي</span></span></div>`;
+
+  // ===== Top risks =====
+  const TOP=[
+    ['R-001','تقلبات أسعار النحاس والألمنيوم','Copper & aluminum price volatility','المالية','Finance',25,15,'#ef4444'],
+    ['R-002','اضطرابات سلسلة الإمداد','Supply chain disruptions','المشتريات','Procurement',20,12,'#ef4444'],
+    ['R-027','حادث صناعي كبير محتمل','Major industrial incident','الإنتاج','Production',20,11,'#f97316'],
+    ['R-006','مخاطر الأمن السيبراني','Cybersecurity risk','IT','IT',20,9,'#f97316'],
+    ['R-014','عجز سيولة قصير الأجل','Short-term liquidity gap','المالية','Finance',16,8,'#f97316'],
+    ['R-031','تذبذب أسعار الطاقة','Energy price volatility','المالية','Finance',16,12,'#f97316'],
+  ];
+  document.getElementById('topRisks').innerHTML=TOP.map(([id,ta,te,da,de,inh,res,c])=>{const reduction=Math.round((inh-res)/inh*100);return `
+    <a href="risk-detail.html?id=${id}" class="strip-row" style="text-decoration:none;color:inherit">
+      <code class="mono" style="background:${c}1f;color:${c}">${id}</code>
+      <div style="flex:1;min-width:0">
+        <p style="margin:0;font-size:.85rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
+        <p class="muted" style="margin:.15rem 0 0;font-size:.72rem" data-ar="${da}" data-en="${de}">${da}</p>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.7rem"><span style="color:#ef4444;font-weight:800">${inh}</span><i data-lucide="arrow-left" style="width:.85rem;height:.85rem;color:var(--foreground-muted)"></i><span style="color:#F39200;font-weight:800">${res}</span></div>
+        <span class="muted" style="font-size:.65rem">↓ ${reduction}%</span>
+      </div>
+    </a>`;}).join('');
+
+  // ===== Strategy mix =====
+  const STR=[
+    ['تقليل','Reduce',312,'#F39200','trending-down'],
+    ['تحويل','Transfer',64,'#3b82f6','share-2'],
+    ['قبول','Accept',48,'#10b981','check'],
+    ['تجنّب','Avoid',28,'#ef4444','x-circle'],
+  ];
+  const stot=STR.reduce((a,b)=>a+b[2],0);
+  document.getElementById('strategyMix').innerHTML=STR.map(([ar,en,v,c,ic])=>{const pct=Math.round(v/stot*100);return `
+    <div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+        <div style="width:2rem;height:2rem;border-radius:.5rem;background:${c}1f;color:${c};display:flex;align-items:center;justify-content:center"><i data-lucide="${ic}" style="width:1rem;height:1rem"></i></div>
+        <div style="flex:1"><p style="margin:0;font-size:.85rem;font-weight:600" data-ar="${ar}" data-en="${en}">${ar}</p></div>
+        <span style="font-weight:800;color:${c}">${v}</span><span class="muted" style="font-size:.72rem">(${pct}%)</span>
+      </div>
+      <div class="progress" style="height:.45rem"><span style="width:${pct}%;background:${c}"></span></div>
+    </div>`;}).join('');
+
+  // ===== Saved reports =====
+  const SR=[
+    ['file-text','تقرير لجنة المخاطر الشهري','Monthly Risk Committee','#F39200','نواف باقاسي','شهرياً','Monthly'],
+    ['shield','تقرير خطط المعالجة','Treatment Plans Report','#10b981','عبدالإله سجيني','أسبوعياً','Weekly'],
+    ['alert-circle','تقرير الحوادث الربعي','Quarterly Incidents','#ef4444','فيصل الزغيبي','ربعياً','Quarterly'],
+    ['check-square','تقرير الامتثال CMA','CMA Compliance Report','#3b82f6','هند السبيعي','ربعياً','Quarterly'],
+    ['trending-down','تقرير فعالية المعالجة','Mitigation Effectiveness','#a855f7','عبدالإله سجيني','شهرياً','Monthly'],
+    ['users','تقرير أداء الرواد','Champions Performance','#06b6d4','عبدالإله سجيني','ربعياً','Quarterly'],
+  ];
+  document.getElementById('savedReports').innerHTML=SR.map(([ic,ar,en,c,oa,fa,fe])=>`
+    <a href="#" style="display:flex;flex-direction:column;gap:.5rem;padding:.85rem;border-radius:.85rem;text-decoration:none;border:1px solid var(--border);background:var(--card);transition:all .15s" onmouseover="this.style.borderColor='var(--primary)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="width:2.4rem;height:2.4rem;border-radius:.6rem;background:${c}1f;color:${c};display:flex;align-items:center;justify-content:center"><i data-lucide="${ic}"></i></div>
+        <div style="flex:1;min-width:0"><p style="margin:0;font-size:.88rem;font-weight:600;color:var(--foreground)" data-ar="${ar}" data-en="${en}">${ar}</p><p class="muted" style="margin:.15rem 0 0;font-size:.7rem"><span data-ar="${oa}" data-en="${oa}">${oa}</span> · <span data-ar="${fa}" data-en="${fe}">${fa}</span></p></div>
+        <i data-lucide="download" style="width:1rem;height:1rem;color:var(--foreground-muted)"></i>
+      </div>
+    </a>`).join('');
+
+  if(window.lucide) lucide.createIcons();
+  window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

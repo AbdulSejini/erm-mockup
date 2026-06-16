@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>رواد المخاطر | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-page="champions.html">
+<div id="app">
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="users" style="color:var(--primary)"></i><span data-ar="رواد المخاطر" data-en="Risk Champions">رواد المخاطر</span></h1>
+      <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="ممثلو إدارة المخاطر في الإدارات وأداؤهم" data-en="Departmental risk representatives and performance">ممثلو إدارة المخاطر في الإدارات وأداؤهم</p>
+    </div>
+    <button class="btn btn-primary"><i data-lucide="user-plus" style="width:1rem;height:1rem"></i><span data-ar="تعيين رائد" data-en="Assign Champion">تعيين رائد</span></button>
+  </div>
+
+  <!-- Top stats -->
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem" id="stats"></div>
+
+  <!-- Search -->
+  <div class="card"><div class="card-pad" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
+    <div style="position:relative;flex:1;min-width:240px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input class="input" style="padding-inline-start:2.25rem" data-ar-ph="ابحث برائد أو إدارة..." data-en-ph="Search by champion or department..." placeholder="بحث..."></div>
+    <select class="select" style="width:auto"><option data-ar="كل الإدارات" data-en="All Departments">كل الإدارات</option><option>المالية</option><option>الإنتاج</option><option>المشتريات</option></select>
+    <select class="select" style="width:auto"><option data-ar="ترتيب حسب الأداء" data-en="Sort by Performance">ترتيب حسب الأداء</option><option data-ar="عدد المخاطر" data-en="Risk count">عدد المخاطر</option><option data-ar="الاسم" data-en="Name">الاسم</option></select>
+  </div></div>
+
+  <!-- Cards -->
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem" id="cards"></div>
+</div>
+
+<script>
+window.ermInit=function(){
+  const G=[['#f97316','#f59e0b'],['#3b82f6','#6366f1'],['#10b981','#22c55e'],['#a855f7','#8b5cf6'],['#ec4899','#f43f5e'],['#06b6d4','#0ea5e9'],['#eab308','#facc15'],['#84cc16','#22c55e']];
+  const C=[
+    ['نواف باقاسي','Nawaf Bagasi','المالية — الخزينة','Finance — Treasury',143,72,12,'n.bagasi@saudicable.com'],
+    ['حسام المالكي','Hussam Al-Malki','الموارد البشرية','HR',70,68,8,'h.malki@saudicable.com'],
+    ['تركي أبو طالب','Turki Abu Talib','المشتريات والشحن','Procurement & Shipping',36,58,5,'t.abutalib@saudicable.com'],
+    ['محمد عشرم','Mohammed Ashram','الإنتاج','Production',68,62,11,'m.ashram@saudicable.com'],
+    ['أكرم زهير','Akram Zuhair','تقنية المعلومات و ERP','IT & ERP',24,63,4,'a.zuhair@saudicable.com'],
+    ['فيصل الزغيبي','Faisal Al-Zaghibi','السلامة المهنية HSE','HSE',24,92,1,'f.zaghibi@saudicable.com'],
+    ['عادل الجدعاني','Adel Al-Jadaani','أمن المنشأة','Security',13,77,2,'a.jadaani@saudicable.com'],
+    ['حبيب الرحمن','Habib Rahman','المبيعات والتسويق','Sales & Marketing',29,59,6,'h.rahman@saudicable.com'],
+    ['محمد باحويرث','Mohammed Bawerath','الموظفين و QA/QC','Staff & QA/QC',41,73,3,'m.bawerath@saudicable.com'],
+    ['أحمد صالح','Ahmad Saleh','اللوجستيات','Logistics',16,63,4,'a.saleh@saudicable.com'],
+    ['مهند فصيح الدين','Muhannad Fasihuddin','المالية — العمليات','Finance — Ops',60,65,7,'m.fasih@saudicable.com'],
+    ['نورة الغامدي','Nora Al-Ghamdi','المبيعات','Sales',14,71,3,'n.ghamdi@saudicable.com'],
+  ];
+
+  document.getElementById('stats').innerHTML=[
+    ['إجمالي الرواد','Total Champions',C.length,'#F39200','users'],
+    ['إدارات مغطاة','Departments Covered',12,'#3b82f6','building-2'],
+    ['متوسط الأداء','Avg Performance',Math.round(C.reduce((a,c)=>a+c[5],0)/C.length)+'%','#10b981','trending-up'],
+    ['أعلى أداء','Top Performer','92%','#a855f7','award'],
+  ].map(([ar,en,v,c,ic])=>`<div class="stat-tile"><div class="glow" style="background:${c}"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c}">${v}</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:${c}1f;color:${c}"><i data-lucide="${ic}"></i></div></div></div>`).join('');
+
+  document.getElementById('cards').innerHTML=C.map(([na,ne,da,de,risks,rate,plans,email],i)=>{
+    const[c1,c2]=G[i%G.length];
+    const initial=na.charAt(0);
+    return `<div class="card"><div class="card-pad" style="text-align:center">
+      <div style="position:relative;width:72px;height:72px;margin:0 auto .6rem">
+        <div style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,${c1},${c2})">${initial}</div>
+        ${rate>=85?'<span style="position:absolute;bottom:-2px;inset-inline-end:-2px;width:1.5rem;height:1.5rem;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--card)" title="أداء عالٍ"><i data-lucide="award" style="width:.85rem;height:.85rem"></i></span>':''}
+      </div>
+      <p style="margin:0;font-weight:700;color:var(--foreground)" data-ar="${na}" data-en="${ne}">${na}</p>
+      <p class="muted" style="margin:.15rem 0 .15rem;font-size:.78rem" data-ar="${da}" data-en="${de}">${da}</p>
+      <p class="muted" style="margin:0 0 .85rem;font-size:.7rem">${email}</p>
+      <div style="display:flex;justify-content:space-around;gap:.5rem;margin-bottom:.75rem">
+        <div style="text-align:center"><p style="margin:0;font-size:1.4rem;font-weight:800;color:var(--foreground)">${risks}</p><p class="muted" style="margin:0;font-size:.7rem" data-ar="خطر" data-en="Risks">خطر</p></div>
+        <div style="text-align:center"><p style="margin:0;font-size:1.4rem;font-weight:800;color:#3b82f6">${plans}</p><p class="muted" style="margin:0;font-size:.7rem" data-ar="خطة" data-en="Plans">خطة</p></div>
+        <div style="text-align:center"><p style="margin:0;font-size:1.4rem;font-weight:800;color:${c1}">${rate}%</p><p class="muted" style="margin:0;font-size:.7rem" data-ar="الأداء" data-en="Perf.">الأداء</p></div>
+      </div>
+      <div class="progress" style="margin-bottom:.6rem"><span style="width:${rate}%;background:linear-gradient(90deg,${c1},${c2})"></span></div>
+      <div style="display:flex;gap:.4rem;justify-content:center"><a href="risks.html" class="btn btn-outline" style="padding:.35rem .7rem;font-size:.75rem"><i data-lucide="list" style="width:.85rem;height:.85rem"></i><span data-ar="عرض المخاطر" data-en="View Risks">عرض المخاطر</span></a><button class="btn btn-outline" style="padding:.35rem .7rem;font-size:.75rem"><i data-lucide="mail" style="width:.85rem;height:.85rem"></i><span data-ar="مراسلة" data-en="Message">مراسلة</span></button></div>
+    </div></div>`;
+  }).join('');
+
+  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>

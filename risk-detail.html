@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تفاصيل الخطر | ERM — Saudi Cable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erm-shell.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  .nav-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-radius:.6rem;font-size:.8rem;font-weight:600;color:var(--foreground-secondary);background:transparent;border:0;cursor:pointer;text-decoration:none;transition:all .15s}
+  .nav-pill:hover{background:var(--background-tertiary);color:var(--foreground)}
+  .nav-pill.active{background:var(--primary-light);color:var(--primary)}
+  .meta-card{display:flex;gap:.6rem;padding:.85rem;border-radius:.75rem;background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.18)}
+  .meta-card i{flex-shrink:0;width:1.1rem;height:1.1rem;color:rgba(255,255,255,.85)}
+  .meta-card .lbl{margin:0;font-size:.7rem;color:rgba(255,255,255,.75);font-weight:500}
+  .meta-card .val{margin:.15rem 0 0;font-size:.85rem;color:#fff;font-weight:600}
+  .score-tile{flex:1;padding:1rem;border-radius:.75rem;text-align:center;background:var(--background-tertiary);border:1px solid var(--border)}
+  .score-tile .lbl{font-size:.7rem;color:var(--foreground-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:0}
+  .score-tile .val{font-size:1.75rem;font-weight:800;margin:.4rem 0 .2rem}
+  .score-tile .sub{font-size:.7rem;color:var(--foreground-muted);margin:0}
+  .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:.5rem;background:transparent;border:1px solid var(--border);color:var(--foreground-secondary);cursor:pointer;transition:all .15s}
+  .icon-btn:hover{background:var(--background-tertiary)}
+  .matrix-mini{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .matrix-mini-cell{aspect-ratio:1;border-radius:.3rem;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;font-weight:700}
+  .timeline-dot{flex-shrink:0;width:2.2rem;height:2.2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 8px rgba(0,0,0,.1)}
+  .timeline-line{position:absolute;inset-inline-start:1.1rem;top:2.2rem;bottom:-.4rem;width:2px;background:var(--border)}
+  .field-block{padding:1rem;border-radius:.85rem;background:var(--background-tertiary);border:1px solid var(--border)}
+  .field-block h4{margin:0 0 .5rem;font-size:.75rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:.4rem}
+  .field-block p{margin:0;line-height:1.7;font-size:.875rem}
+</style>
+</head>
+<body data-page="risks.html">
+<div id="app">
+
+  <!-- Sticky navigation header -->
+  <div class="card" style="position:sticky;top:4rem;z-index:20;padding:.75rem 1rem;display:flex;flex-wrap:wrap;align-items:center;gap:.75rem">
+    <a href="risks.html" class="icon-btn" title="رجوع"><i data-lucide="arrow-right" style="width:1rem;height:1rem"></i></a>
+    <code class="mono" style="font-size:.85rem;background:rgba(243,146,0,.1);color:var(--primary)">R-001</code>
+    <span class="chip" style="background:#ef44441f;color:#ef4444"><i data-lucide="alert-octagon" style="width:.8rem;height:.8rem"></i><span data-ar="حرج" data-en="Critical">حرج</span></span>
+    <span class="chip" style="background:#3b82f61f;color:#3b82f6" data-ar="مفتوح" data-en="Open">مفتوح</span>
+    <div style="height:1.2rem;width:1px;background:var(--border)"></div>
+    <div style="display:flex;gap:.25rem;flex-wrap:wrap">
+      <a href="#overview" class="nav-pill active"><i data-lucide="layout-dashboard" style="width:.9rem;height:.9rem"></i><span data-ar="نظرة عامة" data-en="Overview">نظرة عامة</span></a>
+      <a href="#assessment" class="nav-pill"><i data-lucide="bar-chart-3" style="width:.9rem;height:.9rem"></i><span data-ar="التقييم" data-en="Assessment">التقييم</span></a>
+      <a href="#treatments" class="nav-pill"><i data-lucide="wrench" style="width:.9rem;height:.9rem"></i><span data-ar="خطط المعالجة" data-en="Treatments">خطط المعالجة</span></a>
+      <a href="#history" class="nav-pill"><i data-lucide="history" style="width:.9rem;height:.9rem"></i><span data-ar="السجل" data-en="History">السجل</span></a>
+    </div>
+    <div style="margin-inline-start:auto;display:flex;gap:.4rem;flex-wrap:wrap">
+      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
+      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="pencil" style="width:.9rem;height:.9rem"></i><span data-ar="تعديل" data-en="Edit">تعديل</span></button>
+      <button class="btn btn-primary" style="padding:.45rem .7rem"><i data-lucide="plus" style="width:.9rem;height:.9rem"></i><span data-ar="إضافة خطة معالجة" data-en="Add Treatment Plan">إضافة خطة معالجة</span></button>
+    </div>
+  </div>
+
+  <!-- ========== Overview Hero ========== -->
+  <section id="overview" class="page-hero" style="background:linear-gradient(135deg,#dc2626,#ef4444 55%,#f43f5e)">
+    <div class="blob" style="width:18rem;height:18rem;top:-6rem;inset-inline-end:-6rem"></div>
+    <div class="blob" style="width:14rem;height:14rem;bottom:-6rem;inset-inline-start:-6rem"></div>
+    <div style="position:relative;z-index:1">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:1rem;margin-bottom:1.25rem">
+        <div style="display:flex;height:3.5rem;width:3.5rem;align-items:center;justify-content:center;border-radius:1rem;background:rgba(255,255,255,.2);backdrop-filter:blur(4px)">
+          <i data-lucide="alert-triangle" style="width:1.75rem;height:1.75rem;color:#fff"></i>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <span style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.25);font-size:.75rem;font-weight:700;color:#fff" data-ar="مالي" data-en="Financial">مالي</span>
+            <span style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.25);font-size:.75rem;font-weight:700;color:#fff" data-ar="استراتيجي" data-en="Strategic">استراتيجي</span>
+          </div>
+          <h1 style="margin:0;font-size:1.6rem;font-weight:800;color:#fff;line-height:1.3" data-ar="تقلبات أسعار النحاس والألمنيوم" data-en="Copper & aluminum price volatility">تقلبات أسعار النحاس والألمنيوم</h1>
+          <p style="margin:.4rem 0 0;color:rgba(255,255,255,.85);font-size:.85rem" data-ar="المالية — الخزينة · عملية الشراء والتسعير" data-en="Finance — Treasury · Procurement & pricing process">المالية — الخزينة · عملية الشراء والتسعير</p>
+        </div>
+      </div>
+
+      <!-- Meta grid -->
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem">
+        <div class="meta-card"><i data-lucide="shield"></i><div><p class="lbl" data-ar="مالك الخطر" data-en="Risk Owner">مالك الخطر</p><p class="val" data-ar="أحلام تركستاني" data-en="Ahlam Turkistani">أحلام تركستاني</p></div></div>
+        <div class="meta-card"><i data-lucide="award"></i><div><p class="lbl" data-ar="رائد المخاطر" data-en="Champion">رائد المخاطر</p><p class="val" data-ar="نواف باقاسي" data-en="Nawaf Bagasi">نواف باقاسي</p></div></div>
+        <div class="meta-card"><i data-lucide="git-branch"></i><div><p class="lbl" data-ar="المصدر" data-en="Source">المصدر</p><p class="val" data-ar="ورشة المخاطر السنوية" data-en="Annual Risk Workshop">ورشة المخاطر السنوية</p></div></div>
+        <div class="meta-card"><i data-lucide="calendar-plus"></i><div><p class="lbl" data-ar="تاريخ التسجيل" data-en="Registered">تاريخ التسجيل</p><p class="val">2026-01-08</p></div></div>
+        <div class="meta-card"><i data-lucide="calendar-clock"></i><div><p class="lbl" data-ar="آخر مراجعة" data-en="Last Review">آخر مراجعة</p><p class="val">2026-05-22</p></div></div>
+        <div class="meta-card"><i data-lucide="calendar-check"></i><div><p class="lbl" data-ar="المراجعة القادمة" data-en="Next Review">المراجعة القادمة</p><p class="val">2026-08-22</p></div></div>
+      </div>
+
+      <!-- Inline scores -->
+      <div style="margin-top:1.25rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem">
+        <div style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border-radius:.75rem;padding:.85rem;text-align:center;border:1px solid rgba(255,255,255,.2)">
+          <p style="margin:0;color:rgba(255,255,255,.8);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em" data-ar="الكامن" data-en="Inherent">الكامن</p>
+          <p style="margin:.3rem 0 0;color:#fff;font-size:1.8rem;font-weight:800">25</p>
+          <p style="margin:0;color:rgba(255,255,255,.85);font-size:.7rem">5 × 5</p>
+        </div>
+        <div style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border-radius:.75rem;padding:.85rem;text-align:center;border:1px solid rgba(255,255,255,.2)">
+          <p style="margin:0;color:rgba(255,255,255,.8);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em" data-ar="المتبقي" data-en="Residual">المتبقي</p>
+          <p style="margin:.3rem 0 0;color:#fff;font-size:1.8rem;font-weight:800">15</p>
+          <p style="margin:0;color:rgba(255,255,255,.85);font-size:.7rem">3 × 5</p>
+        </div>
+        <div style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border-radius:.75rem;padding:.85rem;text-align:center;border:1px solid rgba(255,255,255,.2)">
+          <p style="margin:0;color:rgba(255,255,255,.8);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em" data-ar="الخطط النشطة" data-en="Active Plans">الخطط النشطة</p>
+          <p style="margin:.3rem 0 0;color:#fff;font-size:1.8rem;font-weight:800">3</p>
+          <p style="margin:0;color:rgba(255,255,255,.85);font-size:.7rem" data-ar="من أصل 4" data-en="of 4">من أصل 4</p>
+        </div>
+        <div style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border-radius:.75rem;padding:.85rem;text-align:center;border:1px solid rgba(255,255,255,.2)">
+          <p style="margin:0;color:rgba(255,255,255,.8);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em" data-ar="إنجاز المعالجة" data-en="Treatment %">إنجاز المعالجة</p>
+          <p style="margin:.3rem 0 0;color:#fff;font-size:1.8rem;font-weight:800">68%</p>
+          <p style="margin:0;color:rgba(255,255,255,.85);font-size:.7rem">3 / 4</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Risk content (descriptive) ========== -->
+  <div class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="file-text" style="color:var(--primary)"></i><span data-ar="وصف الخطر" data-en="Risk Description">وصف الخطر</span></h3></div>
+    <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:.85rem">
+      <div class="field-block">
+        <h4><i data-lucide="circle-help" style="width:.85rem;height:.85rem"></i><span data-ar="الوصف الكامل" data-en="Full Description">الوصف الكامل</span></h4>
+        <p data-ar="تقلّبات حادّة وغير متوقّعة في أسعار النحاس والألمنيوم في الأسواق العالمية تؤثر مباشرة على هوامش الأرباح وقدرة الشركة على الالتزام بعقود التسعير الثابت طويلة الأجل مع كبار العملاء. ترتبط هذه التقلبات بالطلب من الصين، وإمدادات تشيلي وبيرو، وقرارات بورصة LME." data-en="Sharp, unpredictable swings in global copper and aluminum prices that directly compress margins and threaten our ability to honor fixed-price long-term contracts with key customers. Driven by Chinese demand, Chilean and Peruvian supply, and LME-related dynamics.">تقلّبات حادّة وغير متوقّعة في أسعار النحاس والألمنيوم في الأسواق العالمية تؤثر مباشرة على هوامش الأرباح وقدرة الشركة على الالتزام بعقود التسعير الثابت طويلة الأجل مع كبار العملاء.</p>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.85rem">
+        <div class="field-block">
+          <h4 style="color:#f59e0b"><i data-lucide="zap" style="width:.85rem;height:.85rem"></i><span data-ar="السبب المحتمل" data-en="Potential Cause">السبب المحتمل</span></h4>
+          <p data-ar="توترات جيوسياسية في تشيلي وبيرو، تغيّرات حادة في الطلب من الصين، اختناقات لوجستية في موانئ التصدير، تذبذب في أسعار الطاقة المُستخدمة في التعدين." data-en="Geopolitical tensions in Chile and Peru, sharp shifts in Chinese demand, logistical bottlenecks at export ports, fluctuations in mining-energy prices.">توترات جيوسياسية في تشيلي وبيرو، تغيّرات حادة في الطلب من الصين، اختناقات لوجستية في موانئ التصدير، تذبذب في أسعار الطاقة المُستخدمة في التعدين.</p>
+        </div>
+        <div class="field-block">
+          <h4 style="color:#ef4444"><i data-lucide="trending-down" style="width:.85rem;height:.85rem"></i><span data-ar="الأثر المحتمل" data-en="Potential Impact">الأثر المحتمل</span></h4>
+          <p data-ar="انخفاض هامش الربح الإجمالي بنسبة 4–7%، تأخّر تنفيذ عقود طويلة الأجل، تآكل ثقة العملاء، احتمالية شطب مخصصات على المخزون، أثر سلبي على EPS الربعي." data-en="GP margin erosion of 4–7%, delays on long-term contracts, customer-confidence erosion, possible inventory write-downs, negative impact on quarterly EPS.">انخفاض هامش الربح الإجمالي بنسبة 4–7%، تأخّر تنفيذ عقود طويلة الأجل، تآكل ثقة العملاء، احتمالية شطب مخصصات على المخزون، أثر سلبي على EPS الربعي.</p>
+        </div>
+        <div class="field-block">
+          <h4 style="color:#10b981"><i data-lucide="shield-check" style="width:.85rem;height:.85rem"></i><span data-ar="الضوابط الحالية" data-en="Existing Controls">الضوابط الحالية</span></h4>
+          <p data-ar="مراقبة يومية لأسعار LME من قبل الخزينة، تقارير شهرية للجنة الاستثمار، اتفاقيات إطارية مع موردين رئيسيين، سياسة تسعير ديناميكي للعقود الجديدة، تأمين على المخزون." data-en="Daily LME monitoring by Treasury, monthly investment-committee reporting, framework agreements with key suppliers, dynamic-pricing policy for new contracts, inventory insurance.">مراقبة يومية لأسعار LME من قبل الخزينة، تقارير شهرية للجنة الاستثمار، اتفاقيات إطارية مع موردين رئيسيين، سياسة تسعير ديناميكي للعقود الجديدة، تأمين على المخزون.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Assessment (matrices & scoring) ========== -->
+  <section id="assessment" class="card">
+    <div class="card-head">
+      <h3 class="h-title"><i data-lucide="bar-chart-3" style="color:var(--primary)"></i><span data-ar="التقييم" data-en="Assessment">التقييم</span></h3>
+      <span class="muted" style="font-size:.78rem"><span data-ar="آخر تقييم:" data-en="Last assessed:">آخر تقييم:</span> 2026-05-22</span>
+    </div>
+    <div class="card-pad" style="display:grid;grid-template-columns:1fr;gap:1.25rem">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <div class="score-tile">
+          <p class="lbl" data-ar="الخطر الكامن" data-en="Inherent Risk">الخطر الكامن</p>
+          <p class="val" style="color:#ef4444">25</p>
+          <p class="sub">5 × 5 — <span data-ar="حرج" data-en="Critical">حرج</span></p>
+        </div>
+        <div class="score-tile">
+          <p class="lbl" data-ar="الخطر المتبقي" data-en="Residual Risk">الخطر المتبقي</p>
+          <p class="val" style="color:#F39200">15</p>
+          <p class="sub">3 × 5 — <span data-ar="رئيسي" data-en="Major">رئيسي</span></p>
+        </div>
+        <div class="score-tile">
+          <p class="lbl" data-ar="نسبة التخفيف" data-en="Reduction">نسبة التخفيف</p>
+          <p class="val" style="color:#10b981">40%</p>
+          <p class="sub" data-ar="من 25 إلى 15" data-en="from 25 to 15">من 25 إلى 15</p>
+        </div>
+        <div class="score-tile">
+          <p class="lbl" data-ar="مستوى الشهية" data-en="Risk Appetite">مستوى الشهية</p>
+          <p class="val" style="color:var(--primary)">9</p>
+          <p class="sub" data-ar="فجوة: 6 نقاط" data-en="Gap: 6 pts">فجوة: 6 نقاط</p>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+        <div>
+          <h4 style="margin:0 0 .5rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="مصفوفة الخطر الكامن" data-en="Inherent Matrix">مصفوفة الخطر الكامن</h4>
+          <div class="matrix-mini" id="matrixIn"></div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 .5rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="مصفوفة الخطر المتبقي" data-en="Residual Matrix">مصفوفة الخطر المتبقي</h4>
+          <div class="matrix-mini" id="matrixRes"></div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 .5rem;font-size:.8rem;font-weight:700;color:var(--foreground-secondary);text-transform:uppercase;letter-spacing:.05em" data-ar="مسار التخفيف" data-en="Reduction Path">مسار التخفيف</h4>
+          <div class="field-block" style="background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(243,146,0,.08))">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--foreground-secondary);margin-bottom:.4rem"><span data-ar="الكامن" data-en="Inherent">الكامن</span><span data-ar="المتبقي" data-en="Residual">المتبقي</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="font-size:1.5rem;font-weight:800;color:#ef4444">25</span>
+              <div style="flex:1;height:.4rem;border-radius:999px;background:linear-gradient(90deg,#ef4444,#F39200);position:relative"><span style="position:absolute;top:-3px;inset-inline-start:40%;width:.6rem;height:.6rem;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--primary)"></span></div>
+              <span style="font-size:1.5rem;font-weight:800;color:#F39200">15</span>
+            </div>
+            <p class="muted" style="margin:.5rem 0 0;font-size:.72rem;text-align:center" data-ar="تخفيض 40% بفضل ضوابط التحوّط الحالية" data-en="40% reduction via current hedging controls">تخفيض 40% بفضل ضوابط التحوّط الحالية</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Treatment Plans ========== -->
+  <section id="treatments" class="card">
+    <div class="card-head">
+      <h3 class="h-title"><i data-lucide="wrench" style="color:var(--primary)"></i><span data-ar="خطط المعالجة" data-en="Treatment Plans">خطط المعالجة</span> <span class="chip" style="background:rgba(243,146,0,.1);color:var(--primary)">4</span></h3>
+      <button class="btn btn-primary" style="padding:.5rem .9rem"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="خطة جديدة" data-en="New Plan">خطة جديدة</span></button>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr>
+        <th data-ar="المعرّف" data-en="ID">المعرّف</th>
+        <th data-ar="العنوان" data-en="Title">العنوان</th>
+        <th data-ar="الاستراتيجية" data-en="Strategy">الاستراتيجية</th>
+        <th data-ar="التقدم" data-en="Progress">التقدم</th>
+        <th data-ar="المسؤول" data-en="Responsible">المسؤول</th>
+        <th data-ar="الاستحقاق" data-en="Due">الاستحقاق</th>
+        <th data-ar="الحالة" data-en="Status">الحالة</th>
+      </tr></thead>
+      <tbody id="plansRows"></tbody>
+    </table></div>
+  </section>
+
+  <!-- ========== History ========== -->
+  <section id="history" class="card">
+    <div class="card-head"><h3 class="h-title"><i data-lucide="history" style="color:var(--primary)"></i><span data-ar="سجل التعديلات" data-en="Change History">سجل التعديلات</span></h3></div>
+    <div class="card-pad"><div id="logList" style="position:relative;display:flex;flex-direction:column;gap:1.1rem"></div></div>
+  </section>
+
+</div>
+<script>
+window.ermInit=function(){
+
+  // mini matrices
+  const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
+  const buildMini=(highlightL,highlightI)=>{let h='';for(let l=5;l>=1;l--) for(let i=1;i<=5;i++){const isHi=(l===highlightL&&i===highlightI);h+=`<div class="matrix-mini-cell" style="background:${col(l,i)};${isHi?'box-shadow:0 0 0 3px #fff,0 0 0 5px var(--primary);transform:scale(1.05)':''}">${l*i}</div>`;}return h;};
+  document.getElementById('matrixIn').innerHTML=buildMini(5,5);
+  document.getElementById('matrixRes').innerHTML=buildMini(3,5);
+
+  // treatment plans linked to this risk
+  const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
+  const STATUS={completed:['مكتملة','Completed','#10b981'],inProgress:['قيد التنفيذ','In Progress','#3b82f6'],overdue:['متأخرة','Overdue','#ef4444'],notStarted:['لم تبدأ','Not Started','#64748b']};
+  const PLANS=[
+    {id:'TP-014',ta:'خطة تحوّط أسعار النحاس',te:'Copper price hedging plan',str:'reduce',prog:75,resp_ar:'ماجد الدوسري',resp_en:'Majed Al-Dossari',due:'2026-08-31',st:'inProgress'},
+    {id:'TP-101',ta:'مراجعة سياسة التسعير ديناميكياً',te:'Dynamic pricing policy review',str:'reduce',prog:100,resp_ar:'نورة الغامدي',resp_en:'Nora Al-Ghamdi',due:'2026-05-30',st:'completed'},
+    {id:'TP-102',ta:'بوليصة تأمين مخزون المواد الخام',te:'Raw-material inventory insurance',str:'transfer',prog:100,resp_ar:'خالد الزهراني',resp_en:'Khaled Al-Zahrani',due:'2026-04-15',st:'completed'},
+    {id:'TP-103',ta:'تنويع موردي النحاس الثانوي',te:'Secondary copper supplier diversification',str:'reduce',prog:25,resp_ar:'سعاد البيشي',resp_en:'Suaad Al-Bishi',due:'2026-09-30',st:'inProgress'},
+  ];
+  document.getElementById('plansRows').innerHTML=PLANS.map(p=>{
+    const[sa,se,sc]=STR[p.str];const[ssa,sse,ssc]=STATUS[p.st];
+    const pc=p.prog>=80?'#10b981':p.prog>=40?'#F39200':'#ef4444';
+    return `<tr style="cursor:pointer" onclick="window.location.href='treatment-detail.html?id=${p.id}'">
+      <td><code class="mono">${p.id}</code></td>
+      <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${p.ta}" data-en="${p.te}">${p.ta}</p></td>
+      <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
+      <td><div style="display:flex;align-items:center;gap:.5rem;min-width:140px"><div class="progress" style="flex:1;height:.4rem"><span style="width:${p.prog}%;background:${pc}"></span></div><span style="font-size:.78rem;font-weight:600;color:${pc};min-width:2.5rem;text-align:end">${p.prog}%</span></div></td>
+      <td class="muted" data-ar="${p.resp_ar}" data-en="${p.resp_en}">${p.resp_ar}</td>
+      <td class="muted">${p.due}</td>
+      <td><span class="chip" style="background:${ssc}1f;color:${ssc}" data-ar="${ssa}" data-en="${sse}">${ssa}</span></td>
+    </tr>`;
+  }).join('');
+
+  // change log
+  const LOG=[
+    {ic:'check-circle-2',c:'#10b981',ta:'إنجاز خطة المعالجة TP-101',te:'Completed treatment plan TP-101',sub_ar:'نورة الغامدي · مراجعة سياسة التسعير',sub_en:'Nora Al-Ghamdi · pricing policy review',ago:'منذ 22 يوماً',ago_en:'22d ago'},
+    {ic:'trending-down',c:'#F39200',ta:'تحديث تقييم الخطر المتبقي',te:'Updated residual risk assessment',sub_ar:'من 4×5=20 إلى 3×5=15 — بناءً على اعتماد التحوّط',sub_en:'4×5=20 → 3×5=15 — based on hedge approval',ago:'منذ 25 يوماً',ago_en:'25d ago'},
+    {ic:'plus-circle',c:'#3b82f6',ta:'إضافة خطة معالجة جديدة',te:'New treatment plan added',sub_ar:'TP-103 — تنويع موردي النحاس الثانوي',sub_en:'TP-103 — secondary copper supplier diversification',ago:'منذ شهر',ago_en:'1mo ago'},
+    {ic:'check',c:'#10b981',ta:'موافقة على تسجيل الخطر',te:'Risk approved & registered',sub_ar:'تمت الموافقة من قبل لجنة المخاطر بتاريخ 2026-01-12',sub_en:'Approved by Risk Committee on 2026-01-12',ago:'2026-01-12',ago_en:'2026-01-12'},
+    {ic:'flag',c:'#a855f7',ta:'تسجيل الخطر',te:'Risk registered',sub_ar:'سعاد البيشي · من ورشة المخاطر السنوية',sub_en:'Suaad Al-Bishi · from Annual Risk Workshop',ago:'2026-01-08',ago_en:'2026-01-08'},
+  ];
+  document.getElementById('logList').innerHTML=LOG.map((l,i)=>`
+    <div style="display:flex;gap:.85rem;position:relative">
+      <div class="timeline-dot" style="background:${l.c}"><i data-lucide="${l.ic}" style="width:1rem;height:1rem"></i></div>
+      ${i<LOG.length-1?'<div class="timeline-line"></div>':''}
+      <div style="flex:1;padding-bottom:.4rem">
+        <p style="margin:0;font-weight:600;font-size:.9rem" data-ar="${l.ta}" data-en="${l.te}">${l.ta}</p>
+        <p class="muted" style="margin:.2rem 0 0;font-size:.78rem" data-ar="${l.sub_ar}" data-en="${l.sub_en}">${l.sub_ar}</p>
+        <p class="muted" style="margin:.15rem 0 0;font-size:.7rem" data-ar="${l.ago}" data-en="${l.ago_en}">${l.ago}</p>
+      </div>
+    </div>
+  `).join('');
+
+  // section nav active
+  document.querySelectorAll('.nav-pill').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');}));
+
+  if(window.lucide) lucide.createIcons();
+  window.ermApplyLang();
+};
+</script>
+<script src="erm-shell.js"></script>
+</body></html>
