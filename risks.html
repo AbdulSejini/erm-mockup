@@ -31,24 +31,38 @@
 
   <div class="card">
     <div class="card-pad" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
-      <div style="position:relative;flex:1;min-width:200px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input class="input" style="padding-inline-start:2.25rem" data-ar-ph="بحث في المخاطر..." data-en-ph="Search risks..." placeholder="بحث..."></div>
-      <select class="select" style="width:auto"><option data-ar="كل التصنيفات" data-en="All Categories">كل التصنيفات</option><option data-ar="استراتيجي" data-en="Strategic">استراتيجي</option><option data-ar="تشغيلي" data-en="Operational">تشغيلي</option><option data-ar="مالي" data-en="Financial">مالي</option></select>
-      <select class="select" style="width:auto"><option data-ar="كل المستويات" data-en="All Ratings">كل المستويات</option><option data-ar="حرج" data-en="Critical">حرج</option><option data-ar="رئيسي" data-en="Major">رئيسي</option><option data-ar="متوسط" data-en="Moderate">متوسط</option></select>
-      <select class="select" style="width:auto"><option data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option><option data-ar="مفتوح" data-en="Open">مفتوح</option><option data-ar="قيد المعالجة" data-en="In Treatment">قيد المعالجة</option><option data-ar="مُعالج" data-en="Mitigated">مُعالج</option></select>
+      <div style="position:relative;flex:1;min-width:220px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input id="fSearch" class="input" style="padding-inline-start:2.25rem" data-ar-ph="ابحث برقم الخطر، عنوان، أو مالك..." data-en-ph="Search by risk no., title, or owner..." placeholder="بحث..."></div>
+      <select id="fCategory" class="select" style="width:auto"></select>
+      <select id="fRating" class="select" style="width:auto">
+        <option value="" data-ar="كل المستويات" data-en="All Ratings">كل المستويات</option>
+        <option value="Critical" data-ar="حرج" data-en="Critical">حرج</option>
+        <option value="Major" data-ar="رئيسي" data-en="Major">رئيسي</option>
+        <option value="Moderate" data-ar="متوسط" data-en="Moderate">متوسط</option>
+        <option value="Minor" data-ar="ثانوي" data-en="Minor">ثانوي</option>
+        <option value="Negligible" data-ar="ضئيل" data-en="Negligible">ضئيل</option>
+      </select>
+      <select id="fStatus" class="select" style="width:auto">
+        <option value="" data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option>
+        <option value="open" data-ar="مفتوح" data-en="Open">مفتوح</option>
+        <option value="inTreatment" data-ar="قيد المعالجة" data-en="In Treatment">قيد المعالجة</option>
+        <option value="mitigated" data-ar="مُعالج" data-en="Mitigated">مُعالج</option>
+        <option value="closed" data-ar="مغلق" data-en="Closed">مغلق</option>
+      </select>
+      <select id="fDept" class="select" style="width:auto"></select>
+      <button id="fReset" class="btn btn-outline" style="padding:.5rem .8rem"><i data-lucide="rotate-ccw" style="width:.9rem;height:.9rem"></i><span data-ar="مسح" data-en="Clear">مسح</span></button>
+      <div id="viewToggle" style="display:inline-flex;border-radius:.6rem;padding:.2rem;background:var(--background-tertiary);border:1px solid var(--border);gap:.15rem;margin-inline-start:auto">
+        <button class="vt-btn" data-view="table" title="جدول" style="padding:.4rem .65rem;border:0;background:var(--primary);color:#fff;border-radius:.45rem;font-family:inherit;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="table" style="width:.9rem;height:.9rem"></i><span data-ar="جدول" data-en="Table">جدول</span></button>
+        <button class="vt-btn" data-view="cards" title="بطاقات" style="padding:.4rem .65rem;border:0;background:transparent;color:var(--foreground-secondary);border-radius:.45rem;font-family:inherit;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="layout-grid" style="width:.9rem;height:.9rem"></i><span data-ar="بطاقات" data-en="Cards">بطاقات</span></button>
+      </div>
     </div>
-    <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+    <div id="risksTableWrap" style="overflow-x:auto"><table class="tbl"><thead><tr>
       <th data-ar="المعرّف" data-en="ID">المعرّف</th><th data-ar="عنوان الخطر" data-en="Risk Title">عنوان الخطر</th><th data-ar="التصنيف" data-en="Category">التصنيف</th><th data-ar="الإدارة" data-en="Department">الإدارة</th>
       <th data-ar="كامن" data-en="Inherent">كامن</th><th data-ar="متبقٍ" data-en="Residual">متبقٍ</th><th data-ar="الحالة" data-en="Status">الحالة</th><th data-ar="المالك" data-en="Owner">المالك</th><th></th>
     </tr></thead><tbody id="riskRows"></tbody></table></div>
-    <div class="card-pad" style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+    <div id="risksCardsWrap" class="grid" style="display:none;padding:1rem;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem"></div>
+    <div class="card-pad" style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);flex-wrap:wrap;gap:.5rem">
       <span class="muted" style="font-size:.8rem"><span data-ar="عرض 1–10 من 48" data-en="Showing 1–10 of 48">عرض 1–10 من 48</span></span>
-      <div style="display:flex;gap:.25rem">
-        <button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="chevron-right" class="flip-x" style="width:1rem;height:1rem"></i></button>
-        <button class="btn btn-primary" style="padding:.4rem .8rem">1</button>
-        <button class="btn btn-outline" style="padding:.4rem .8rem">2</button>
-        <button class="btn btn-outline" style="padding:.4rem .8rem">3</button>
-        <button class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="chevron-left" class="flip-x" style="width:1rem;height:1rem"></i></button>
-      </div>
+      <div id="pager" style="display:flex;gap:.25rem"></div>
     </div>
   </div>
 
@@ -70,37 +84,229 @@ window.ermInit=async function(){
   if(tiles[2]) tiles[2].textContent = critical;
   if(tiles[3]) tiles[3].textContent = withPlans;
 
-  // Update pagination label
-  const pageSize = 12;
-  const pageLabel = document.querySelector('span[data-ar^="عرض"]');
-  if(pageLabel){ pageLabel.textContent = `عرض 1–${Math.min(pageSize,total)} من ${total}`; pageLabel.setAttribute('data-ar', `عرض 1–${Math.min(pageSize,total)} من ${total}`); pageLabel.setAttribute('data-en', `Showing 1–${Math.min(pageSize,total)} of ${total}`); }
-
   const RATING={Critical:['حرج','Critical','#ef4444'],Major:['رئيسي','Major','#f97316'],Moderate:['متوسط','Moderate','#eab308'],Minor:['ثانوي','Minor','#22c55e'],Negligible:['ضئيل','Negligible','#3b82f6']};
   const STATUS={open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#10b981']};
 
-  const sample = risks.slice(0, pageSize);
-  document.getElementById('riskRows').innerHTML=sample.map(r=>{
-    const ratInfo = RATING[r.inherentRating] || ['—','—','#64748b'];
-    const [ira,ire,ic] = ratInfo;
-    const statInfo = STATUS[r.status] || [r.status||'—',r.status||'—','#64748b'];
-    const [sa,se,sc] = statInfo;
-    const titleAr = (r.titleAr||'—').replace(/"/g,'&quot;');
-    const titleEn = (r.titleEn||titleAr).replace(/"/g,'&quot;');
-    return `<tr style="cursor:pointer" onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${r.id}'"><td><code class="mono">${r.riskNumber||'—'}</code></td>
-    <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p></td>
-    <td class="muted" data-ar="${r.categoryAr||'—'}" data-en="${r.categoryEn||r.categoryAr||'—'}">${r.categoryAr||'—'}</td>
-    <td class="muted" data-ar="${r.departmentAr||'—'}" data-en="${r.departmentEn||r.departmentAr||'—'}">${r.departmentAr||'—'}</td>
-    <td><span class="chip" style="background:${ic}1f;color:${ic}">${r.inherentScore||'—'}</span></td>
-    <td><span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)">${r.residualScore||'—'}</span></td>
-    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
-    <td class="muted" data-ar="${r.ownerName||'—'}" data-en="${r.ownerNameEn||r.ownerName||'—'}">${r.ownerName||'—'}</td>
-    <td><button class="btn btn-outline" style="padding:.3rem .5rem" onclick="event.stopPropagation()"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td></tr>`;
-  }).join('');
+  // Populate dynamic selects from real data
+  const cats  = Array.from(new Set(risks.map(r => r.categoryAr).filter(Boolean))).sort();
+  const depts = Array.from(new Set(risks.map(r => r.departmentAr).filter(Boolean))).sort();
+  document.getElementById('fCategory').innerHTML = `<option value="" data-ar="كل التصنيفات" data-en="All Categories">كل التصنيفات</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('fDept').innerHTML     = `<option value="" data-ar="كل الإدارات" data-en="All Departments">كل الإدارات</option>` + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  // ===== State from URL =====
+  const url = new URL(window.location.href);
+  const state = {
+    q: url.searchParams.get('q') || '',
+    category: url.searchParams.get('category') || '',
+    rating: url.searchParams.get('rating') || '',
+    status: url.searchParams.get('status') || '',
+    dept: url.searchParams.get('dept') || '',
+    view: url.searchParams.get('view') || 'table',
+    page: parseInt(url.searchParams.get('page') || '1', 10) || 1,
+  };
+  document.getElementById('fSearch').value = state.q;
+  document.getElementById('fCategory').value = state.category;
+  document.getElementById('fRating').value = state.rating;
+  document.getElementById('fStatus').value = state.status;
+  document.getElementById('fDept').value = state.dept;
+  document.querySelectorAll('.vt-btn').forEach(b => {
+    const on = b.dataset.view === state.view;
+    b.style.background = on ? 'var(--primary)' : 'transparent';
+    b.style.color = on ? '#fff' : 'var(--foreground-secondary)';
+  });
+
+  function syncURL(){
+    const u = new URL(window.location.href);
+    ['q','category','rating','status','dept','view','page'].forEach(k => {
+      if(state[k] && !(k==='view' && state[k]==='table') && !(k==='page' && state[k]===1)) u.searchParams.set(k, state[k]);
+      else u.searchParams.delete(k);
+    });
+    window.history.replaceState(null, '', u);
+  }
+
+  function filtered(){
+    const q = state.q.trim().toLowerCase();
+    return risks.filter(r => {
+      if(state.category && r.categoryAr !== state.category) return false;
+      if(state.rating && r.inherentRating !== state.rating) return false;
+      if(state.status && (r.status||'open') !== state.status) return false;
+      if(state.dept && r.departmentAr !== state.dept) return false;
+      if(q){
+        const blob = [
+          r.riskNumber, r.titleAr, r.titleEn, r.ownerName, r.ownerNameEn,
+          r.championName, r.championNameEn, r.departmentAr, r.departmentEn, r.categoryAr, r.categoryEn,
+        ].filter(Boolean).join(' ').toLowerCase();
+        if(!blob.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  const pageSize = 12;
+
+  function renderPager(totalF){
+    const totalPages = Math.max(1, Math.ceil(totalF / pageSize));
+    const pager = document.getElementById('pager');
+    const win = [];
+    for(let i=1;i<=totalPages;i++){
+      if(i===1 || i===totalPages || Math.abs(i-state.page)<=1) win.push(i);
+      else if(i===2 && state.page>4) win.push('…');
+      else if(i===totalPages-1 && state.page<totalPages-3) win.push('…');
+    }
+    const cleaned = win.filter((x,i,a) => x!=='…' || a[i-1]!=='…');
+    pager.innerHTML = `<button class="pgr-btn" data-act="prev" ${state.page<=1?'disabled':''} style="padding:.4rem .7rem;border-radius:.5rem;border:1px solid var(--border);background:var(--card);cursor:pointer;${state.page<=1?'opacity:.4':''}"><i data-lucide="chevron-right" class="flip-x" style="width:1rem;height:1rem"></i></button>` +
+      cleaned.map(n => n==='…'
+        ? `<span style="padding:.4rem .5rem;color:var(--foreground-muted)">…</span>`
+        : `<button class="pgr-btn" data-act="page" data-p="${n}" style="padding:.4rem .8rem;border-radius:.5rem;border:1px solid var(--border);background:${n===state.page?'var(--primary)':'var(--card)'};color:${n===state.page?'#fff':'var(--foreground)'};cursor:pointer;font-family:inherit;font-weight:600">${n}</button>`).join('') +
+      `<button class="pgr-btn" data-act="next" ${state.page>=totalPages?'disabled':''} style="padding:.4rem .7rem;border-radius:.5rem;border:1px solid var(--border);background:var(--card);cursor:pointer;${state.page>=totalPages?'opacity:.4':''}"><i data-lucide="chevron-left" class="flip-x" style="width:1rem;height:1rem"></i></button>`;
+    pager.querySelectorAll('.pgr-btn').forEach(b => b.addEventListener('click', () => {
+      if(b.dataset.act==='prev' && state.page>1) state.page--;
+      else if(b.dataset.act==='next' && state.page<totalPages) state.page++;
+      else if(b.dataset.act==='page') state.page = parseInt(b.dataset.p, 10);
+      syncURL(); render();
+    }));
+  }
+
+  function render(){
+    const list = filtered();
+    const totalF = list.length;
+    const totalPages = Math.max(1, Math.ceil(totalF / pageSize));
+    if(state.page > totalPages) state.page = 1;
+    const start = (state.page - 1) * pageSize;
+    const slice = list.slice(start, start + pageSize);
+
+    // Pagination label
+    const pageLabel = document.querySelector('span[data-ar^="عرض"]');
+    if(pageLabel){
+      const from = totalF ? start + 1 : 0;
+      const to = Math.min(start + pageSize, totalF);
+      pageLabel.textContent = `عرض ${from}–${to} من ${totalF}`;
+      pageLabel.setAttribute('data-ar', `عرض ${from}–${to} من ${totalF}`);
+      pageLabel.setAttribute('data-en', `Showing ${from}–${to} of ${totalF}`);
+    }
+    renderPager(totalF);
+
+    // Empty state
+    if(!totalF){
+      const emptyHtml = `<tr><td colspan="9" style="padding:3rem;text-align:center"><div style="display:flex;flex-direction:column;align-items:center;gap:.5rem"><div style="width:48px;height:48px;border-radius:.85rem;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center"><i data-lucide="search-x" style="width:1.4rem;height:1.4rem"></i></div><p style="margin:0;font-weight:600" data-ar="لا توجد مخاطر مطابقة" data-en="No matching risks">لا توجد مخاطر مطابقة</p><p class="muted" style="margin:0;font-size:.8rem" data-ar="جرّب تعديل الفلاتر" data-en="Try changing the filters">جرّب تعديل الفلاتر</p></div></td></tr>`;
+      document.getElementById('riskRows').innerHTML = emptyHtml;
+      document.getElementById('risksCardsWrap').innerHTML = `<div style="grid-column:1/-1;padding:3rem;text-align:center;color:var(--foreground-muted)" data-ar="لا توجد مخاطر مطابقة" data-en="No matching risks">لا توجد مخاطر مطابقة</div>`;
+    } else {
+      // Table view
+      document.getElementById('riskRows').innerHTML = slice.map(r => {
+        const ratInfo = RATING[r.inherentRating] || ['—','—','#64748b'];
+        const [ira,ire,ic] = ratInfo;
+        const statInfo = STATUS[r.status] || [r.status||'مفتوح', r.status||'Open', '#3b82f6'];
+        const [sa,se,sc] = statInfo;
+        const titleAr = (r.titleAr||'—').replace(/"/g,'&quot;');
+        const titleEn = (r.titleEn||titleAr).replace(/"/g,'&quot;');
+        return `<tr style="cursor:pointer" onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${r.id}'">
+          <td><code class="mono">${r.riskNumber||'—'}</code></td>
+          <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p></td>
+          <td class="muted" data-ar="${r.categoryAr||'—'}" data-en="${r.categoryEn||r.categoryAr||'—'}">${r.categoryAr||'—'}</td>
+          <td class="muted" data-ar="${r.departmentAr||'—'}" data-en="${r.departmentEn||r.departmentAr||'—'}">${r.departmentAr||'—'}</td>
+          <td><span class="chip" style="background:${ic}1f;color:${ic}">${r.inherentScore||'—'}</span></td>
+          <td><span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)">${r.residualScore||'—'}</span></td>
+          <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
+          <td class="muted" data-ar="${r.ownerName||'—'}" data-en="${r.ownerNameEn||r.ownerName||'—'}">${r.ownerName||'—'}</td>
+          <td><button class="btn btn-outline" style="padding:.3rem .5rem" onclick="event.stopPropagation()"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td>
+        </tr>`;
+      }).join('');
+
+      // Cards view
+      document.getElementById('risksCardsWrap').innerHTML = slice.map(r => {
+        const ratInfo = RATING[r.inherentRating] || ['—','—','#64748b'];
+        const [ira,ire,ic] = ratInfo;
+        const statInfo = STATUS[r.status] || [r.status||'مفتوح', r.status||'Open', '#3b82f6'];
+        const [sa,se,sc] = statInfo;
+        const titleAr = (r.titleAr||'—').replace(/"/g,'&quot;');
+        const titleEn = (r.titleEn||titleAr).replace(/"/g,'&quot;');
+        return `<a href="risk-detail.html?id=${r.id}" class="card" style="display:block;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''"><div class="card-pad">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.5rem;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:.5rem;min-width:0"><code class="mono">${r.riskNumber||'—'}</code><span class="chip" style="background:${ic}1f;color:${ic}" data-ar="${ira}" data-en="${ire}">${ira}</span></div>
+            <span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span>
+          </div>
+          <p style="margin:0 0 .35rem;font-size:.95rem;font-weight:600;color:var(--foreground);line-height:1.4" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p>
+          <p class="muted" style="margin:0;font-size:.75rem"><i data-lucide="building-2" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${r.departmentAr||'—'}" data-en="${r.departmentEn||r.departmentAr||'—'}">${r.departmentAr||'—'}</span> · <span data-ar="${r.categoryAr||'—'}" data-en="${r.categoryEn||r.categoryAr||'—'}">${r.categoryAr||'—'}</span></p>
+          <div style="display:flex;gap:.85rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+            <div style="flex:1"><p class="muted" style="margin:0;font-size:.65rem;text-transform:uppercase;font-weight:600" data-ar="الكامن" data-en="Inherent">الكامن</p><p style="margin:.15rem 0 0;font-size:1.15rem;font-weight:800;color:#ef4444">${r.inherentScore||'—'}</p></div>
+            <div style="flex:1"><p class="muted" style="margin:0;font-size:.65rem;text-transform:uppercase;font-weight:600" data-ar="المتبقي" data-en="Residual">المتبقي</p><p style="margin:.15rem 0 0;font-size:1.15rem;font-weight:800;color:#F39200">${r.residualScore||'—'}</p></div>
+            <div style="flex:1.2"><p class="muted" style="margin:0;font-size:.65rem;text-transform:uppercase;font-weight:600" data-ar="المالك" data-en="Owner">المالك</p><p style="margin:.15rem 0 0;font-size:.78rem;font-weight:600" data-ar="${r.ownerName||'—'}" data-en="${r.ownerNameEn||r.ownerName||'—'}">${r.ownerName||'—'}</p></div>
+          </div>
+        </div></a>`;
+      }).join('');
+    }
+
+    // Toggle view containers
+    document.getElementById('risksTableWrap').style.display = state.view === 'table' ? 'block' : 'none';
+    document.getElementById('risksCardsWrap').style.display = state.view === 'cards' ? 'grid' : 'none';
+
+    if(window.lucide) lucide.createIcons();
+    window.ermApplyLang();
+  }
+
+  // Wire inputs
+  let searchTimer = null;
+  document.getElementById('fSearch').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.q = e.target.value; state.page = 1; syncURL(); render(); }, 200);
+  });
+  ['fCategory','fRating','fStatus','fDept'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      const key = id.replace('f','').toLowerCase();
+      state[key] = e.target.value; state.page = 1; syncURL(); render();
+    });
+  });
+  document.getElementById('fReset').addEventListener('click', () => {
+    state.q = state.category = state.rating = state.status = state.dept = '';
+    state.page = 1;
+    document.getElementById('fSearch').value = '';
+    document.getElementById('fCategory').value = '';
+    document.getElementById('fRating').value = '';
+    document.getElementById('fStatus').value = '';
+    document.getElementById('fDept').value = '';
+    syncURL(); render();
+  });
+  document.querySelectorAll('.vt-btn').forEach(b => b.addEventListener('click', () => {
+    state.view = b.dataset.view;
+    document.querySelectorAll('.vt-btn').forEach(x => {
+      const on = x.dataset.view === state.view;
+      x.style.background = on ? 'var(--primary)' : 'transparent';
+      x.style.color = on ? '#fff' : 'var(--foreground-secondary)';
+    });
+    syncURL(); render();
+  }));
+
+  // popstate — restore filters when user navigates back
+  window.addEventListener('popstate', () => {
+    const u = new URL(window.location.href);
+    state.q = u.searchParams.get('q') || '';
+    state.category = u.searchParams.get('category') || '';
+    state.rating = u.searchParams.get('rating') || '';
+    state.status = u.searchParams.get('status') || '';
+    state.dept = u.searchParams.get('dept') || '';
+    state.view = u.searchParams.get('view') || 'table';
+    state.page = parseInt(u.searchParams.get('page') || '1', 10) || 1;
+    document.getElementById('fSearch').value = state.q;
+    document.getElementById('fCategory').value = state.category;
+    document.getElementById('fRating').value = state.rating;
+    document.getElementById('fStatus').value = state.status;
+    document.getElementById('fDept').value = state.dept;
+    document.querySelectorAll('.vt-btn').forEach(x => {
+      const on = x.dataset.view === state.view;
+      x.style.background = on ? 'var(--primary)' : 'transparent';
+      x.style.color = on ? '#fff' : 'var(--foreground-secondary)';
+    });
+    render();
+  });
+
   // ===== Excel export =====
   document.getElementById('risksExportExcel')?.addEventListener('click', () => {
+    const isAr = window.ermLang()==='ar';
+    const list = filtered();
     window.ermExportExcel({
       baseFilename: 'risks-register',
-      sheetName: window.ermLang()==='ar' ? 'سجل المخاطر' : 'Risk Register',
+      sheetName: isAr ? 'سجل المخاطر' : 'Risk Register',
       headers: [
         { key:'riskNumber',   label_ar:'رقم الخطر',     label_en:'Risk No.',     width:14 },
         { key:'title',        label_ar:'عنوان الخطر',   label_en:'Risk Title',   width:48 },
@@ -115,17 +321,17 @@ window.ermInit=async function(){
         { key:'status',       label_ar:'الحالة',         label_en:'Status',       width:14 },
         { key:'treatmentCount',label_ar:'خطط المعالجة',  label_en:'Plans',        width:8 },
       ],
-      rows: risks.map(r => ({
+      rows: list.map(r => ({
         riskNumber: r.riskNumber || '',
-        title: window.ermLang()==='ar' ? (r.titleAr||'') : (r.titleEn||r.titleAr||''),
-        category: window.ermLang()==='ar' ? (r.categoryAr||'') : (r.categoryEn||r.categoryAr||''),
-        department: window.ermLang()==='ar' ? (r.departmentAr||'') : (r.departmentEn||r.departmentAr||''),
+        title: isAr ? (r.titleAr||'') : (r.titleEn||r.titleAr||''),
+        category: isAr ? (r.categoryAr||'') : (r.categoryEn||r.categoryAr||''),
+        department: isAr ? (r.departmentAr||'') : (r.departmentEn||r.departmentAr||''),
         inherentScore: r.inherentScore||'',
         inherentRating: r.inherentRating||'',
         residualScore: r.residualScore||'',
         residualRating: r.residualRating||'',
-        owner: window.ermLang()==='ar' ? (r.ownerName||'') : (r.ownerNameEn||r.ownerName||''),
-        champion: window.ermLang()==='ar' ? (r.championName||'') : (r.championNameEn||r.championName||''),
+        owner: isAr ? (r.ownerName||'') : (r.ownerNameEn||r.ownerName||''),
+        champion: isAr ? (r.championName||'') : (r.championNameEn||r.championName||''),
         status: r.status||'',
         treatmentCount: r.treatmentCount||0,
       })),
@@ -135,14 +341,16 @@ window.ermInit=async function(){
   // ===== PDF export =====
   document.getElementById('risksExportPDF')?.addEventListener('click', () => {
     const isAr = window.ermLang()==='ar';
-    const top = risks.slice(0, 50);
+    const list = filtered();
+    const top = list.slice(0, 50);
     const rows_ar = top.map(r => `<tr><td>${r.riskNumber||'—'}</td><td>${(r.titleAr||'—').slice(0,80)}</td><td>${r.departmentAr||'—'}</td><td>${r.inherentScore||'—'}</td><td>${r.residualScore||'—'}</td><td>${window.ermRatingPill(r.residualRating)}</td><td>${r.ownerName||'—'}</td></tr>`).join('');
     const rows_en = top.map(r => `<tr><td>${r.riskNumber||'—'}</td><td>${(r.titleEn||r.titleAr||'—').slice(0,80)}</td><td>${r.departmentEn||r.departmentAr||'—'}</td><td>${r.inherentScore||'—'}</td><td>${r.residualScore||'—'}</td><td>${window.ermRatingPill(r.residualRating)}</td><td>${r.ownerNameEn||r.ownerName||'—'}</td></tr>`).join('');
+    const hasFilters = state.q||state.category||state.rating||state.status||state.dept;
     window.ermPrintPDF({
       title_ar: 'سجل المخاطر المؤسسية',
       title_en: 'Enterprise Risk Register',
-      subtitle_ar: `إجمالي ${total} خطر · يعرض أعلى ${top.length} حسب الدرجة`,
-      subtitle_en: `${total} risks total · showing top ${top.length} by score`,
+      subtitle_ar: `إجمالي ${list.length} خطر · يعرض ${top.length}` + (hasFilters ? ' (مع الفلاتر المطبّقة)' : ''),
+      subtitle_en: `${list.length} risks total · showing ${top.length}` + (hasFilters ? ' (filtered)' : ''),
       sections: [{
         title_ar: 'قائمة المخاطر',
         title_en: 'Risk List',
@@ -152,6 +360,8 @@ window.ermInit=async function(){
     });
   });
 
+  // Initial render
+  render();
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>
