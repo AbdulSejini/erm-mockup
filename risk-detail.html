@@ -320,12 +320,10 @@ window.ermInit=async function(){
   // treatment plans linked to this risk
   const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
   const STATUS={completed:['مكتملة','Completed','#10b981'],inProgress:['قيد التنفيذ','In Progress','#3b82f6'],overdue:['متأخرة','Overdue','#ef4444'],notStarted:['لم تبدأ','Not Started','#64748b']};
-  const PLANS=(window.__realPlans && window.__realPlans.length) ? window.__realPlans.map(p => ({...p})) : [
-    {id:'TP-014',ta:'خطة تحوّط أسعار النحاس',te:'Copper price hedging plan',str:'reduce',prog:75,resp_ar:'ماجد الدوسري',resp_en:'Majed Al-Dossari',due:'2026-08-31',st:'inProgress'},
-    {id:'TP-101',ta:'مراجعة سياسة التسعير ديناميكياً',te:'Dynamic pricing policy review',str:'reduce',prog:100,resp_ar:'نورة الغامدي',resp_en:'Nora Al-Ghamdi',due:'2026-05-30',st:'completed'},
-    {id:'TP-102',ta:'بوليصة تأمين مخزون المواد الخام',te:'Raw-material inventory insurance',str:'transfer',prog:100,resp_ar:'خالد الزهراني',resp_en:'Khaled Al-Zahrani',due:'2026-04-15',st:'completed'},
-    {id:'TP-103',ta:'تنويع موردي النحاس الثانوي',te:'Secondary copper supplier diversification',str:'reduce',prog:25,resp_ar:'سعاد البيشي',resp_en:'Suaad Al-Bishi',due:'2026-09-30',st:'inProgress'},
-  ];
+const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realPlans.map(p => ({...p})) : [];
+  if(!PLANS.length){
+    document.getElementById('plansRows').innerHTML = `<tr><td colspan="7" style="padding:2.5rem;text-align:center"><div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--foreground-muted)"><div style="width:48px;height:48px;border-radius:.85rem;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center"><i data-lucide="wrench" style="width:1.4rem;height:1.4rem"></i></div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="لا توجد خطط معالجة لهذا الخطر" data-en="No treatment plans for this risk">لا توجد خطط معالجة لهذا الخطر</p><p style="margin:0;font-size:.82rem" data-ar="ابدأ بإنشاء خطة معالجة جديدة" data-en="Create a new treatment plan to start">ابدأ بإنشاء خطة معالجة جديدة</p></div></td></tr>`;
+  } else {
   document.getElementById('plansRows').innerHTML=PLANS.map(p=>{
     const[sa,se,sc]=STR[p.str];const[ssa,sse,ssc]=STATUS[p.st];
     const pc=p.prog>=80?'#10b981':p.prog>=40?'#F39200':'#ef4444';
@@ -339,26 +337,10 @@ window.ermInit=async function(){
       <td><span class="chip" style="background:${ssc}1f;color:${ssc}" data-ar="${ssa}" data-en="${sse}">${ssa}</span></td>
     </tr>`;
   }).join('');
+  }
 
-  // change log
-  const LOG=[
-    {ic:'check-circle-2',c:'#10b981',ta:'إنجاز خطة المعالجة TP-101',te:'Completed treatment plan TP-101',sub_ar:'نورة الغامدي · مراجعة سياسة التسعير',sub_en:'Nora Al-Ghamdi · pricing policy review',ago:'منذ 22 يوماً',ago_en:'22d ago'},
-    {ic:'trending-down',c:'#F39200',ta:'تحديث تقييم الخطر المتبقي',te:'Updated residual risk assessment',sub_ar:'من 4×5=20 إلى 3×5=15 — بناءً على اعتماد التحوّط',sub_en:'4×5=20 → 3×5=15 — based on hedge approval',ago:'منذ 25 يوماً',ago_en:'25d ago'},
-    {ic:'plus-circle',c:'#3b82f6',ta:'إضافة خطة معالجة جديدة',te:'New treatment plan added',sub_ar:'TP-103 — تنويع موردي النحاس الثانوي',sub_en:'TP-103 — secondary copper supplier diversification',ago:'منذ شهر',ago_en:'1mo ago'},
-    {ic:'check',c:'#10b981',ta:'موافقة على تسجيل الخطر',te:'Risk approved & registered',sub_ar:'تمت الموافقة من قبل لجنة المخاطر بتاريخ 2026-01-12',sub_en:'Approved by Risk Committee on 2026-01-12',ago:'2026-01-12',ago_en:'2026-01-12'},
-    {ic:'flag',c:'#a855f7',ta:'تسجيل الخطر',te:'Risk registered',sub_ar:'سعاد البيشي · من ورشة المخاطر السنوية',sub_en:'Suaad Al-Bishi · from Annual Risk Workshop',ago:'2026-01-08',ago_en:'2026-01-08'},
-  ];
-  document.getElementById('logList').innerHTML=LOG.map((l,i)=>`
-    <div style="display:flex;gap:.85rem;position:relative">
-      <div class="timeline-dot" style="background:${l.c}"><i data-lucide="${l.ic}" style="width:1rem;height:1rem"></i></div>
-      ${i<LOG.length-1?'<div class="timeline-line"></div>':''}
-      <div style="flex:1;padding-bottom:.4rem">
-        <p style="margin:0;font-weight:600;font-size:.9rem" data-ar="${l.ta}" data-en="${l.te}">${l.ta}</p>
-        <p class="muted" style="margin:.2rem 0 0;font-size:.78rem" data-ar="${l.sub_ar}" data-en="${l.sub_en}">${l.sub_ar}</p>
-        <p class="muted" style="margin:.15rem 0 0;font-size:.7rem" data-ar="${l.ago}" data-en="${l.ago_en}">${l.ago}</p>
-      </div>
-    </div>
-  `).join('');
+  // change log — empty state (no per-risk log model wired yet)
+  document.getElementById('logList').innerHTML = `<div style="padding:2rem;text-align:center;color:var(--foreground-muted)"><div style="width:48px;height:48px;border-radius:.85rem;margin:0 auto .65rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="history" style="width:1.4rem;height:1.4rem"></i></div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="لا يوجد سجل تعديلات" data-en="No change history">لا يوجد سجل تعديلات</p><p style="margin:.4rem 0 0;font-size:.82rem" data-ar="ستظهر هنا أي تعديلات مستقبلية على بيانات الخطر" data-en="Future edits to this risk will appear here">ستظهر هنا أي تعديلات مستقبلية على بيانات الخطر</p></div>`;
 
   // section nav active
   document.querySelectorAll('.nav-pill').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');}));

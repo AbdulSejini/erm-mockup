@@ -379,13 +379,11 @@ window.ermInit=async function(){
 
   // ===== Tasks =====
   const STATUS_LBL={completed:['مكتملة','Completed','#10b981','check-circle-2'],inProgress:['قيد التنفيذ','In Progress','#3b82f6','play'],notStarted:['لم تبدأ','Not Started','#64748b','circle-dot']};
-  const TASKS=(window.__realTasks && window.__realTasks.length) ? window.__realTasks : [
-    {n:1,ta:'تحليل تقلبات أسعار النحاس على آخر 18 شهراً',te:'Analyze copper price volatility over last 18 months',status:'completed',prio:'high',assignee:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],monitor:['نواف باقاسي','Nawaf Bagasi','n.bagasi@saudicable.com'],due:'2026-02-28',done:'2026-02-25',att:'تحليل-LME-Q1.xlsx',steps:[{t:'سحب بيانات LME',s:'completed'},{t:'بناء نموذج تذبذب',s:'completed'},{t:'تقرير ملخص للجنة',s:'completed'}],upd:2},
-    {n:2,ta:'التفاوض على عقود تحوّط ستة أشهر — 60% من الاحتياج',te:'Negotiate 6-month hedge contracts — 60% of demand',status:'completed',prio:'high',assignee:['أحلام تركستاني','Ahlam Turkistani','a.turkistani@saudicable.com'],monitor:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],due:'2026-04-15',done:'2026-04-10',att:'Hedge-Contracts-Signed.pdf',steps:[{t:'اختيار البنوك الوسيطة',s:'completed'},{t:'مراجعة الشروط من القانونية',s:'completed'},{t:'توقيع وإيداع',s:'completed'}],upd:4},
-    {n:3,ta:'مراجعة سياسة التسعير مع كبار العملاء',te:'Revise pricing policy with key customers',status:'completed',prio:'medium',assignee:['نورة الغامدي','Nora Al-Ghamdi','n.ghamdi@saudicable.com'],monitor:['نواف باقاسي','Nawaf Bagasi','n.bagasi@saudicable.com'],due:'2026-05-30',done:'2026-05-22',att:'Pricing-Policy-v3.docx',steps:[{t:'مسوّدة جديدة',s:'completed'},{t:'موافقة لجنة الاستثمار',s:'completed'}],upd:3},
-    {n:4,ta:'بناء لوحة متابعة شهرية للجنة المخاطر',te:'Build monthly risk-committee dashboard',status:'inProgress',prio:'high',assignee:['فهد الشمري','Fahad Al-Shamri','f.shamri@saudicable.com'],monitor:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],due:'2026-07-31',done:null,att:null,steps:[{t:'تجميع مصادر البيانات',s:'completed'},{t:'تصميم البصريات',s:'inProgress'},{t:'اختبار وتسليم',s:'pending'}],upd:1},
-  ];
+  const TASKS = (window.__realTasks && window.__realTasks.length) ? window.__realTasks : [];
 
+  if(!TASKS.length){
+    document.getElementById('tasksList').innerHTML = `<div style="padding:2.5rem;text-align:center;color:var(--foreground-muted)"><div style="width:48px;height:48px;border-radius:.85rem;margin:0 auto .65rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="list-checks" style="width:1.4rem;height:1.4rem"></i></div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="لم تُسجل مهام بعد" data-en="No tasks recorded yet">لم تُسجل مهام بعد</p><p style="margin:.4rem 0 0;font-size:.82rem" data-ar="أضف مهام لمتابعة تنفيذ الخطة" data-en="Add tasks to track plan execution">أضف مهام لمتابعة تنفيذ الخطة</p></div>`;
+  } else {
   document.getElementById('tasksList').innerHTML = TASKS.map(t=>{
     const[sa,se,sc,si]=STATUS_LBL[t.status];
     const prioC=t.prio==='high'?'#ef4444':t.prio==='low'?'#10b981':'#F39200';
@@ -446,6 +444,7 @@ window.ermInit=async function(){
       </div>
     </div>`;
   }).join('');
+  }
 
   // ===== Mini matrices =====
   const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
@@ -457,15 +456,34 @@ window.ermInit=async function(){
     }
     return h;
   };
-  document.getElementById('matrixIn').innerHTML=buildMini(5,5);
-  document.getElementById('matrixRes').innerHTML=buildMini(3,5);
+  // Resolve risk L/I from risks snapshot for accurate highlight
+  const allRisks = await window.ermLoad('risks') || [];
+  const linkedRisk = t ? allRisks.find(x => x.riskNumber === t.riskNumber) : null;
+  const inhL = linkedRisk?.inherentLikelihood || 5;
+  const inhI = linkedRisk?.inherentImpact || 5;
+  const resL = linkedRisk?.residualLikelihood || 3;
+  const resI = linkedRisk?.residualImpact || 5;
+  document.getElementById('matrixIn').innerHTML = buildMini(inhL, inhI);
+  document.getElementById('matrixRes').innerHTML = buildMini(resL, resI);
 
-  // ===== Discussions =====
-  const DISC=[
-    {a:'N',ar:'نواف باقاسي',en:'Nawaf Bagasi',ago:'منذ ساعتين',ago_en:'2h ago',type:'question',ta:'هل تم تأكيد تغطية النسبة الكاملة 60% أم أن آخر دفعة بانتظار اعتماد لجنة الاستثمار؟',te:'Has the full 60% coverage been confirmed, or is the last batch still pending investment-committee approval?',resolved:false},
-    {a:'M',ar:'ماجد الدوسري',en:'Majed Al-Dossari',ago:'منذ ساعة',ago_en:'1h ago',type:'reply',ta:'تم اعتمادها صباح اليوم، وثيقة التوقيع مرفقة في المهمة #2.',te:'Approved this morning — signed document attached to task #2.',resolved:false},
-    {a:'A',ar:'أحلام تركستاني',en:'Ahlam Turkistani',ago:'منذ 3 أيام',ago_en:'3d ago',type:'decision',ta:'لجنة الاستثمار وافقت على تمديد نسبة التحوّط إلى 70% في الربع الرابع بناءً على توقعات LME.',te:'Investment committee approved extending hedge to 70% in Q4 based on LME outlook.',resolved:true},
-  ];
+  // ===== Discussions — real, filtered by treatmentPlanId =====
+  const allDiscussions = await window.ermLoad('discussions') || [];
+  function timeAgoAr(d){const diff=(Date.now()-new Date(d).getTime())/1000;if(diff<3600)return `منذ ${Math.floor(diff/60)} دقيقة`;if(diff<86400)return `منذ ${Math.floor(diff/3600)} ساعة`;return `منذ ${Math.floor(diff/86400)} يوم`;}
+  function timeAgoEn(d){const diff=(Date.now()-new Date(d).getTime())/1000;if(diff<3600)return `${Math.floor(diff/60)}m ago`;if(diff<86400)return `${Math.floor(diff/3600)}h ago`;return `${Math.floor(diff/86400)}d ago`;}
+  const DISC = (t ? allDiscussions.filter(d => d.treatmentPlanId === t.id) : []).map(d => ({
+    a: (d.authorName||'?').charAt(0),
+    ar: d.authorName || '—',
+    en: d.authorNameEn || d.authorName || '—',
+    ago: timeAgoAr(d.createdAt),
+    ago_en: timeAgoEn(d.createdAt),
+    type: d.type === 'comment' ? 'comment' : d.type,
+    ta: d.content || '',
+    te: d.content || '',
+    resolved: !!d.isResolved,
+  }));
+  if(!DISC.length){
+    document.getElementById('discussList').innerHTML = `<div style="padding:2rem;text-align:center;color:var(--foreground-muted)"><div style="width:48px;height:48px;border-radius:.85rem;margin:0 auto .65rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="message-square-plus" style="width:1.4rem;height:1.4rem"></i></div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="لا توجد نقاشات على هذه الخطة" data-en="No discussions on this plan">لا توجد نقاشات على هذه الخطة</p><p style="margin:.4rem 0 0;font-size:.82rem" data-ar="ابدأ نقاشاً من المربع أعلاه" data-en="Start a discussion using the box above">ابدأ نقاشاً من المربع أعلاه</p></div>`;
+  } else {
   document.getElementById('discussList').innerHTML=DISC.map(d=>{
     const typeCfg={question:['سؤال','Question','#3b82f6','help-circle'],decision:['قرار','Decision','#a855f7','flag'],reply:['رد','Reply','#64748b','corner-down-left'],comment:['تعليق','Comment','#64748b','message-square']}[d.type];
     return `<div class="update-bubble" style="${d.type==='reply'?'margin-inline-start:2.5rem':''}">
@@ -483,27 +501,10 @@ window.ermInit=async function(){
       </div>
     </div>`;
   }).join('');
+  }
 
-  // ===== Change Log =====
-  const LOG=[
-    {ic:'check-circle-2',c:'#10b981',ta:'إنجاز المهمة #3',te:'Completed task #3',sub_ar:'نورة الغامدي · مراجعة سياسة التسعير',sub_en:'Nora Al-Ghamdi · pricing policy revision',ago:'منذ ساعة',ago_en:'1h ago'},
-    {ic:'pencil',c:'#3b82f6',ta:'تحديث تاريخ الاستحقاق للمهمة #4',te:'Updated due date for task #4',sub_ar:'تم تغيير 2026-07-15 → 2026-07-31',sub_en:'Changed 2026-07-15 → 2026-07-31',ago:'منذ 5 ساعات',ago_en:'5h ago'},
-    {ic:'message-square-plus',c:'#a855f7',ta:'إضافة نقاش جديد',te:'New discussion added',sub_ar:'نواف باقاسي · سؤال عن تغطية التحوّط',sub_en:'Nawaf Bagasi · question on hedge coverage',ago:'منذ ساعتين',ago_en:'2h ago'},
-    {ic:'trending-down',c:'#F39200',ta:'تعديل تقييم الخطر المتبقي المتوقع',te:'Updated expected residual rating',sub_ar:'من 9 (متوسط) إلى 6 (متوسط)',sub_en:'9 (Moderate) → 6 (Moderate)',ago:'منذ يوم',ago_en:'1d ago'},
-    {ic:'user-plus',c:'#0ea5e9',ta:'تعيين متابع جديد للمهمة #4',te:'New monitor assigned to task #4',sub_ar:'ماجد الدوسري',sub_en:'Majed Al-Dossari',ago:'منذ يومين',ago_en:'2d ago'},
-    {ic:'plus-circle',c:'#10b981',ta:'إنشاء خطة المعالجة',te:'Treatment plan created',sub_ar:'ماجد الدوسري — استراتيجية: تقليل',sub_en:'Majed Al-Dossari — strategy: Reduce',ago:'2026-01-15',ago_en:'2026-01-15'},
-  ];
-  document.getElementById('logList').innerHTML=LOG.map((l,i)=>`
-    <div style="display:flex;gap:.85rem;position:relative">
-      <div class="timeline-dot" style="background:${l.c}"><i data-lucide="${l.ic}" style="width:1rem;height:1rem"></i></div>
-      ${i<LOG.length-1?'<div class="timeline-line"></div>':''}
-      <div style="flex:1;padding-bottom:.4rem">
-        <p style="margin:0;font-weight:600;font-size:.9rem" data-ar="${l.ta}" data-en="${l.te}">${l.ta}</p>
-        <p class="muted" style="margin:.2rem 0 0;font-size:.78rem" data-ar="${l.sub_ar}" data-en="${l.sub_en}">${l.sub_ar}</p>
-        <p class="muted" style="margin:.15rem 0 0;font-size:.7rem" data-ar="${l.ago}" data-en="${l.ago_en}">${l.ago}</p>
-      </div>
-    </div>
-  `).join('');
+  // ===== Change Log — empty state =====
+  document.getElementById('logList').innerHTML = `<div style="padding:2rem;text-align:center;color:var(--foreground-muted)"><div style="width:48px;height:48px;border-radius:.85rem;margin:0 auto .65rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="history" style="width:1.4rem;height:1.4rem"></i></div><p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="لا توجد تعديلات مسجّلة" data-en="No changes recorded">لا توجد تعديلات مسجّلة</p><p style="margin:.4rem 0 0;font-size:.82rem" data-ar="سيتم تسجيل أي تعديل على الخطة أو المهام هنا" data-en="Any plan or task edits will appear here">سيتم تسجيل أي تعديل على الخطة أو المهام هنا</p></div>`;
 
   // ===== Section nav highlight =====
   document.querySelectorAll('.nav-pill').forEach(p=>{
