@@ -13,15 +13,15 @@
   };
   window.ERM_BRAND = BRAND;
 
-  // ===== SheetJS loader (lazy) =====
+  // ===== xlsx-js-style loader (lazy) — fork that supports real cell styling =====
   let _xlsxPromise = null;
   function loadXLSX(){
-    if(window.XLSX) return Promise.resolve(window.XLSX);
+    if(window.XLSX && window.XLSX._styled) return Promise.resolve(window.XLSX);
     if(_xlsxPromise) return _xlsxPromise;
     _xlsxPromise = new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-      s.onload = () => resolve(window.XLSX);
+      s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+      s.onload = () => { if(window.XLSX) window.XLSX._styled = true; resolve(window.XLSX); };
       s.onerror = reject;
       document.head.appendChild(s);
     });
@@ -76,24 +76,93 @@
       { s:{r:2,c:0}, e:{r:2,c:lastCol} },
     ];
 
-    // Style brand and header rows (SheetJS Community edition keeps cell text;
-    // styling needs xlsx-style for real fills — we set cell type but the
-    // workbook still opens nicely in Excel. We at least set bold-like markers
-    // via inline cell formats where supported.)
-    function styleCell(ref, opts){
-      if(!ws[ref]) return;
-      ws[ref].s = opts;
-    }
-    styleCell('A1', { font:{ bold:true, sz:16, color:{ rgb:'FFFFFF' } }, fill:{ patternType:'solid', fgColor:{ rgb:'F39200' } }, alignment:{ horizontal:'center', vertical:'center' } });
-    styleCell('A2', { font:{ bold:true, sz:12, color:{ rgb:'FFFFFF' } }, fill:{ patternType:'solid', fgColor:{ rgb:'E08600' } }, alignment:{ horizontal:'center' } });
-    styleCell('A3', { font:{ italic:true, sz:10, color:{ rgb:'64748B' } }, alignment:{ horizontal:'center' } });
-    // Header row at row 5 (0-based: row 4)
+    // ===== Saudi Cable themed styling (xlsx-js-style fully renders these) =====
+    function setStyle(ref, opts){ if(ws[ref]) ws[ref].s = opts; }
+    const thinBorder = { style:'thin', color:{ rgb:'E2E8F0' } };
+    const fullBorder = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
+
+    // Row 1 — Brand name on primary orange #F39200
+    setStyle('A1', {
+      font: { name: isAr?'Arial':'Calibri', bold:true, sz:18, color:{ rgb:'FFFFFF' } },
+      fill: { patternType:'solid', fgColor:{ rgb:'F39200' } },
+      alignment: { horizontal:'center', vertical:'center' },
+      border: { top: { style:'medium', color:{ rgb:'E08600' } }, left:{ style:'medium', color:{ rgb:'E08600' } }, right:{ style:'medium', color:{ rgb:'E08600' } } },
+    });
+    // Row 2 — System name on darker orange #E08600
+    setStyle('A2', {
+      font: { name: isAr?'Arial':'Calibri', bold:true, sz:12, color:{ rgb:'FFFFFF' } },
+      fill: { patternType:'solid', fgColor:{ rgb:'E08600' } },
+      alignment: { horizontal:'center', vertical:'center' },
+      border: { left:{ style:'medium', color:{ rgb:'E08600' } }, right:{ style:'medium', color:{ rgb:'E08600' } } },
+    });
+    // Row 3 — Date stamp on cream #FFF4E6 with primary orange text
+    setStyle('A3', {
+      font: { name: isAr?'Arial':'Calibri', italic:true, sz:10, color:{ rgb:'E08600' } },
+      fill: { patternType:'solid', fgColor:{ rgb:'FFF4E6' } },
+      alignment: { horizontal:'center', vertical:'center' },
+      border: { bottom: { style:'medium', color:{ rgb:'F39200' } }, left:{ style:'medium', color:{ rgb:'E08600' } }, right:{ style:'medium', color:{ rgb:'E08600' } } },
+    });
+    // Row 5 — column headers on primary orange #F39200
     for(let c=0; c<headers.length; c++){
       const ref = XLSX.utils.encode_cell({ r:4, c });
-      styleCell(ref, { font:{ bold:true, color:{ rgb:'FFFFFF' } }, fill:{ patternType:'solid', fgColor:{ rgb:'F39200' } }, alignment:{ horizontal:'center', vertical:'center' } });
+      // Ensure cell exists
+      if(!ws[ref]) ws[ref] = { t:'s', v: labels[c] };
+      setStyle(ref, {
+        font: { name: isAr?'Arial':'Calibri', bold:true, sz:11, color:{ rgb:'FFFFFF' } },
+        fill: { patternType:'solid', fgColor:{ rgb:'F39200' } },
+        alignment: { horizontal:'center', vertical:'center', wrapText:true },
+        border: {
+          top:    { style:'medium', color:{ rgb:'E08600' } },
+          bottom: { style:'medium', color:{ rgb:'E08600' } },
+          left:   { style:'thin',   color:{ rgb:'FFFFFF' } },
+          right:  { style:'thin',   color:{ rgb:'FFFFFF' } },
+        },
+      });
     }
-    // Set row heights
-    ws['!rows'] = [{ hpt:30 }, { hpt:20 }, { hpt:16 }, { hpt:8 }, { hpt:26 }];
+    // Body rows — zebra striping + thin borders
+    for(let r=0; r<data.length; r++){
+      const isOdd = r % 2 === 1;
+      const fillRgb = isOdd ? 'FAFBFC' : 'FFFFFF';
+      for(let c=0; c<headers.length; c++){
+        const ref = XLSX.utils.encode_cell({ r: r+5, c });
+        if(!ws[ref]) ws[ref] = { t:'s', v: '' };
+        // Highlight Critical/Major in the rating columns
+        const headerKey = headers[c].key || '';
+        const val = String(data[r][c] || '');
+        let extraFont = {};
+        let extraFill = {};
+        if(/rating/i.test(headerKey)){
+          if(val === 'Critical' || val === 'حرج'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'FEE2E2' } };
+            extraFont = { color:{ rgb:'DC2626' }, bold:true };
+          } else if(val === 'Major' || val === 'رئيسي'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'FFEDD5' } };
+            extraFont = { color:{ rgb:'EA580C' }, bold:true };
+          } else if(val === 'Moderate' || val === 'متوسط'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'FEF3C7' } };
+            extraFont = { color:{ rgb:'D97706' } };
+          } else if(val === 'Minor' || val === 'ثانوي'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'DCFCE7' } };
+            extraFont = { color:{ rgb:'16A34A' } };
+          } else if(val === 'Negligible' || val === 'ضئيل'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'DBEAFE' } };
+            extraFont = { color:{ rgb:'2563EB' } };
+          }
+        }
+        setStyle(ref, {
+          font: { name: isAr?'Arial':'Calibri', sz:10, color:{ rgb:'1E293B' }, ...extraFont },
+          fill: Object.keys(extraFill).length ? extraFill : { patternType:'solid', fgColor:{ rgb: fillRgb } },
+          alignment: { horizontal:'center', vertical:'center', wrapText:true },
+          border: fullBorder,
+        });
+      }
+    }
+    // Set row heights — banner rows taller, header tall, body comfortable
+    const rowHeights = [{ hpt:34 }, { hpt:22 }, { hpt:18 }, { hpt:6 }, { hpt:30 }];
+    for(let i=0;i<data.length;i++) rowHeights.push({ hpt:22 });
+    ws['!rows'] = rowHeights;
+    // Freeze header
+    ws['!freeze'] = { xSplit: 0, ySplit: 5 };
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, sheetName || (isAr ? 'بيانات' : 'Data'));
