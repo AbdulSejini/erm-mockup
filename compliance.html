@@ -28,21 +28,18 @@
 </div>
 <script>
 window.ermInit=function(){
-  const ST={ok:['ملتزم','Compliant','#10b981'],partial:['جزئي','Partial','#f59e0b'],no:['غير ملتزم','Non-Compliant','#ef4444']};
-  const R=[
-    ['التقارير المالية وفق معايير IFRS','IFRS financial reporting','هيئة السوق المالية','CMA','المالية','Finance','2026-03-31','ok'],
-    ['متطلبات حماية البيانات الشخصية','Personal data protection (PDPL)','الهيئة السعودية للبيانات','SDAIA','تقنية المعلومات','IT','2026-09-01','partial'],
-    ['اشتراطات السلامة والصحة المهنية','OHS regulations','المجلس الأعلى للسلامة','HCIS','السلامة','HSE','2026-06-30','ok'],
-    ['الإفصاح والحوكمة للشركات المدرجة','Corporate governance disclosure','هيئة السوق المالية','CMA','الشؤون القانونية','Legal','2026-04-30','ok'],
-    ['اشتراطات الجودة ISO 9001','ISO 9001 quality','منظمة المواصفات','SASO','الجودة','Quality','2026-12-31','partial'],
-    ['الامتثال البيئي للانبعاثات','Environmental emissions','المركز الوطني للرقابة','NCEC','السلامة','HSE','2026-05-15','no'],
-  ];
-  document.getElementById('rows').innerHTML=R.map(([ta,te,rega,rege,oa,oe,due,st])=>{const[sa,se,sc]=ST[st];return `
-    <tr><td><span style="font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</span></td>
-    <td class="muted" data-ar="${rega}" data-en="${rege}">${rega}</td>
-    <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
-    <td class="muted">${due}</td>
-    <td><span class="chip" style="background:${sc}1f;color:${sc}"><i data-lucide="${st==='ok'?'check-circle':st==='partial'?'alert-circle':'x-circle'}" style="width:.85rem;height:.85rem"></i> <span data-ar="${sa}" data-en="${se}">${sa}</span></span></td></tr>`;}).join('');
+  // Zero out tile stats
+  const tiles = document.querySelectorAll('.stat-tile p[style*="font-weight:700"]');
+  if(tiles[0]) tiles[0].textContent = '—';
+  if(tiles[1]) tiles[1].textContent = 0;
+  if(tiles[2]) tiles[2].textContent = 0;
+  if(tiles[3]) tiles[3].textContent = 0;
+
+  document.getElementById('rows').parentElement.parentElement.innerHTML = `<div style="padding:3rem 1.5rem;text-align:center">
+    <div style="width:64px;height:64px;border-radius:1rem;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="shield-plus" style="width:1.8rem;height:1.8rem"></i></div>
+    <p style="margin:0;font-weight:600" data-ar="لم تُسجل متطلبات امتثال بعد" data-en="No compliance requirements registered">لم تُسجل متطلبات امتثال بعد</p>
+    <p class="muted" style="margin:.4rem 0 0;font-size:.85rem" data-ar="ابدأ بتسجيل المتطلبات التنظيمية لمتابعتها" data-en="Register regulatory requirements to track them">ابدأ بتسجيل المتطلبات التنظيمية لمتابعتها</p>
+  </div>`;
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>

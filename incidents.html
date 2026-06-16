@@ -30,24 +30,47 @@
   </div>
 </div>
 <script>
-window.ermInit=function(){
+window.ermInit=async function(){
+  const incidents = await window.ermLoad('incidents') || [];
+
+  // Stat tiles based on real data
+  const bySev = { crit:0, high:0, med:0, closed:0 };
+  incidents.forEach(i => {
+    if(i.severity==='critical') bySev.crit++;
+    else if(i.severity==='major') bySev.high++;
+    else if(i.severity==='moderate') bySev.med++;
+    if(i.status==='resolved'||i.status==='closed') bySev.closed++;
+  });
+  const tiles = document.querySelectorAll('.stat-tile p[style*="font-weight:700"]');
+  if(tiles[0]) tiles[0].textContent = bySev.crit;
+  if(tiles[1]) tiles[1].textContent = bySev.high;
+  if(tiles[2]) tiles[2].textContent = bySev.med;
+  if(tiles[3]) tiles[3].textContent = bySev.closed;
+
+  if(!incidents.length){
+    document.getElementById('rows').parentElement.innerHTML = `<div style="padding:3rem 1.5rem;text-align:center">
+      <div style="width:64px;height:64px;border-radius:1rem;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.1);color:#10b981"><i data-lucide="check-circle-2" style="width:1.8rem;height:1.8rem"></i></div>
+      <p style="margin:0;font-weight:600" data-ar="لم تُسجل أي حوادث بعد" data-en="No incidents recorded yet">لم تُسجل أي حوادث بعد</p>
+      <p class="muted" style="margin:.4rem 0 0;font-size:.85rem" data-ar="عند تسجيل أول حادث ستظهر هنا" data-en="The first reported incident will appear here">عند تسجيل أول حادث ستظهر هنا</p>
+    </div>`;
+    if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+    return;
+  }
+
   const SEV={crit:['حرجة','Critical','#ef4444'],high:['عالية','High','#f97316'],med:['متوسطة','Medium','#eab308'],low:['منخفضة','Low','#10b981']};
-  const ST={open:['مفتوح','Open','#3b82f6'],inv:['قيد التحقيق','Investigating','#f59e0b'],closed:['مغلق','Closed','#10b981']};
-  const R=[
-    ['INC-031','توقف خط إنتاج بسبب عطل كهربائي','Production line halt — electrical fault','الإنتاج','Production','high','2026-06-11','inv'],
-    ['INC-030','تسرّب زيت في منطقة التشحيم','Oil leak in lubrication area','الصيانة','Maintenance','med','2026-06-09','closed'],
-    ['INC-029','محاولة تصيّد إلكتروني على البريد','Phishing attempt on corporate email','تقنية المعلومات','IT','high','2026-06-07','closed'],
-    ['INC-028','إصابة طفيفة أثناء المناولة','Minor injury during handling','السلامة','HSE','med','2026-06-05','closed'],
-    ['INC-027','انقطاع مؤقت في التيار الرئيسي','Temporary main power outage','المرافق','Utilities','crit','2026-06-02','open'],
-    ['INC-026','قُرب حادث — سقوط حمولة','Near miss — load drop','المستودعات','Warehouse','low','2026-05-30','closed'],
-  ];
-  document.getElementById('rows').innerHTML=R.map(([id,ta,te,da,de,sev,date,st])=>{const[va,ve,vc]=SEV[sev];const[sa,se,sc]=ST[st];return `
-    <tr><td><code class="mono">${id}</code></td>
-    <td><span style="font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</span></td>
-    <td class="muted" data-ar="${da}" data-en="${de}">${da}</td>
+  const ST={open:['مفتوح','Open','#3b82f6'],investigating:['قيد التحقيق','Investigating','#f59e0b'],resolved:['تم الحل','Resolved','#10b981'],closed:['مغلق','Closed','#10b981']};
+  document.getElementById('rows').innerHTML=incidents.map(i => {
+    const sevMap = {critical:'crit',major:'high',moderate:'med',minor:'low'};
+    const [va,ve,vc] = SEV[sevMap[i.severity]||'med'] || SEV.med;
+    const [sa,se,sc] = ST[i.status] || [i.status,i.status,'#64748b'];
+    const dt = i.incidentDate ? new Date(i.incidentDate).toISOString().slice(0,10) : '—';
+    return `<tr><td><code class="mono">${i.incidentNumber||'—'}</code></td>
+    <td><span style="font-weight:500;color:var(--foreground)" data-ar="${i.titleAr||'—'}" data-en="${i.titleEn||i.titleAr||'—'}">${i.titleAr||'—'}</span></td>
+    <td class="muted" data-ar="${i.departmentAr||'—'}" data-en="${i.departmentEn||i.departmentAr||'—'}">${i.departmentAr||'—'}</td>
     <td><span class="chip" style="background:${vc}1f;color:${vc}" data-ar="${va}" data-en="${ve}">${va}</span></td>
-    <td class="muted">${date}</td>
-    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td></tr>`;}).join('');
+    <td class="muted">${dt}</td>
+    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td></tr>`;
+  }).join('');
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>

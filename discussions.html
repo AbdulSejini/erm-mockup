@@ -21,28 +21,65 @@
   <div style="display:flex;flex-direction:column;gap:1rem" id="threads"></div>
 </div>
 <script>
-window.ermInit=function(){
-  const G=[['#f97316','#f59e0b'],['#3b82f6','#6366f1'],['#10b981','#22c55e'],['#a855f7','#8b5cf6']];
-  const T=[
-    ['سعاد البيشي','Suaad Al-Bishi','question','سؤال','Question','بخصوص R-002، هل تم تأكيد المورد البديل الثالث؟ نحتاج إغلاق هذه النقطة قبل اجتماع اللجنة.','Regarding R-002, has the third alternate supplier been confirmed? We need to close this before the committee meeting.','منذ ساعتين','2h ago',4],
-    ['ماجد الدوسري','Majed Al-Dossari','comment','تعليق','Comment','تم رفع نسبة إنجاز خطة تحوّط النحاس إلى 75% بعد توقيع العقد الإطاري مع المورد الرئيسي.','Copper hedging plan progress raised to 75% after signing the framework agreement with the main supplier.','منذ 5 ساعات','5h ago',2],
-    ['فهد الشمري','Fahad Al-Shamri','decision','قرار','Decision','تقرر تصعيد خطة الأمن السيبراني (TP-016) كأولوية قصوى بعد تجاوزها الموعد المحدد.','Decided to escalate the cybersecurity plan (TP-016) to top priority after it passed its deadline.','أمس','Yesterday',6],
-  ];
-  const TY={question:['#3b82f6','help-circle'],comment:['#64748b','message-circle'],decision:['#10b981','check-circle']};
-  document.getElementById('threads').innerHTML=T.map(([na,ne,ty,tya,tye,ca,ce,ta,te,replies],i)=>{const[c1,c2]=G[i%G.length];const[tc,tic]=TY[ty];return `
-    <div class="card"><div class="card-pad">
+window.ermInit=async function(){
+  const discussions = await window.ermLoad('discussions') || [];
+  const G=[['#f97316','#f59e0b'],['#3b82f6','#6366f1'],['#10b981','#22c55e'],['#a855f7','#8b5cf6'],['#ec4899','#f43f5e'],['#06b6d4','#0ea5e9']];
+  const TY={question:['#3b82f6','help-circle','سؤال','Question'],comment:['#64748b','message-circle','تعليق','Comment'],decision:['#10b981','check-circle','قرار','Decision'],reply:['#a855f7','corner-up-left','رد','Reply'],mention:['#f59e0b','at-sign','إشارة','Mention']};
+
+  const root = document.getElementById('threads');
+  if(!discussions.length){
+    root.innerHTML = `<div class="card"><div class="card-pad" style="padding:3rem 1.5rem;text-align:center">
+      <div style="width:64px;height:64px;border-radius:1rem;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="message-square" style="width:1.8rem;height:1.8rem"></i></div>
+      <p style="margin:0;font-weight:600" data-ar="لا توجد نقاشات بعد" data-en="No discussions yet">لا توجد نقاشات بعد</p>
+      <p class="muted" style="margin:.4rem 0 0;font-size:.85rem" data-ar="ابدأ نقاشاً من صفحة أي خطة معالجة" data-en="Start a discussion on any treatment plan">ابدأ نقاشاً من صفحة أي خطة معالجة</p>
+    </div></div>`;
+    if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+    return;
+  }
+
+  function timeAgo(d){
+    const diff = (Date.now() - new Date(d).getTime())/1000;
+    if(diff<3600) return `منذ ${Math.floor(diff/60)} دقيقة`;
+    if(diff<86400) return `منذ ${Math.floor(diff/3600)} ساعة`;
+    return `منذ ${Math.floor(diff/86400)} يوم`;
+  }
+  function timeAgoEn(d){
+    const diff = (Date.now() - new Date(d).getTime())/1000;
+    if(diff<3600) return `${Math.floor(diff/60)}m ago`;
+    if(diff<86400) return `${Math.floor(diff/3600)}h ago`;
+    return `${Math.floor(diff/86400)}d ago`;
+  }
+
+  // count replies per thread
+  const replyCount = {};
+  discussions.forEach(d => { if(d.parentId) replyCount[d.parentId] = (replyCount[d.parentId]||0)+1; });
+
+  // top-level only
+  const top = discussions.filter(d => !d.parentId);
+  root.innerHTML = top.map((d,i) => {
+    const ty = TY[d.type] || TY.comment;
+    const [tc,tic,tya,tye] = ty;
+    const [c1,c2] = G[i%G.length];
+    const initial = (d.authorName||'?').charAt(0);
+    const content = (d.content||'').replace(/"/g,'&quot;');
+    const planAr = (d.planTitleAr||'').replace(/"/g,'&quot;');
+    const planEn = (d.planTitleEn||planAr).replace(/"/g,'&quot;');
+    const replies = replyCount[d.id] || 0;
+    return `<div class="card"><div class="card-pad">
       <div style="display:flex;gap:.75rem;align-items:flex-start">
-        <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;background:linear-gradient(135deg,${c1},${c2})">${na.charAt(0)}</div>
+        <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;background:linear-gradient(135deg,${c1},${c2})">${initial}</div>
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span style="font-weight:600;color:var(--foreground)" data-ar="${na}" data-en="${ne}">${na}</span><span class="chip" style="background:${tc}1f;color:${tc}"><i data-lucide="${tic}" style="width:.8rem;height:.8rem"></i> <span data-ar="${tya}" data-en="${tye}">${tya}</span></span><span class="muted" style="font-size:.72rem" data-ar="${ta}" data-en="${te}">${ta}</span></div>
-          <p style="margin:.5rem 0 0;color:var(--foreground);line-height:1.7;font-size:.9rem" data-ar="${ca}" data-en="${ce}">${ca}</p>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span style="font-weight:600;color:var(--foreground)" data-ar="${d.authorName||'—'}" data-en="${d.authorNameEn||d.authorName||'—'}">${d.authorName||'—'}</span><span class="chip" style="background:${tc}1f;color:${tc}"><i data-lucide="${tic}" style="width:.8rem;height:.8rem"></i> <span data-ar="${tya}" data-en="${tye}">${tya}</span></span>${d.isResolved?'<span class="chip" style="background:rgba(16,185,129,.1);color:#10b981"><i data-lucide="check" style="width:.7rem;height:.7rem"></i><span data-ar="محلول" data-en="Resolved">محلول</span></span>':''}<span class="muted" style="font-size:.72rem" data-ar="${timeAgo(d.createdAt)}" data-en="${timeAgoEn(d.createdAt)}">${timeAgo(d.createdAt)}</span></div>
+          <p style="margin:.5rem 0 0;color:var(--foreground);line-height:1.7;font-size:.9rem" data-ar="${content}" data-en="${content}">${content}</p>
+          ${d.riskNumber||d.planTitleAr?`<div style="margin-top:.5rem;padding:.5rem .75rem;border-radius:.5rem;background:var(--background-tertiary);font-size:.75rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap"><i data-lucide="wrench" style="width:.85rem;height:.85rem;color:var(--primary)"></i><span class="muted" data-ar="على خطة معالجة" data-en="On treatment plan">على خطة معالجة</span><a href="treatment-detail.html?id=${d.treatmentPlanId}" style="font-weight:600;color:var(--primary);text-decoration:none" data-ar="${planAr}" data-en="${planEn}">${planAr}</a>${d.riskNumber?`<code class="mono" style="margin-inline-start:auto">${d.riskNumber}</code>`:''}</div>`:''}
           <div style="margin-top:.6rem;display:flex;gap:1.25rem;font-size:.78rem" class="muted">
             <button style="background:none;border:0;cursor:pointer;color:inherit;display:flex;align-items:center;gap:.3rem"><i data-lucide="message-square" style="width:.85rem;height:.85rem"></i> <span>${replies}</span> <span data-ar="رد" data-en="replies">رد</span></button>
             <button style="background:none;border:0;cursor:pointer;color:inherit;display:flex;align-items:center;gap:.3rem"><i data-lucide="corner-up-left" class="flip-x" style="width:.85rem;height:.85rem"></i> <span data-ar="رد" data-en="Reply">رد</span></button>
           </div>
         </div>
       </div>
-    </div></div>`;}).join('');
+    </div></div>`;
+  }).join('');
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>

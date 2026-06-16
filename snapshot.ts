@@ -52,6 +52,29 @@ async function main() {
       _count: { select: { championRisks: { where:{ isDeleted:false } }, responsibleTreatments:true } } },
   });
 
+  console.log('Fetching risk approval requests...');
+  const approvals = await prisma.riskApprovalRequest.findMany({
+    include: {
+      risk: { select: { id:true, riskNumber:true, titleAr:true, titleEn:true,
+        category: { select:{ nameAr:true, nameEn:true } },
+        department: { select:{ nameAr:true, nameEn:true } },
+        inherentScore:true, inherentRating:true } },
+      requester: { select: { fullName:true, fullNameEn:true, email:true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  console.log('Fetching discussions...');
+  const allDiscussions = await prisma.treatmentDiscussion.findMany({
+    take: 30,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      author: { select: { fullName:true, fullNameEn:true, email:true } },
+      treatmentPlan: { select: { id:true, titleAr:true, titleEn:true,
+        risk: { select:{ riskNumber:true } } } },
+    },
+  });
+
   console.log('Fetching incidents...');
   const incidents = await prisma.incident.findMany({
     take: 20,
@@ -184,6 +207,29 @@ async function main() {
   writeFileSync(`${outDir}/departments.json`, JSON.stringify(departments.map(d=>({ id:d.id, code:d.code, nameAr:d.nameAr, nameEn:d.nameEn, riskCount: d._count.risks }))));
   writeFileSync(`${outDir}/champions.json`, JSON.stringify(champions.map(c=>({ id:c.id, fullName:c.fullName, fullNameEn:c.fullNameEn, email:c.email, departmentAr:c.department?.nameAr, departmentEn:c.department?.nameEn, riskCount:c._count.championRisks, planCount:c._count.responsibleTreatments }))));
   writeFileSync(`${outDir}/incidents.json`, JSON.stringify(incidents.map(i=>({ id:i.id, incidentNumber:i.incidentNumber, titleAr:i.titleAr, titleEn:i.titleEn, severity:i.severity, status:i.status, departmentAr:i.department?.nameAr, departmentEn:i.department?.nameEn, incidentDate:i.incidentDate, user:i.reportedBy?.fullName }))));
+
+  writeFileSync(`${outDir}/approvals.json`, JSON.stringify(approvals.map(a=>({
+    id: a.id, status: a.status,
+    riskNumber: a.risk?.riskNumber,
+    riskTitleAr: a.risk?.titleAr, riskTitleEn: a.risk?.titleEn,
+    categoryAr: a.risk?.category?.nameAr, categoryEn: a.risk?.category?.nameEn,
+    departmentAr: a.risk?.department?.nameAr, departmentEn: a.risk?.department?.nameEn,
+    inherentScore: a.risk?.inherentScore, inherentRating: a.risk?.inherentRating,
+    requesterName: a.requester?.fullName, requesterNameEn: a.requester?.fullNameEn, requesterEmail: a.requester?.email,
+    reviewNoteAr: a.reviewNoteAr, reviewNoteEn: a.reviewNoteEn,
+    createdAt: a.createdAt,
+  }))));
+
+  writeFileSync(`${outDir}/discussions.json`, JSON.stringify(allDiscussions.map(d=>({
+    id: d.id, type: d.type, content: d.content,
+    isResolved: d.isResolved,
+    authorName: d.author?.fullName, authorNameEn: d.author?.fullNameEn, authorEmail: d.author?.email,
+    treatmentPlanId: d.treatmentPlanId,
+    planTitleAr: d.treatmentPlan?.titleAr, planTitleEn: d.treatmentPlan?.titleEn,
+    riskNumber: d.treatmentPlan?.risk?.riskNumber,
+    createdAt: d.createdAt,
+    parentId: d.parentId,
+  }))));
 
   console.log('\n✓ Snapshot written to', outDir);
   console.log('Risks:', risks.length, '· Treatments:', treatments.length, '· Champions:', champions.length, '· Departments:', departments.length, '· Incidents:', incidents.length);

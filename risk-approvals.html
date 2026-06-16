@@ -16,35 +16,77 @@
   <div id="cards" style="display:flex;flex-direction:column;gap:1rem"></div>
 </div>
 <script>
-window.ermInit=function(){
-  const C=[
-    ['R-049','نقص قطع الغيار الحرجة للمعدات','Critical equipment spare-parts shortage','تشغيلي','Operational','خالد الزهراني','Khaled Al-Zahrani','2026-06-15',16,'رئيسي','Major','#f97316'],
-    ['R-050','مخاطر تذبذب أسعار الطاقة','Energy price volatility','مالي','Financial','سعاد البيشي','Suaad Al-Bishi','2026-06-14',20,'حرج','Critical','#ef4444'],
-    ['R-051','ضعف تغطية التأمين على الأصول','Insufficient asset insurance coverage','مالي','Financial','هند السبيعي','Hind Al-Subaie','2026-06-13',12,'رئيسي','Major','#f97316'],
-  ];
+window.ermInit=async function(){
+  const approvals = await window.ermLoad('approvals') || [];
+  // Pending requests only
+  const pending = approvals.filter(a => a.status === 'pending');
+
+  // Update header badge
+  const badge = document.querySelector('h1 .chip');
+  if(badge) badge.textContent = pending.length;
+
+  const root = document.getElementById('cards');
+  if(pending.length === 0){
+    root.innerHTML = `<div class="card"><div class="card-pad" style="padding:3rem 1.5rem;text-align:center">
+      <div style="width:64px;height:64px;border-radius:1rem;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.1);color:#10b981"><i data-lucide="check-circle-2" style="width:1.8rem;height:1.8rem"></i></div>
+      <p style="margin:0;font-weight:600;color:var(--foreground)" data-ar="لا توجد طلبات بانتظار المراجعة" data-en="No pending approval requests">لا توجد طلبات بانتظار المراجعة</p>
+      <p class="muted" style="margin:.4rem 0 0;font-size:.85rem" data-ar="جميع المخاطر المُرسلة تمت مراجعتها" data-en="All submitted risks have been reviewed">جميع المخاطر المُرسلة تمت مراجعتها</p>
+    </div></div>`;
+
+    // Also show approved history below
+    const approved = approvals.filter(a => a.status === 'approved').slice(0, 6);
+    if(approved.length){
+      const RATING={Critical:'#ef4444',Major:'#f97316',Moderate:'#eab308',Minor:'#22c55e',Negligible:'#3b82f6'};
+      root.innerHTML += `<div class="card" style="margin-top:1rem"><div class="card-head"><h3 class="h-title"><i data-lucide="history" style="color:var(--primary)"></i><span data-ar="آخر الطلبات المعتمدة" data-en="Recently Approved">آخر الطلبات المعتمدة</span> <span class="chip" style="background:rgba(16,185,129,.1);color:#10b981">${approved.length}</span></h3></div><div class="card-pad" style="display:flex;flex-direction:column;gap:.6rem">${
+        approved.map(a => {
+          const c = RATING[a.inherentRating] || '#64748b';
+          const ta = (a.riskTitleAr||'—').replace(/"/g,'&quot;').slice(0,100);
+          const dt = a.createdAt ? new Date(a.createdAt).toISOString().slice(0,10) : '';
+          return `<div style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:var(--background-tertiary);border:1px solid var(--border);border-radius:.7rem">
+            <code class="mono" style="background:${c}1f;color:${c};flex-shrink:0">${a.riskNumber||'—'}</code>
+            <div style="flex:1;min-width:0"><p style="margin:0;font-size:.85rem;font-weight:500" data-ar="${ta}" data-en="${(a.riskTitleEn||ta).replace(/"/g,'&quot;').slice(0,100)}">${ta}</p>
+            <p class="muted" style="margin:.15rem 0 0;font-size:.72rem"><i data-lucide="user" style="width:.7rem;height:.7rem;vertical-align:-1px"></i> <span data-ar="${a.requesterName||'—'}" data-en="${a.requesterNameEn||a.requesterName||'—'}">${a.requesterName||'—'}</span> · ${dt}</p></div>
+            <span class="chip" style="background:rgba(16,185,129,.1);color:#10b981"><i data-lucide="check" style="width:.7rem;height:.7rem"></i><span data-ar="معتمد" data-en="Approved">معتمد</span></span>
+          </div>`;
+        }).join('')
+      }</div></div>`;
+    }
+    if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+    return;
+  }
+
+  // Render real pending cards
+  const RATING={Critical:['حرج','Critical','#ef4444'],Major:['رئيسي','Major','#f97316'],Moderate:['متوسط','Moderate','#eab308'],Minor:['ثانوي','Minor','#22c55e'],Negligible:['ضئيل','Negligible','#3b82f6']};
   const btn=(ic,ar,en,bg,fg)=>`<button class="btn" style="background:${bg};color:${fg};border:1px solid ${fg}33"><i data-lucide="${ic}" style="width:1rem;height:1rem"></i><span data-ar="${ar}" data-en="${en}">${ar}</span></button>`;
-  document.getElementById('cards').innerHTML=C.map(([id,ta,te,ca,ce,ra,re,date,score,lvа,lve,c])=>`
-    <div class="card"><div class="card-pad">
+  root.innerHTML=pending.map(a => {
+    const ratInfo = RATING[a.inherentRating] || ['—','—','#64748b'];
+    const [ra,re,c] = ratInfo;
+    const ta = (a.riskTitleAr||'—').replace(/"/g,'&quot;');
+    const te = (a.riskTitleEn||ta).replace(/"/g,'&quot;');
+    const dt = a.createdAt ? new Date(a.createdAt).toISOString().slice(0,10) : '—';
+    return `<div class="card"><div class="card-pad">
       <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-start;justify-content:space-between">
         <div style="flex:1;min-width:240px">
-          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem"><code class="mono">${id}</code><span class="chip" style="background:${c}1f;color:${c}" data-ar="${lvа}" data-en="${lve}">${lvа}</span><span class="chip" style="background:#f59e0b1f;color:#d97706" data-ar="بانتظار الموافقة" data-en="Pending">بانتظار الموافقة</span></div>
-          <p style="margin:0;font-size:1.05rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;flex-wrap:wrap"><code class="mono">${a.riskNumber||'—'}</code><span class="chip" style="background:${c}1f;color:${c}" data-ar="${ra}" data-en="${re}">${ra}</span><span class="chip" style="background:#f59e0b1f;color:#d97706" data-ar="بانتظار الموافقة" data-en="Pending">بانتظار الموافقة</span></div>
+          <p style="margin:0;font-size:1.05rem;font-weight:600;color:var(--foreground);line-height:1.5" data-ar="${ta}" data-en="${te}">${ta}</p>
           <div style="display:flex;flex-wrap:wrap;gap:1.25rem;margin-top:.6rem;font-size:.8rem" class="muted">
-            <span><i data-lucide="tag" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${ca}" data-en="${ce}">${ca}</span></span>
-            <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${ra}" data-en="${re}">${ra}</span></span>
-            <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${date}</span>
+            <span><i data-lucide="tag" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${a.categoryAr||'—'}" data-en="${a.categoryEn||a.categoryAr||'—'}">${a.categoryAr||'—'}</span></span>
+            <span><i data-lucide="building-2" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${a.departmentAr||'—'}" data-en="${a.departmentEn||a.departmentAr||'—'}">${a.departmentAr||'—'}</span></span>
+            <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${a.requesterName||'—'}" data-en="${a.requesterNameEn||a.requesterName||'—'}">${a.requesterName||'—'}</span></span>
+            <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${dt}</span>
           </div>
         </div>
-        <div style="text-align:center"><div style="width:64px;height:64px;border-radius:1rem;background:${c};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:1.4rem;font-weight:700">${score}</span><span style="font-size:.6rem;opacity:.85" data-ar="الدرجة" data-en="Score">الدرجة</span></div></div>
+        <div style="text-align:center"><div style="width:64px;height:64px;border-radius:1rem;background:${c};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:1.4rem;font-weight:700">${a.inherentScore||'—'}</span><span style="font-size:.6rem;opacity:.85" data-ar="الدرجة" data-en="Score">الدرجة</span></div></div>
       </div>
       <div style="margin-top:1rem"><textarea class="input" rows="2" data-ar-ph="ملاحظات المراجع (اختياري)..." data-en-ph="Reviewer notes (optional)..." placeholder=""></textarea></div>
       <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem">
-        ${btn('check','قبول','Approve','#10b9811f','#059669')}
-        ${btn('x','رفض','Reject','#ef44441f','#dc2626')}
-        ${btn('edit-3','طلب تعديل','Request Revision','#3b82f61f','#2563eb')}
-        ${btn('clock','تأجيل','Defer','#64748b1f','#475569')}
+        ${btn('check','قبول','Approve','rgba(16,185,129,.12)','#059669')}
+        ${btn('x','رفض','Reject','rgba(239,68,68,.12)','#dc2626')}
+        ${btn('edit-3','طلب تعديل','Request Revision','rgba(59,130,246,.12)','#2563eb')}
+        ${btn('clock','تأجيل','Defer','rgba(100,116,139,.12)','#475569')}
       </div>
-    </div></div>`).join('');
+    </div></div>`;
+  }).join('');
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>
