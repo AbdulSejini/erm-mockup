@@ -17,8 +17,10 @@
     <div class="card-head" style="flex-wrap:wrap">
       <h3 class="h-title"><i data-lucide="list-checks" style="color:var(--primary)"></i><span data-ar="حالة الخطط" data-en="Plans Status">حالة الخطط</span></h3>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <select class="select" style="width:auto"><option data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option><option data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</option><option data-ar="متأخرة" data-en="Overdue">متأخرة</option></select>
-        <select class="select" style="width:auto"><option data-ar="كل الأولويات" data-en="All Priorities">كل الأولويات</option><option data-ar="عالية" data-en="High">عالية</option><option data-ar="متوسطة" data-en="Medium">متوسطة</option></select>
+        <select id="fStatus" class="select" style="width:auto"><option value="" data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option><option value="notStarted" data-ar="لم تبدأ" data-en="Not Started">لم تبدأ</option><option value="inProgress" data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</option><option value="completed" data-ar="مكتملة" data-en="Completed">مكتملة</option><option value="overdue" data-ar="متأخرة" data-en="Overdue">متأخرة</option></select>
+        <select id="fPriority" class="select" style="width:auto"><option value="" data-ar="كل الأولويات" data-en="All Priorities">كل الأولويات</option><option value="high" data-ar="عالية" data-en="High">عالية</option><option value="medium" data-ar="متوسطة" data-en="Medium">متوسطة</option><option value="low" data-ar="منخفضة" data-en="Low">منخفضة</option></select>
+        <button id="monExportExcel" class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="file-spreadsheet" style="width:.9rem;height:.9rem"></i><span data-ar="Excel" data-en="Excel">Excel</span></button>
+        <button id="monExportPDF" class="btn btn-outline" style="padding:.4rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
       </div>
     </div>
     <div style="overflow-x:auto"><table class="tbl"><thead><tr>
@@ -27,27 +29,118 @@
   </div>
 </div>
 <script>
-window.ermInit=function(){
-  const PR={high:['عالية','High','#ef4444'],med:['متوسطة','Medium','#f59e0b'],low:['منخفضة','Low','#10b981']};
-  const ST={prog:['قيد التنفيذ','In Progress','#3b82f6'],over:['متأخرة','Overdue','#ef4444'],done:['مكتملة','Completed','#10b981'],ns:['لم يبدأ','Not Started','#64748b']};
-  const R=[
-    ['خطة تحوّط أسعار النحاس','Copper hedging','R-001','ماجد الدوسري','Majed Al-Dossari','high',75,'2026-08-31','prog'],
-    ['تنويع قاعدة الموردين','Supplier diversification','R-002','سعاد البيشي','Suaad Al-Bishi','high',40,'2026-07-15','prog'],
-    ['تحديث ضوابط الأمن','Cyber controls upgrade','R-006','فهد الشمري','Fahad Al-Shamri','high',60,'2026-06-10','over'],
-    ['تأمين شامل على الأصول','Asset insurance','R-003','خالد الزهراني','Khaled Al-Zahrani','med',100,'2026-05-20','done'],
-    ['برنامج السلامة المعزّز','Enhanced HSE','R-005','ياسر الشهراني','Yasser Al-Shahrani','med',20,'2026-09-01','prog'],
-    ['تحديث خطط الطوارئ','Emergency plans update','R-009','ماجد الدوسري','Majed Al-Dossari','low',0,'2026-10-01','ns'],
-  ];
-  document.getElementById('rows').innerHTML=R.map(([ta,te,rn,oa,oe,pr,prog,due,st])=>{const[pa,pe,pc]=PR[pr];const[sa,se,sc]=ST[st];const bc=prog>=80?'#10b981':prog>=40?'#f59e0b':'#ef4444';return `
-    <tr><td><span style="font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</span></td>
-    <td><code class="mono">${rn}</code></td>
-    <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
-    <td><span class="chip" style="background:${pc}1f;color:${pc}" data-ar="${pa}" data-en="${pe}">${pa}</span></td>
-    <td><div style="display:flex;align-items:center;gap:.5rem;min-width:120px"><div class="progress" style="flex:1"><span style="width:${prog}%;background:${bc}"></span></div><span style="font-size:.75rem;font-weight:600">${prog}%</span></div></td>
-    <td class="muted">${due}</td>
-    <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td></tr>`;}).join('');
-  if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+window.ermInit=async function(){
+  const treatments = await window.ermLoad('treatments') || [];
+  const PR={high:['عالية','High','#ef4444'],medium:['متوسطة','Medium','#f59e0b'],low:['منخفضة','Low','#10b981']};
+  const ST={inProgress:['قيد التنفيذ','In Progress','#3b82f6'],overdue:['متأخرة','Overdue','#ef4444'],completed:['مكتملة','Completed','#10b981'],notStarted:['لم تبدأ','Not Started','#64748b'],cancelled:['ملغية','Cancelled','#a855f7']};
+
+  const state = { status:'', priority:'' };
+
+  function filtered(){
+    return treatments.filter(t => {
+      if(state.status && t.status !== state.status) return false;
+      if(state.priority && t.priority !== state.priority) return false;
+      return true;
+    });
+  }
+
+  function render(){
+    const list = filtered();
+    const root = document.getElementById('rows');
+    if(!list.length){
+      root.innerHTML = `<tr><td colspan="7" style="padding:2rem;text-align:center;color:var(--foreground-muted)"><span data-ar="لا توجد خطط مطابقة" data-en="No matching plans">لا توجد خطط مطابقة</span></td></tr>`;
+      if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+      return;
+    }
+    // Order: overdue first, then in-progress by progress asc, then completed, then notStarted
+    const ORDER = {overdue:0, inProgress:1, completed:2, notStarted:3, cancelled:4};
+    const sorted = [...list].sort((a,b) => {
+      const oa = ORDER[a.status] ?? 99;
+      const ob = ORDER[b.status] ?? 99;
+      if(oa !== ob) return oa - ob;
+      return (a.progress||0) - (b.progress||0);
+    });
+    root.innerHTML = sorted.slice(0, 100).map(t => {
+      const [pa,pe,pc] = PR[t.priority] || ['—','—','#64748b'];
+      const [sa,se,sc] = ST[t.status] || [t.status||'—', t.status||'—', '#64748b'];
+      const prog = t.progress || 0;
+      const bc = prog>=80?'#10b981':prog>=40?'#f59e0b':'#ef4444';
+      const due = t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '—';
+      const titleAr = (t.titleAr||'—').replace(/"/g,'&quot;').slice(0,80);
+      const titleEn = (t.titleEn||titleAr).replace(/"/g,'&quot;').slice(0,80);
+      const oa = t.responsibleName || '—';
+      const oe = t.responsibleNameEn || oa;
+      return `<tr style="cursor:pointer" onclick="window.location.href='treatment-detail.html?id=${t.id}'">
+        <td><span style="font-weight:500;color:var(--foreground)" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</span></td>
+        <td><code class="mono">${t.riskNumber||'—'}</code></td>
+        <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
+        <td><span class="chip" style="background:${pc}1f;color:${pc}" data-ar="${pa}" data-en="${pe}">${pa}</span></td>
+        <td><div style="display:flex;align-items:center;gap:.5rem;min-width:120px"><div class="progress" style="flex:1"><span style="width:${prog}%;background:${bc}"></span></div><span style="font-size:.75rem;font-weight:600">${prog}%</span></div></td>
+        <td class="muted">${due}</td>
+        <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
+      </tr>`;
+    }).join('');
+    if(window.lucide) lucide.createIcons(); window.ermApplyLang();
+  }
+
+  document.getElementById('fStatus').addEventListener('change', e => { state.status = e.target.value; render(); });
+  document.getElementById('fPriority').addEventListener('change', e => { state.priority = e.target.value; render(); });
+
+  // ===== Excel export =====
+  document.getElementById('monExportExcel')?.addEventListener('click', () => {
+    const isAr = window.ermLang() === 'ar';
+    const list = filtered();
+    window.ermExportExcel({
+      baseFilename: 'treatment-monitoring',
+      sheetName: isAr ? 'مراقبة المعالجة' : 'Treatment Monitoring',
+      headers: [
+        { key:'tpId',         label_ar:'رقم الخطة',    label_en:'Plan No.',    width:14 },
+        { key:'title',        label_ar:'عنوان الخطة',  label_en:'Plan Title',  width:48 },
+        { key:'riskNumber',   label_ar:'رقم الخطر',    label_en:'Risk No.',    width:14 },
+        { key:'department',   label_ar:'الإدارة',      label_en:'Department',  width:22 },
+        { key:'responsible',  label_ar:'المسؤول',      label_en:'Responsible', width:24 },
+        { key:'priority',     label_ar:'الأولوية',      label_en:'Priority',    width:12 },
+        { key:'progress',     label_ar:'التقدم %',     label_en:'Progress %',  width:10 },
+        { key:'dueDate',      label_ar:'الاستحقاق',    label_en:'Due Date',    width:12 },
+        { key:'status',       label_ar:'الحالة',        label_en:'Status',      width:14 },
+      ],
+      rows: list.map(t => ({
+        tpId: 'TP-' + (t.id||'').slice(-6).toUpperCase(),
+        title: isAr ? (t.titleAr||'') : (t.titleEn||t.titleAr||''),
+        riskNumber: t.riskNumber || '',
+        department: isAr ? (t.departmentAr||'') : (t.departmentEn||t.departmentAr||''),
+        responsible: isAr ? (t.responsibleName||'') : (t.responsibleNameEn||t.responsibleName||''),
+        priority: PR[t.priority] ? (isAr ? PR[t.priority][0] : PR[t.priority][1]) : t.priority||'',
+        progress: t.progress || 0,
+        dueDate: t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '',
+        status: ST[t.status] ? (isAr ? ST[t.status][0] : ST[t.status][1]) : t.status||'',
+      })),
+    });
+  });
+
+  // ===== PDF export =====
+  document.getElementById('monExportPDF')?.addEventListener('click', () => {
+    const isAr = window.ermLang() === 'ar';
+    const list = filtered().slice(0, 60);
+    const rows_ar = list.map(t => `<tr><td>TP-${(t.id||'').slice(-6).toUpperCase()}</td><td>${(t.titleAr||'—').slice(0,70)}</td><td>${t.riskNumber||'—'}</td><td>${t.responsibleName||'—'}</td><td>${t.progress||0}%</td><td>${t.dueDate?new Date(t.dueDate).toISOString().slice(0,10):'—'}</td><td>${ST[t.status]?ST[t.status][0]:'—'}</td></tr>`).join('');
+    const rows_en = list.map(t => `<tr><td>TP-${(t.id||'').slice(-6).toUpperCase()}</td><td>${(t.titleEn||t.titleAr||'—').slice(0,70)}</td><td>${t.riskNumber||'—'}</td><td>${t.responsibleNameEn||t.responsibleName||'—'}</td><td>${t.progress||0}%</td><td>${t.dueDate?new Date(t.dueDate).toISOString().slice(0,10):'—'}</td><td>${ST[t.status]?ST[t.status][1]:'—'}</td></tr>`).join('');
+    window.ermPrintPDF({
+      title_ar: 'مراقبة خطط المعالجة',
+      title_en: 'Treatment Monitoring',
+      subtitle_ar: `إجمالي ${list.length} خطة` + (state.status||state.priority ? ' (مع الفلاتر المطبّقة)' : ''),
+      subtitle_en: `${list.length} plans` + (state.status||state.priority ? ' (filtered)' : ''),
+      sections: [{
+        title_ar: 'حالة الخطط',
+        title_en: 'Plan Status',
+        html_ar: `<table class="erm-table"><thead><tr><th>رقم الخطة</th><th>العنوان</th><th>الخطر</th><th>المسؤول</th><th>التقدم</th><th>الاستحقاق</th><th>الحالة</th></tr></thead><tbody>${rows_ar}</tbody></table>`,
+        html_en: `<table class="erm-table"><thead><tr><th>Plan No.</th><th>Title</th><th>Risk</th><th>Responsible</th><th>Progress</th><th>Due</th><th>Status</th></tr></thead><tbody>${rows_en}</tbody></table>`,
+      }],
+    });
+  });
+
+  render();
 };
 </script>
+<script src="erm-export.js"></script>
 <script src="erm-shell.js"></script>
 </body></html>
