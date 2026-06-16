@@ -88,10 +88,20 @@
         <button id="impersonateBtn" title="عرض كمستخدم آخر (Admin)" style="border-radius:.75rem;padding:.625rem;background:var(--background-tertiary);color:var(--foreground-secondary);border:0;cursor:pointer">
           <i data-lucide="user-cog"></i>
         </button>
-        <button style="position:relative;border-radius:.75rem;padding:.625rem;background:var(--background-tertiary);color:var(--foreground-secondary);border:0;cursor:pointer">
-          <i data-lucide="bell"></i>
-          <span style="position:absolute;top:-.25rem;inset-inline-end:-.25rem;display:flex;height:1.25rem;width:1.25rem;align-items:center;justify-content:center;border-radius:50%;background:#ef4444;font-size:.625rem;color:#fff;font-weight:700">3</span>
-        </button>
+        <div style="position:relative">
+          <button id="notifBtn" style="position:relative;border-radius:.75rem;padding:.625rem;background:var(--background-tertiary);color:var(--foreground-secondary);border:0;cursor:pointer">
+            <i data-lucide="bell"></i>
+            <span id="notifBadge" style="position:absolute;top:-.25rem;inset-inline-end:-.25rem;display:none;height:1.25rem;min-width:1.25rem;padding:0 .25rem;align-items:center;justify-content:center;border-radius:50%;background:#ef4444;font-size:.625rem;color:#fff;font-weight:700">0</span>
+          </button>
+          <div id="notifPanel" style="display:none;position:absolute;top:calc(100% + .5rem);inset-inline-end:0;width:min(380px,calc(100vw - 2rem));background:var(--card);border:1px solid var(--border);border-radius:.85rem;box-shadow:0 18px 40px -12px rgba(0,0,0,.2);z-index:40;overflow:hidden">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <span style="font-weight:700;font-size:.9rem" data-ar="الإشعارات" data-en="Notifications">الإشعارات</span>
+              <button id="notifMarkAll" style="background:none;border:0;color:var(--primary);font-size:.72rem;font-weight:600;cursor:pointer" data-ar="تعليم الكل مقروء" data-en="Mark all read">تعليم الكل مقروء</button>
+            </div>
+            <div id="notifList" style="max-height:65vh;overflow-y:auto;padding:.4rem 0"></div>
+            <div style="padding:.6rem 1rem;border-top:1px solid var(--border);text-align:center"><a href="#" style="color:var(--primary);font-size:.78rem;font-weight:600;text-decoration:none" data-ar="عرض كل الإشعارات" data-en="View all notifications">عرض كل الإشعارات</a></div>
+          </div>
+        </div>
         <div style="display:flex;align-items:center;gap:.5rem;padding-inline-start:.5rem;border-inline-start:1px solid var(--border)">
           <div style="height:2.25rem;width:2.25rem;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.875rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-hover))">A</div>
           <div class="md-show"><p style="margin:0;font-size:.875rem;font-weight:600;color:var(--foreground)" data-ar="عبدالإله سجيني" data-en="Abdulelah Sejini">عبدالإله سجيني</p><p style="margin:0;font-size:.6875rem;color:var(--foreground-secondary)" data-ar="مدير المخاطر" data-en="Risk Manager">مدير المخاطر</p></div>
@@ -185,6 +195,19 @@
     if(e.target.closest('#themeBtn')){ theme=theme==='dark'?'light':'dark'; applyTheme(); }
     if(e.target.closest('#menuBtn')){ document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').style.display='block'; }
     if(e.target.closest('#closeSb')||e.target.id==='overlay'){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').style.display='none'; }
+    // Notifications dropdown
+    const np = document.getElementById('notifPanel');
+    if(np){
+      if(e.target.closest('#notifBtn')){
+        np.style.display = np.style.display==='block' ? 'none' : 'block';
+      } else if(!e.target.closest('#notifPanel')){
+        np.style.display = 'none';
+      }
+      if(e.target.closest('#notifMarkAll')){
+        document.querySelectorAll('.notif-item').forEach(x => x.classList.add('read'));
+        const b = document.getElementById('notifBadge'); if(b) b.style.display='none';
+      }
+    }
     // Impersonation
     if(e.target.closest('#impersonateBtn')){ document.getElementById('impModal').style.display='flex'; }
     if(e.target.closest('#impClose')||e.target.id==='impModal'){ document.getElementById('impModal').style.display='none'; }
@@ -220,6 +243,63 @@
       return j;
     }catch(e){ console.warn('ermLoad failed', name, e); return null; }
   };
+
+  // Populate notifications dropdown async
+  (async () => {
+    const list = await (window.ermLoad ? window.ermLoad('notifications') : null);
+    const root = document.getElementById('notifList');
+    const badge = document.getElementById('notifBadge');
+    if(!root) return;
+    if(!list || !list.length){
+      root.innerHTML = `<div style="padding:2rem 1rem;text-align:center;color:var(--foreground-muted)"><i data-lucide="bell-off" style="width:1.5rem;height:1.5rem;margin-bottom:.5rem"></i><p style="margin:0;font-size:.8rem" data-ar="لا توجد إشعارات" data-en="No notifications">لا توجد إشعارات</p></div>`;
+      if(badge) badge.style.display = 'none';
+      if(window.lucide) lucide.createIcons();
+      return;
+    }
+    const unread = list.filter(n => !n.isRead).length;
+    if(badge){
+      if(unread > 0){ badge.textContent = unread > 99 ? '99+' : unread; badge.style.display = 'flex'; }
+      else badge.style.display = 'none';
+    }
+    const TYPE_ICONS = {
+      newRisk: ['alert-triangle','#F39200'],
+      risk_approved: ['check-circle','#10b981'],
+      risk_rejected: ['x-circle','#ef4444'],
+      risk_deferred: ['clock','#f59e0b'],
+      risk_revision_requested: ['edit-3','#3b82f6'],
+      risk_approval_pending: ['inbox','#a855f7'],
+      treatmentDue: ['calendar-clock','#ef4444'],
+      residual_risk_approval: ['shield','#a855f7'],
+      residual_risk_approved: ['shield-check','#10b981'],
+      reviewReminder: ['bell','#3b82f6'],
+    };
+    function timeAgo(d){
+      const lang = window.ermLang ? window.ermLang() : 'ar';
+      const diff = (Date.now() - new Date(d).getTime())/1000;
+      if(diff<3600) return lang==='ar' ? `منذ ${Math.floor(diff/60)} دقيقة` : `${Math.floor(diff/60)}m ago`;
+      if(diff<86400) return lang==='ar' ? `منذ ${Math.floor(diff/3600)} ساعة` : `${Math.floor(diff/3600)}h ago`;
+      const d2 = Math.floor(diff/86400);
+      return lang==='ar' ? `منذ ${d2} يوم` : `${d2}d ago`;
+    }
+    root.innerHTML = list.slice(0, 15).map(n => {
+      const conf = TYPE_ICONS[n.type] || ['info','#64748b'];
+      const ta = (n.titleAr||'').replace(/"/g,'&quot;');
+      const te = (n.titleEn||ta).replace(/"/g,'&quot;');
+      const ma = (n.messageAr||'').replace(/"/g,'&quot;');
+      const me = (n.messageEn||ma).replace(/"/g,'&quot;');
+      return `<div class="notif-item ${n.isRead?'read':''}" style="display:flex;gap:.6rem;padding:.7rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;${n.isRead?'opacity:.65':'background:rgba(243,146,0,.04)'}">
+        <div style="flex-shrink:0;width:2.1rem;height:2.1rem;border-radius:50%;background:${conf[1]}1f;color:${conf[1]};display:flex;align-items:center;justify-content:center"><i data-lucide="${conf[0]}" style="width:1rem;height:1rem"></i></div>
+        <div style="flex:1;min-width:0">
+          <p style="margin:0;font-size:.78rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
+          <p style="margin:.15rem 0 0;font-size:.72rem;color:var(--foreground-secondary);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" data-ar="${ma}" data-en="${me}">${ma}</p>
+          <p style="margin:.2rem 0 0;font-size:.65rem;color:var(--foreground-muted)" data-ar="${timeAgo(n.createdAt)}" data-en="${timeAgo(n.createdAt)}">${timeAgo(n.createdAt)}</p>
+        </div>
+        ${!n.isRead?'<span style="flex-shrink:0;width:.5rem;height:.5rem;border-radius:50%;background:var(--primary);margin-top:.3rem"></span>':''}
+      </div>`;
+    }).join('');
+    if(window.lucide) lucide.createIcons();
+    if(window.ermApplyLang) window.ermApplyLang();
+  })();
 
   if(window.lucide) lucide.createIcons();
   applyTheme();

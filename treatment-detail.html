@@ -50,7 +50,7 @@
       <a href="#log" class="nav-pill"><i data-lucide="history" style="width:.9rem;height:.9rem"></i><span data-ar="سجل التعديلات" data-en="Change Log">سجل التعديلات</span></a>
     </div>
     <div style="margin-inline-start:auto;display:flex;gap:.4rem;flex-wrap:wrap">
-      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
+      <button id="pdfBtn" class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
       <button class="btn btn-outline" id="emailBtn" style="padding:.45rem .7rem"><i data-lucide="mail" style="width:.9rem;height:.9rem"></i><span data-ar="بريد" data-en="Email">بريد</span></button>
       <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="pencil" style="width:.9rem;height:.9rem"></i><span data-ar="تعديل" data-en="Edit">تعديل</span></button>
       <button class="btn btn-outline" style="padding:.45rem .7rem;color:#e11d48;border-color:rgba(225,29,72,.3)"><i data-lucide="trash-2" style="width:.9rem;height:.9rem"></i><span data-ar="حذف" data-en="Delete">حذف</span></button>
@@ -535,9 +535,68 @@ window.ermInit=async function(){
     window.location.href=`mailto:${to}?subject=${subj}&body=${body}`;
   });
 
+  // ===== PDF export =====
+  document.getElementById('pdfBtn')?.addEventListener('click', () => {
+    const isAr = window.ermLang() === 'ar';
+    const tp = (t || treatments[0]);
+    if(!tp){ alert(isAr?'لا توجد بيانات':'No data'); return; }
+    const STR_LBL = {avoid:['تجنّب','Avoid'],reduce:['تقليل','Reduce'],transfer:['تحويل','Transfer'],accept:['قبول','Accept']};
+    const STATUS_LBL_PDF = {notStarted:['لم تبدأ','Not Started'],inProgress:['قيد التنفيذ','In Progress'],completed:['مكتملة','Completed'],overdue:['متأخرة','Overdue']};
+    const meta_ar = `<div class="erm-meta">
+      <span><strong>الإدارة:</strong> ${tp.departmentAr||'—'}</span>
+      <span><strong>المسؤول:</strong> ${tp.responsibleName||'—'}</span>
+      <span><strong>مالك الخطر:</strong> ${tp.riskOwnerName||'—'}</span>
+      <span><strong>تاريخ البدء:</strong> ${tp.startDate?new Date(tp.startDate).toISOString().slice(0,10):'—'}</span>
+      <span><strong>تاريخ الاستحقاق:</strong> ${tp.dueDate?new Date(tp.dueDate).toISOString().slice(0,10):'—'}</span>
+      <span><strong>الإستراتيجية:</strong> ${STR_LBL[tp.strategy]?STR_LBL[tp.strategy][0]:tp.strategy||'—'}</span>
+      <span><strong>الحالة:</strong> ${STATUS_LBL_PDF[tp.status]?STATUS_LBL_PDF[tp.status][0]:tp.status||'—'}</span>
+      <span><strong>التقدم:</strong> ${tp.progress||0}%</span>
+    </div>`;
+    const meta_en = `<div class="erm-meta">
+      <span><strong>Department:</strong> ${tp.departmentEn||tp.departmentAr||'—'}</span>
+      <span><strong>Responsible:</strong> ${tp.responsibleNameEn||tp.responsibleName||'—'}</span>
+      <span><strong>Risk Owner:</strong> ${tp.riskOwnerName||'—'}</span>
+      <span><strong>Start:</strong> ${tp.startDate?new Date(tp.startDate).toISOString().slice(0,10):'—'}</span>
+      <span><strong>Due:</strong> ${tp.dueDate?new Date(tp.dueDate).toISOString().slice(0,10):'—'}</span>
+      <span><strong>Strategy:</strong> ${STR_LBL[tp.strategy]?STR_LBL[tp.strategy][1]:tp.strategy||'—'}</span>
+      <span><strong>Status:</strong> ${STATUS_LBL_PDF[tp.status]?STATUS_LBL_PDF[tp.status][1]:tp.status||'—'}</span>
+      <span><strong>Progress:</strong> ${tp.progress||0}%</span>
+    </div>`;
+    const justification_ar = tp.justificationAr ? `<div class="erm-content"><p>${tp.justificationAr}</p></div>` : `<div class="erm-content"><p style="color:#94A3B8">— لم يُسجل تبرير —</p></div>`;
+    const justification_en = tp.justificationEn || tp.justificationAr ? `<div class="erm-content"><p>${tp.justificationEn||tp.justificationAr}</p></div>` : `<div class="erm-content"><p style="color:#94A3B8">— No justification recorded —</p></div>`;
+    const tasksRows_ar = (tp.tasks||[]).map((tk,i) => `<tr><td>${i+1}</td><td>${tk.titleAr||'—'}</td><td>${tk.assigneeName||'—'}</td><td>${tk.monitorName||'—'}</td><td>${tk.dueDate?new Date(tk.dueDate).toISOString().slice(0,10):'—'}</td><td>${STATUS_LBL_PDF[tk.status]?STATUS_LBL_PDF[tk.status][0]:tk.status||'—'}</td></tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:#64748b">لا توجد مهام مسجّلة</td></tr>`;
+    const tasksRows_en = (tp.tasks||[]).map((tk,i) => `<tr><td>${i+1}</td><td>${tk.titleEn||tk.titleAr||'—'}</td><td>${tk.assigneeName||'—'}</td><td>${tk.monitorName||'—'}</td><td>${tk.dueDate?new Date(tk.dueDate).toISOString().slice(0,10):'—'}</td><td>${STATUS_LBL_PDF[tk.status]?STATUS_LBL_PDF[tk.status][1]:tk.status||'—'}</td></tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:#64748b">No tasks recorded</td></tr>`;
+    const scores_ar = `<div class="erm-grid cols-3">
+      <div class="erm-kpi"><div class="lbl">الخطر الكامن</div><div class="val">${tp.inherentScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">الخطر المتبقي</div><div class="val">${tp.residualScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">المتوقع</div><div class="val">${tp.expectedResidualScore||'—'}</div></div>
+    </div>`;
+    const scores_en = `<div class="erm-grid cols-3">
+      <div class="erm-kpi"><div class="lbl">Inherent</div><div class="val">${tp.inherentScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">Residual</div><div class="val">${tp.residualScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">Expected</div><div class="val">${tp.expectedResidualScore||'—'}</div></div>
+    </div>`;
+    window.ermPrintPDF({
+      title_ar: 'خطة المعالجة: ' + (tp.titleAr||'—'),
+      title_en: 'Treatment Plan: ' + (tp.titleEn||tp.titleAr||'—'),
+      subtitle_ar: `مرتبطة بالخطر ${tp.riskNumber||''} — ${tp.riskTitleAr||''}`,
+      subtitle_en: `Linked to ${tp.riskNumber||''} — ${tp.riskTitleEn||tp.riskTitleAr||''}`,
+      sections: [
+        { title_ar:'بيانات الخطة', title_en:'Plan Information', html_ar: meta_ar, html_en: meta_en },
+        { title_ar:'درجات المخاطر', title_en:'Risk Scores', html_ar: scores_ar, html_en: scores_en },
+        { title_ar:'تبرير الخطة', title_en:'Justification', html_ar: justification_ar, html_en: justification_en },
+        { title_ar:'قائمة المهام', title_en:'Tasks',
+          html_ar: `<table class="erm-table"><thead><tr><th>#</th><th>العنوان</th><th>المنفذ</th><th>المتابع</th><th>الاستحقاق</th><th>الحالة</th></tr></thead><tbody>${tasksRows_ar}</tbody></table>`,
+          html_en: `<table class="erm-table"><thead><tr><th>#</th><th>Title</th><th>Assignee</th><th>Monitor</th><th>Due</th><th>Status</th></tr></thead><tbody>${tasksRows_en}</tbody></table>`,
+        },
+      ],
+    });
+  });
+
   if(window.lucide) lucide.createIcons();
   window.ermApplyLang();
 };
 </script>
+<script src="erm-export.js"></script>
 <script src="erm-shell.js"></script>
 </body></html>

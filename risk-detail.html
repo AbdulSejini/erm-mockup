@@ -46,7 +46,7 @@
       <a href="#history" class="nav-pill"><i data-lucide="history" style="width:.9rem;height:.9rem"></i><span data-ar="السجل" data-en="History">السجل</span></a>
     </div>
     <div style="margin-inline-start:auto;display:flex;gap:.4rem;flex-wrap:wrap">
-      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
+      <button id="pdfBtn" class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
       <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="pencil" style="width:.9rem;height:.9rem"></i><span data-ar="تعديل" data-en="Edit">تعديل</span></button>
       <button class="btn btn-primary" style="padding:.45rem .7rem"><i data-lucide="plus" style="width:.9rem;height:.9rem"></i><span data-ar="إضافة خطة معالجة" data-en="Add Treatment Plan">إضافة خطة معالجة</span></button>
     </div>
@@ -363,9 +363,64 @@ window.ermInit=async function(){
   // section nav active
   document.querySelectorAll('.nav-pill').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');}));
 
+  // ===== PDF export =====
+  document.getElementById('pdfBtn')?.addEventListener('click', () => {
+    const isAr = window.ermLang() === 'ar';
+    const rk = r || risks[0];
+    if(!rk){ alert(isAr?'لا توجد بيانات':'No data'); return; }
+    const meta_ar = `<div class="erm-meta">
+      <span><strong>الإدارة:</strong> ${rk.departmentAr||'—'}</span>
+      <span><strong>التصنيف:</strong> ${rk.categoryAr||'—'}</span>
+      <span><strong>مالك الخطر:</strong> ${rk.ownerName||'—'}</span>
+      <span><strong>الرائد:</strong> ${rk.championName||'—'}</span>
+      <span><strong>الحالة:</strong> ${rk.status||'—'}</span>
+      <span><strong>التصنيف المتبقي:</strong> ${window.ermRatingPill(rk.residualRating)}</span>
+    </div>`;
+    const meta_en = `<div class="erm-meta">
+      <span><strong>Department:</strong> ${rk.departmentEn||rk.departmentAr||'—'}</span>
+      <span><strong>Category:</strong> ${rk.categoryEn||rk.categoryAr||'—'}</span>
+      <span><strong>Owner:</strong> ${rk.ownerNameEn||rk.ownerName||'—'}</span>
+      <span><strong>Champion:</strong> ${rk.championNameEn||rk.championName||'—'}</span>
+      <span><strong>Status:</strong> ${rk.status||'—'}</span>
+      <span><strong>Residual:</strong> ${window.ermRatingPill(rk.residualRating)}</span>
+    </div>`;
+    const scores_ar = `<div class="erm-grid cols-4">
+      <div class="erm-kpi"><div class="lbl">الكامن</div><div class="val">${rk.inherentScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">المتبقي</div><div class="val">${rk.residualScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">الاحتمالية × الأثر</div><div class="val" style="font-size:14pt">${rk.residualLikelihood||'—'} × ${rk.residualImpact||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">عدد الخطط</div><div class="val">${rk.treatmentCount||0}</div></div>
+    </div>`;
+    const scores_en = `<div class="erm-grid cols-4">
+      <div class="erm-kpi"><div class="lbl">Inherent</div><div class="val">${rk.inherentScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">Residual</div><div class="val">${rk.residualScore||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">L × I</div><div class="val" style="font-size:14pt">${rk.residualLikelihood||'—'} × ${rk.residualImpact||'—'}</div></div>
+      <div class="erm-kpi"><div class="lbl">Plans</div><div class="val">${rk.treatmentCount||0}</div></div>
+    </div>`;
+    const desc_ar = `<p><strong>الوصف:</strong> ${rk.descriptionAr||'—'}</p><p style="margin-top:8px"><strong>السبب المحتمل:</strong> ${rk.causeAr||'—'}</p><p style="margin-top:8px"><strong>الأثر المحتمل:</strong> ${rk.impactAr||'—'}</p><p style="margin-top:8px"><strong>الضوابط الحالية:</strong> ${rk.existingControlsAr||'—'}</p>`;
+    const desc_en = `<p><strong>Description:</strong> ${rk.descriptionEn||rk.descriptionAr||'—'}</p><p style="margin-top:8px"><strong>Cause:</strong> ${rk.causeEn||rk.causeAr||'—'}</p><p style="margin-top:8px"><strong>Impact:</strong> ${rk.impactEn||rk.impactAr||'—'}</p><p style="margin-top:8px"><strong>Existing Controls:</strong> ${rk.existingControlsEn||rk.existingControlsAr||'—'}</p>`;
+    const planRows_ar = (window.__realPlans||[]).map(p => `<tr><td>TP-${(p.id||'').slice(-6).toUpperCase()}</td><td>${p.ta||'—'}</td><td>${p.resp_ar||'—'}</td><td>${p.prog||0}%</td><td>${p.due||'—'}</td></tr>`).join('') || `<tr><td colspan="5" style="text-align:center;color:#64748b">لا توجد خطط معالجة</td></tr>`;
+    const planRows_en = (window.__realPlans||[]).map(p => `<tr><td>TP-${(p.id||'').slice(-6).toUpperCase()}</td><td>${p.te||p.ta||'—'}</td><td>${p.resp_en||p.resp_ar||'—'}</td><td>${p.prog||0}%</td><td>${p.due||'—'}</td></tr>`).join('') || `<tr><td colspan="5" style="text-align:center;color:#64748b">No treatment plans</td></tr>`;
+    window.ermPrintPDF({
+      title_ar: 'تفاصيل الخطر: ' + (rk.titleAr||'—'),
+      title_en: 'Risk Details: ' + (rk.titleEn||rk.titleAr||'—'),
+      subtitle_ar: `الرقم ${rk.riskNumber||''}`,
+      subtitle_en: `No. ${rk.riskNumber||''}`,
+      sections: [
+        { title_ar:'بيانات الخطر', title_en:'Risk Information', html_ar: meta_ar, html_en: meta_en },
+        { title_ar:'درجات المخاطر', title_en:'Risk Scores', html_ar: scores_ar, html_en: scores_en },
+        { title_ar:'الوصف والأسباب', title_en:'Description & Causes', html_ar:`<div class="erm-content">${desc_ar}</div>`, html_en:`<div class="erm-content">${desc_en}</div>` },
+        { title_ar:'خطط المعالجة', title_en:'Treatment Plans',
+          html_ar:`<table class="erm-table"><thead><tr><th>رقم الخطة</th><th>العنوان</th><th>المسؤول</th><th>التقدم</th><th>الاستحقاق</th></tr></thead><tbody>${planRows_ar}</tbody></table>`,
+          html_en:`<table class="erm-table"><thead><tr><th>Plan No.</th><th>Title</th><th>Responsible</th><th>Progress</th><th>Due</th></tr></thead><tbody>${planRows_en}</tbody></table>`,
+        },
+      ],
+    });
+  });
+
   if(window.lucide) lucide.createIcons();
   window.ermApplyLang();
 };
 </script>
+<script src="erm-export.js"></script>
 <script src="erm-shell.js"></script>
 </body></html>

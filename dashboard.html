@@ -21,7 +21,7 @@
       </div>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap">
         <button class="btn" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff"><i data-lucide="refresh-cw" style="width:1rem;height:1rem"></i><span data-ar="تحديث" data-en="Refresh">تحديث</span></button>
-        <button class="btn" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تقرير شهري" data-en="Monthly Report">تقرير شهري</span></button>
+        <button id="monthlyReportBtn" class="btn" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff;cursor:pointer"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تقرير شهري" data-en="Monthly Report">تقرير شهري</span></button>
       </div>
     </div>
     <div style="position:relative;z-index:1;margin-top:1.5rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem" class="hero-stats"></div>
@@ -70,5 +70,6 @@
 
 </div>
 <script src="dashboard-data.js"></script>
+<script src="erm-export.js"></script>
 <script src="erm-shell.js"></script>
 </body></html>

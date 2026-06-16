@@ -15,7 +15,11 @@
       <h1 style="margin:0;font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem"><i data-lucide="alert-triangle" style="color:var(--primary)"></i><span data-ar="سجل المخاطر" data-en="Risk Register">سجل المخاطر</span></h1>
       <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="إدارة وتتبّع جميع المخاطر المؤسسية" data-en="Manage and track all enterprise risks">إدارة وتتبّع جميع المخاطر المؤسسية</p>
     </div>
-    <a href="risk-new.html" class="btn btn-primary" style="text-decoration:none"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="تسجيل خطر جديد" data-en="Register New Risk">تسجيل خطر جديد</span></a>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button id="risksExportExcel" class="btn btn-outline"><i data-lucide="file-spreadsheet" style="width:1rem;height:1rem"></i><span data-ar="تصدير Excel" data-en="Export Excel">تصدير Excel</span></button>
+      <button id="risksExportPDF" class="btn btn-outline"><i data-lucide="file-text" style="width:1rem;height:1rem"></i><span data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</span></button>
+      <a href="risk-new.html" class="btn btn-primary" style="text-decoration:none"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="تسجيل خطر جديد" data-en="Register New Risk">تسجيل خطر جديد</span></a>
+    </div>
   </div>
 
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
@@ -92,8 +96,65 @@ window.ermInit=async function(){
     <td class="muted" data-ar="${r.ownerName||'—'}" data-en="${r.ownerNameEn||r.ownerName||'—'}">${r.ownerName||'—'}</td>
     <td><button class="btn btn-outline" style="padding:.3rem .5rem" onclick="event.stopPropagation()"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td></tr>`;
   }).join('');
+  // ===== Excel export =====
+  document.getElementById('risksExportExcel')?.addEventListener('click', () => {
+    window.ermExportExcel({
+      baseFilename: 'risks-register',
+      sheetName: window.ermLang()==='ar' ? 'سجل المخاطر' : 'Risk Register',
+      headers: [
+        { key:'riskNumber',   label_ar:'رقم الخطر',     label_en:'Risk No.',     width:14 },
+        { key:'title',        label_ar:'عنوان الخطر',   label_en:'Risk Title',   width:48 },
+        { key:'category',     label_ar:'التصنيف',       label_en:'Category',     width:18 },
+        { key:'department',   label_ar:'الإدارة',       label_en:'Department',   width:22 },
+        { key:'inherentScore',label_ar:'الكامن',        label_en:'Inherent',     width:10 },
+        { key:'inherentRating',label_ar:'تصنيف الكامن', label_en:'Inh. Rating',  width:14 },
+        { key:'residualScore',label_ar:'المتبقي',       label_en:'Residual',     width:10 },
+        { key:'residualRating',label_ar:'تصنيف المتبقي',label_en:'Res. Rating',  width:14 },
+        { key:'owner',        label_ar:'مالك الخطر',    label_en:'Owner',        width:22 },
+        { key:'champion',     label_ar:'الرائد',         label_en:'Champion',     width:22 },
+        { key:'status',       label_ar:'الحالة',         label_en:'Status',       width:14 },
+        { key:'treatmentCount',label_ar:'خطط المعالجة',  label_en:'Plans',        width:8 },
+      ],
+      rows: risks.map(r => ({
+        riskNumber: r.riskNumber || '',
+        title: window.ermLang()==='ar' ? (r.titleAr||'') : (r.titleEn||r.titleAr||''),
+        category: window.ermLang()==='ar' ? (r.categoryAr||'') : (r.categoryEn||r.categoryAr||''),
+        department: window.ermLang()==='ar' ? (r.departmentAr||'') : (r.departmentEn||r.departmentAr||''),
+        inherentScore: r.inherentScore||'',
+        inherentRating: r.inherentRating||'',
+        residualScore: r.residualScore||'',
+        residualRating: r.residualRating||'',
+        owner: window.ermLang()==='ar' ? (r.ownerName||'') : (r.ownerNameEn||r.ownerName||''),
+        champion: window.ermLang()==='ar' ? (r.championName||'') : (r.championNameEn||r.championName||''),
+        status: r.status||'',
+        treatmentCount: r.treatmentCount||0,
+      })),
+    });
+  });
+
+  // ===== PDF export =====
+  document.getElementById('risksExportPDF')?.addEventListener('click', () => {
+    const isAr = window.ermLang()==='ar';
+    const top = risks.slice(0, 50);
+    const rows_ar = top.map(r => `<tr><td>${r.riskNumber||'—'}</td><td>${(r.titleAr||'—').slice(0,80)}</td><td>${r.departmentAr||'—'}</td><td>${r.inherentScore||'—'}</td><td>${r.residualScore||'—'}</td><td>${window.ermRatingPill(r.residualRating)}</td><td>${r.ownerName||'—'}</td></tr>`).join('');
+    const rows_en = top.map(r => `<tr><td>${r.riskNumber||'—'}</td><td>${(r.titleEn||r.titleAr||'—').slice(0,80)}</td><td>${r.departmentEn||r.departmentAr||'—'}</td><td>${r.inherentScore||'—'}</td><td>${r.residualScore||'—'}</td><td>${window.ermRatingPill(r.residualRating)}</td><td>${r.ownerNameEn||r.ownerName||'—'}</td></tr>`).join('');
+    window.ermPrintPDF({
+      title_ar: 'سجل المخاطر المؤسسية',
+      title_en: 'Enterprise Risk Register',
+      subtitle_ar: `إجمالي ${total} خطر · يعرض أعلى ${top.length} حسب الدرجة`,
+      subtitle_en: `${total} risks total · showing top ${top.length} by score`,
+      sections: [{
+        title_ar: 'قائمة المخاطر',
+        title_en: 'Risk List',
+        html_ar: `<table class="erm-table"><thead><tr><th>الرقم</th><th>العنوان</th><th>الإدارة</th><th>الكامن</th><th>المتبقي</th><th>التصنيف</th><th>المالك</th></tr></thead><tbody>${rows_ar}</tbody></table>`,
+        html_en: `<table class="erm-table"><thead><tr><th>No.</th><th>Title</th><th>Department</th><th>Inherent</th><th>Residual</th><th>Rating</th><th>Owner</th></tr></thead><tbody>${rows_en}</tbody></table>`,
+      }],
+    });
+  });
+
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>
+<script src="erm-export.js"></script>
 <script src="erm-shell.js"></script>
 </body></html>

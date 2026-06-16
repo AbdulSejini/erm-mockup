@@ -110,6 +110,67 @@ window.ermInit = async function(){
   ];
   document.getElementById('quickActions').innerHTML=QA.map(([ic,ta,te,sa,se,c1,c2,href])=>`<a href="${href}" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:.75rem;text-decoration:none;border:1px solid var(--border)"><div style="display:flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border-radius:.75rem;color:#fff;box-shadow:0 4px 8px rgba(0,0,0,.15);background:linear-gradient(135deg,${c1},${c2})"><i data-lucide="${ic}" style="width:1.25rem;height:1.25rem"></i></div><div style="flex:1"><p style="margin:0;font-size:.875rem;font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p><p class="muted" style="margin:.1rem 0 0;font-size:.75rem" data-ar="${sa}" data-en="${se}">${sa}</p></div><i data-lucide="chevron-right" class="flip-x" style="width:1.25rem;height:1.25rem;color:var(--foreground-muted)"></i></a>`).join('');
 
+  // ===== Monthly Report PDF =====
+  const monthlyBtn = document.getElementById('monthlyReportBtn');
+  if(monthlyBtn){
+    monthlyBtn.addEventListener('click', () => {
+      const isAr = window.ermLang() === 'ar';
+      const monthName = isAr ? 'يونيو 2026' : 'June 2026';
+      const monthlyKPIs = [
+        { lbl_ar:'إجمالي المخاطر', lbl_en:'Total Risks', val: totalRisks },
+        { lbl_ar:'خطط معالجة', lbl_en:'Treatment Plans', val: totalTreatments },
+        { lbl_ar:'حرجة', lbl_en:'Critical', val: critical },
+        { lbl_ar:'معدل الإنجاز', lbl_en:'Completion Rate', val: completionRate + '%' },
+      ];
+      const ratingRows_ar = RT.map(([ar,en,r,c1,c2,v])=>`<tr><td>${ar}</td><td>${r}</td><td>${v}</td></tr>`).join('');
+      const ratingRows_en = RT.map(([ar,en,r,c1,c2,v])=>`<tr><td>${en}</td><td>${r}</td><td>${v}</td></tr>`).join('');
+      const recentRows_ar = recent.slice(0,10).map(r=>`<tr><td>${r.riskNumber||'—'}</td><td>${r.titleAr||'—'}</td><td>${r.departmentAr||'—'}</td><td>${window.ermRatingPill(r.inherentRating)}</td><td>${r.residualScore||'—'}</td></tr>`).join('');
+      const recentRows_en = recent.slice(0,10).map(r=>`<tr><td>${r.riskNumber||'—'}</td><td>${r.titleEn||r.titleAr||'—'}</td><td>${r.departmentEn||r.departmentAr||'—'}</td><td>${window.ermRatingPill(r.inherentRating)}</td><td>${r.residualScore||'—'}</td></tr>`).join('');
+      const overdueList = upcoming.filter(t=>t.daysLeft<0).slice(0,5);
+      const overdueRows_ar = overdueList.length ? overdueList.map(t=>`<tr><td>${t.riskNumber||'—'}</td><td>${t.titleAr||'—'}</td><td>${t.progress||0}%</td><td>${Math.abs(t.daysLeft)} يوم</td></tr>`).join('') : `<tr><td colspan="4" style="text-align:center;color:#64748b">لا توجد خطط متأخرة</td></tr>`;
+      const overdueRows_en = overdueList.length ? overdueList.map(t=>`<tr><td>${t.riskNumber||'—'}</td><td>${t.titleEn||t.titleAr||'—'}</td><td>${t.progress||0}%</td><td>${Math.abs(t.daysLeft)} days</td></tr>`).join('') : `<tr><td colspan="4" style="text-align:center;color:#64748b">No overdue plans</td></tr>`;
+
+      window.ermPrintPDF({
+        title_ar: 'التقرير الشهري — ' + monthName,
+        title_en: 'Monthly Risk Report — ' + monthName,
+        subtitle_ar: 'لمحة تنفيذية عن المخاطر المؤسسية وخطط المعالجة',
+        subtitle_en: 'Executive snapshot of enterprise risks and treatment plans',
+        sections: [
+          {
+            title_ar: 'مؤشرات الأداء الرئيسية',
+            title_en: 'Key Performance Indicators',
+            html_ar: `<div class="erm-grid cols-4">${monthlyKPIs.map(k=>`<div class="erm-kpi"><div class="lbl">${k.lbl_ar}</div><div class="val">${k.val}</div></div>`).join('')}</div>`,
+            html_en: `<div class="erm-grid cols-4">${monthlyKPIs.map(k=>`<div class="erm-kpi"><div class="lbl">${k.lbl_en}</div><div class="val">${k.val}</div></div>`).join('')}</div>`,
+          },
+          {
+            title_ar: 'توزيع المخاطر حسب التصنيف',
+            title_en: 'Risk Distribution by Rating',
+            html_ar: `<table class="erm-table"><thead><tr><th>التصنيف</th><th>المدى</th><th>العدد</th></tr></thead><tbody>${ratingRows_ar}</tbody></table>`,
+            html_en: `<table class="erm-table"><thead><tr><th>Rating</th><th>Range</th><th>Count</th></tr></thead><tbody>${ratingRows_en}</tbody></table>`,
+          },
+          {
+            title_ar: 'حالة خطط المعالجة',
+            title_en: 'Treatment Plan Status',
+            html_ar: `<table class="erm-table"><thead><tr><th>الحالة</th><th>العدد</th></tr></thead><tbody>${TS.map(([ar,en,v])=>`<tr><td>${ar}</td><td>${v}</td></tr>`).join('')}</tbody></table>`,
+            html_en: `<table class="erm-table"><thead><tr><th>Status</th><th>Count</th></tr></thead><tbody>${TS.map(([ar,en,v])=>`<tr><td>${en}</td><td>${v}</td></tr>`).join('')}</tbody></table>`,
+          },
+          {
+            title_ar: 'أعلى 10 مخاطر',
+            title_en: 'Top 10 Risks',
+            html_ar: `<table class="erm-table"><thead><tr><th>الرقم</th><th>العنوان</th><th>الإدارة</th><th>التصنيف</th><th>المتبقي</th></tr></thead><tbody>${recentRows_ar}</tbody></table>`,
+            html_en: `<table class="erm-table"><thead><tr><th>ID</th><th>Title</th><th>Department</th><th>Rating</th><th>Residual</th></tr></thead><tbody>${recentRows_en}</tbody></table>`,
+          },
+          {
+            title_ar: 'الخطط المتأخرة',
+            title_en: 'Overdue Plans',
+            html_ar: `<table class="erm-table"><thead><tr><th>الخطر</th><th>الخطة</th><th>التقدم</th><th>التأخير</th></tr></thead><tbody>${overdueRows_ar}</tbody></table>`,
+            html_en: `<table class="erm-table"><thead><tr><th>Risk</th><th>Plan</th><th>Progress</th><th>Days late</th></tr></thead><tbody>${overdueRows_en}</tbody></table>`,
+          },
+        ],
+      });
+    });
+  }
+
   if(window.lucide) lucide.createIcons();
   window.ermApplyLang();
 };

@@ -75,6 +75,13 @@ async function main() {
     },
   });
 
+  console.log('Fetching notifications...');
+  const notifications = await prisma.notification.findMany({
+    take: 20,
+    orderBy: { createdAt: 'desc' },
+    select: { id:true, type:true, titleAr:true, titleEn:true, messageAr:true, messageEn:true, isRead:true, link:true, createdAt:true },
+  });
+
   console.log('Fetching incidents...');
   const incidents = await prisma.incident.findMany({
     take: 20,
@@ -219,6 +226,8 @@ async function main() {
     reviewNoteAr: a.reviewNoteAr, reviewNoteEn: a.reviewNoteEn,
     createdAt: a.createdAt,
   }))));
+
+  writeFileSync(`${outDir}/notifications.json`, JSON.stringify(notifications));
 
   writeFileSync(`${outDir}/discussions.json`, JSON.stringify(allDiscussions.map(d=>({
     id: d.id, type: d.type, content: d.content,

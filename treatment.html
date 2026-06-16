@@ -16,7 +16,12 @@
       <p class="muted" style="margin:.25rem 0 0;font-size:.875rem" data-ar="استراتيجيات الاستجابة للمخاطر ومتابعة تنفيذها" data-en="Risk response strategies and execution tracking">استراتيجيات الاستجابة للمخاطر ومتابعة تنفيذها</p>
     </div>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-      <button class="btn btn-outline"><i data-lucide="download" style="width:1rem;height:1rem"></i><span data-ar="تصدير Excel" data-en="Export Excel">تصدير Excel</span></button>
+      <div id="viewToggle" style="display:inline-flex;border-radius:.6rem;padding:.2rem;background:var(--background-tertiary);border:1px solid var(--border);gap:.15rem">
+        <button class="vt-btn" data-view="cards" title="بطاقات" style="padding:.4rem .7rem;border:0;background:var(--primary);color:#fff;border-radius:.45rem;font-family:inherit;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="layout-grid" style="width:.9rem;height:.9rem"></i><span data-ar="بطاقات" data-en="Cards">بطاقات</span></button>
+        <button class="vt-btn" data-view="table" title="جدول" style="padding:.4rem .7rem;border:0;background:transparent;color:var(--foreground-secondary);border-radius:.45rem;font-family:inherit;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem"><i data-lucide="table" style="width:.9rem;height:.9rem"></i><span data-ar="جدول" data-en="Table">جدول</span></button>
+      </div>
+      <button id="plansExportExcel" class="btn btn-outline"><i data-lucide="file-spreadsheet" style="width:1rem;height:1rem"></i><span data-ar="تصدير Excel" data-en="Export Excel">تصدير Excel</span></button>
+      <button id="plansExportPDF" class="btn btn-outline"><i data-lucide="file-text" style="width:1rem;height:1rem"></i><span data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</span></button>
       <button class="btn btn-primary"><i data-lucide="plus" style="width:1rem;height:1rem"></i><span data-ar="خطة جديدة" data-en="New Plan">خطة جديدة</span></button>
     </div>
   </div>
@@ -25,30 +30,38 @@
 
   <div class="card">
     <div class="card-pad" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
-      <div style="position:relative;flex:1;min-width:220px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input class="input" style="padding-inline-start:2.25rem" data-ar-ph="ابحث برقم الخطر، عنوان، أو مسؤول..." data-en-ph="Search by risk number, title, or responsible..." placeholder="بحث..."></div>
-      <select class="select" style="width:auto">
-        <option data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option>
-        <option data-ar="لم تبدأ" data-en="Not Started">لم تبدأ</option>
-        <option data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</option>
-        <option data-ar="مكتملة" data-en="Completed">مكتملة</option>
-        <option data-ar="متأخرة" data-en="Overdue">متأخرة</option>
+      <div style="position:relative;flex:1;min-width:220px"><i data-lucide="search" style="position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:.75rem;width:1rem;height:1rem;color:var(--foreground-muted)"></i><input id="fSearch" class="input" style="padding-inline-start:2.25rem" data-ar-ph="ابحث برقم الخطر، عنوان، أو مسؤول..." data-en-ph="Search by risk number, title, or responsible..." placeholder="بحث..."></div>
+      <select id="fStatus" class="select" style="width:auto">
+        <option value="" data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option>
+        <option value="notStarted" data-ar="لم تبدأ" data-en="Not Started">لم تبدأ</option>
+        <option value="inProgress" data-ar="قيد التنفيذ" data-en="In Progress">قيد التنفيذ</option>
+        <option value="completed" data-ar="مكتملة" data-en="Completed">مكتملة</option>
+        <option value="overdue" data-ar="متأخرة" data-en="Overdue">متأخرة</option>
       </select>
-      <select class="select" style="width:auto">
-        <option data-ar="كل الاستراتيجيات" data-en="All Strategies">كل الاستراتيجيات</option>
-        <option data-ar="تجنّب" data-en="Avoid">تجنّب</option>
-        <option data-ar="تقليل" data-en="Reduce">تقليل</option>
-        <option data-ar="تحويل" data-en="Transfer">تحويل</option>
-        <option data-ar="قبول" data-en="Accept">قبول</option>
+      <select id="fStrategy" class="select" style="width:auto">
+        <option value="" data-ar="كل الاستراتيجيات" data-en="All Strategies">كل الاستراتيجيات</option>
+        <option value="avoid" data-ar="تجنّب" data-en="Avoid">تجنّب</option>
+        <option value="reduce" data-ar="تقليل" data-en="Reduce">تقليل</option>
+        <option value="transfer" data-ar="تحويل" data-en="Transfer">تحويل</option>
+        <option value="accept" data-ar="قبول" data-en="Accept">قبول</option>
       </select>
-      <select class="select" style="width:auto">
-        <option data-ar="كل الإدارات" data-en="All Departments">كل الإدارات</option>
-        <option>المالية</option><option>المشتريات</option><option>الموارد البشرية</option>
-        <option>الإنتاج</option><option>السلامة والأمن</option><option>اللوجستيات</option>
-      </select>
+      <select id="fDept" class="select" style="width:auto"></select>
+      <button id="fReset" class="btn btn-outline" style="padding:.5rem .8rem"><i data-lucide="rotate-ccw" style="width:.9rem;height:.9rem"></i><span data-ar="مسح" data-en="Clear">مسح</span></button>
     </div>
   </div>
 
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1rem" id="plans"></div>
+  <div id="plans" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1rem"></div>
+  <div id="plansTable" class="card" style="display:none"><div style="overflow-x:auto"><table class="tbl"><thead><tr>
+    <th data-ar="المعرّف" data-en="ID">المعرّف</th>
+    <th data-ar="العنوان" data-en="Title">العنوان</th>
+    <th data-ar="الخطر" data-en="Risk">الخطر</th>
+    <th data-ar="الإدارة" data-en="Dept">الإدارة</th>
+    <th data-ar="الإستراتيجية" data-en="Strategy">الإستراتيجية</th>
+    <th data-ar="الحالة" data-en="Status">الحالة</th>
+    <th data-ar="التقدم" data-en="Progress">التقدم</th>
+    <th data-ar="المسؤول" data-en="Responsible">المسؤول</th>
+    <th data-ar="الاستحقاق" data-en="Due">الاستحقاق</th>
+  </tr></thead><tbody id="plansTableBody"></tbody></table></div></div>
 
   <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .25rem">
     <span class="muted" style="font-size:.8rem" data-ar="عرض 1–6 من 552" data-en="Showing 1–6 of 552">عرض 1–6 من 552</span>
@@ -69,60 +82,276 @@ window.ermInit=async function(){
   const stats = await window.ermLoad('stats');
   const treatments = await window.ermLoad('treatments') || [];
   const STATUS_LBL={notStarted:['لم تبدأ','Not Started','#64748b'],inProgress:['قيد التنفيذ','In Progress','#3b82f6'],completed:['مكتملة','Completed','#10b981'],overdue:['متأخرة','Overdue','#ef4444'],cancelled:['ملغية','Cancelled','#a855f7']};
+  const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
 
   const total = stats?.counts?.treatments ?? treatments.length;
   const byStatus = stats?.byStatus || {};
-  const inProgress = byStatus.inProgress || 0;
-  const completed = byStatus.completed || 0;
-  const overdue = byStatus.overdue || 0;
-
   document.getElementById('tstats').innerHTML=[
     ['الإجمالي','Total',total,'#F39200','clipboard-list'],
-    ['قيد التنفيذ','In Progress',inProgress,'#3b82f6','play'],
-    ['مكتملة','Completed',completed,'#10b981','check-circle'],
-    ['متأخرة','Overdue',overdue,'#ef4444','clock']
+    ['قيد التنفيذ','In Progress',byStatus.inProgress||0,'#3b82f6','play'],
+    ['مكتملة','Completed',byStatus.completed||0,'#10b981','check-circle'],
+    ['متأخرة','Overdue',byStatus.overdue||0,'#ef4444','clock']
   ].map(([ar,en,v,c,ic])=>`<div class="stat-tile"><div class="glow" style="background:${c}"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c}">${v}</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:${c}1f;color:${c}"><i data-lucide="${ic}"></i></div></div></div>`).join('');
 
-  // Update pagination label
-  const pageSize = 12;
-  const pageLabel = document.querySelector('span[data-ar^="عرض"]');
-  if(pageLabel){ pageLabel.textContent = `عرض 1–${Math.min(pageSize,total)} من ${total}`; pageLabel.setAttribute('data-ar', `عرض 1–${Math.min(pageSize,total)} من ${total}`); pageLabel.setAttribute('data-en', `Showing 1–${Math.min(pageSize,total)} of ${total}`); }
+  // Populate department options from real data
+  const depts = Array.from(new Set(treatments.map(t => t.departmentAr).filter(Boolean))).sort();
+  const fDept = document.getElementById('fDept');
+  fDept.innerHTML = `<option value="" data-ar="كل الإدارات" data-en="All Departments">كل الإدارات</option>` + depts.map(d => `<option value="${d}">${d}</option>`).join('');
 
-  const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
-  const sample = treatments.slice(0, pageSize);
-  document.getElementById('plans').innerHTML = sample.map(t=>{
-    const strInfo = STR[t.strategy] || ['—','—','#64748b'];
-    const [sar,sen,strc] = strInfo;
-    const statInfo = STATUS_LBL[t.status] || ['—','—','#64748b'];
-    const [statAr,statEn,statC] = statInfo;
-    const prog = t.progress || 0;
-    const pc = prog>=80?'#10b981':prog>=40?'#F39200':'#ef4444';
-    const totalTasks = t.tasks?.length || 0;
-    const doneTasks = (t.tasks||[]).filter(x=>x.status==='completed').length;
-    const due = t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '—';
-    const oa = t.responsibleName || '—';
-    const oe = t.responsibleNameEn || oa;
-    const titleAr = (t.titleAr || '—').replace(/"/g,'&quot;');
-    const titleEn = (t.titleEn || titleAr).replace(/"/g,'&quot;');
-    const tpId = (t.id||'').slice(-6).toUpperCase();
-    return `
-    <a href="treatment-detail.html?id=${t.id}" class="card" style="display:block;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''"><div class="card-pad">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.5rem">
-        <div style="display:flex;align-items:center;gap:.5rem;min-width:0"><code class="mono" style="flex-shrink:0">TP-${tpId}</code><span class="chip" style="background:${strc}1f;color:${strc};flex-shrink:0" data-ar="${sar}" data-en="${sen}">${sar}</span></div>
-        <span class="chip" style="background:${statC}1f;color:${statC};flex-shrink:0" data-ar="${statAr}" data-en="${statEn}">${statAr}</span>
-      </div>
-      <p style="margin:0 0 .35rem;font-size:.95rem;font-weight:600;color:var(--foreground);line-height:1.4" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p>
-      <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem" class="muted"><i data-lucide="link" style="width:.85rem;height:.85rem"></i><span data-ar="مرتبطة بـ" data-en="Linked to">مرتبطة بـ</span> <code class="mono">${t.riskNumber||'—'}</code></div>
-      <div style="margin-top:.75rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.25rem" class="muted"><span data-ar="التقدم" data-en="Progress">التقدم</span><span>${prog}%</span></div><div class="progress"><span style="width:${prog}%;background:${pc}"></span></div></div>
-      <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.85rem;font-size:.75rem" class="muted">
-        <span><i data-lucide="check-square" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${doneTasks}/${totalTasks}</span>
-        <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${oa}" data-en="${oe}">${oa}</span></span>
-        <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${due}</span>
-      </div>
-    </div></a>`;
-  }).join('');
+  // ===== State from URL =====
+  const url = new URL(window.location.href);
+  const state = {
+    q: url.searchParams.get('q') || '',
+    status: url.searchParams.get('status') || '',
+    strategy: url.searchParams.get('strategy') || '',
+    dept: url.searchParams.get('dept') || '',
+    view: url.searchParams.get('view') || 'cards',
+    page: parseInt(url.searchParams.get('page') || '1', 10) || 1,
+  };
+  // Apply state to inputs
+  document.getElementById('fSearch').value = state.q;
+  document.getElementById('fStatus').value = state.status;
+  document.getElementById('fStrategy').value = state.strategy;
+  document.getElementById('fDept').value = state.dept;
+  // View toggle
+  document.querySelectorAll('.vt-btn').forEach(b => {
+    const on = b.dataset.view === state.view;
+    b.style.background = on ? 'var(--primary)' : 'transparent';
+    b.style.color = on ? '#fff' : 'var(--foreground-secondary)';
+  });
+
+  function syncURL(){
+    const u = new URL(window.location.href);
+    ['q','status','strategy','dept','view','page'].forEach(k => {
+      if(state[k] && !(k==='view' && state[k]==='cards') && !(k==='page' && state[k]===1)) u.searchParams.set(k, state[k]);
+      else u.searchParams.delete(k);
+    });
+    window.history.replaceState(null, '', u);
+  }
+
+  function filtered(){
+    const q = state.q.trim().toLowerCase();
+    return treatments.filter(t => {
+      if(state.status && t.status !== state.status) return false;
+      if(state.strategy && t.strategy !== state.strategy) return false;
+      if(state.dept && t.departmentAr !== state.dept) return false;
+      if(q){
+        const blob = [
+          t.riskNumber, t.titleAr, t.titleEn, t.riskTitleAr, t.riskTitleEn,
+          t.responsibleName, t.responsibleNameEn, t.departmentAr, t.departmentEn,
+        ].filter(Boolean).join(' ').toLowerCase();
+        if(!blob.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  const pageSize = 12;
+
+  function render(){
+    const list = filtered();
+    const totalF = list.length;
+    const totalPages = Math.max(1, Math.ceil(totalF / pageSize));
+    if(state.page > totalPages) state.page = 1;
+    const start = (state.page - 1) * pageSize;
+    const slice = list.slice(start, start + pageSize);
+
+    // Pagination label
+    const pageLabel = document.querySelector('span[data-ar^="عرض"]');
+    if(pageLabel){
+      const from = totalF ? start + 1 : 0;
+      const to = Math.min(start + pageSize, totalF);
+      pageLabel.textContent = `عرض ${from}–${to} من ${totalF}`;
+      pageLabel.setAttribute('data-ar', `عرض ${from}–${to} من ${totalF}`);
+      pageLabel.setAttribute('data-en', `Showing ${from}–${to} of ${totalF}`);
+    }
+
+    // Empty state if no results
+    if(!totalF){
+      const emptyMsg = `<div class="card" style="grid-column:1/-1"><div class="card-pad" style="padding:3rem;text-align:center"><div style="width:64px;height:64px;border-radius:1rem;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)"><i data-lucide="search-x" style="width:1.8rem;height:1.8rem"></i></div><p style="margin:0;font-weight:600" data-ar="لا توجد نتائج" data-en="No results">لا توجد نتائج</p><p class="muted" style="margin:.4rem 0 0;font-size:.85rem" data-ar="جرّب تعديل الفلاتر" data-en="Try changing your filters">جرّب تعديل الفلاتر</p></div></div>`;
+      document.getElementById('plans').innerHTML = emptyMsg;
+      document.getElementById('plansTableBody').innerHTML = '';
+    } else {
+      // Cards
+      document.getElementById('plans').innerHTML = slice.map(t=>{
+        const [sar,sen,strc] = STR[t.strategy] || ['—','—','#64748b'];
+        const [statAr,statEn,statC] = STATUS_LBL[t.status] || ['—','—','#64748b'];
+        const prog = t.progress || 0;
+        const pc = prog>=80?'#10b981':prog>=40?'#F39200':'#ef4444';
+        const totalTasks = t.tasks?.length || 0;
+        const doneTasks = (t.tasks||[]).filter(x=>x.status==='completed').length;
+        const due = t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '—';
+        const oa = t.responsibleName || '—';
+        const oe = t.responsibleNameEn || oa;
+        const titleAr = (t.titleAr || '—').replace(/"/g,'&quot;');
+        const titleEn = (t.titleEn || titleAr).replace(/"/g,'&quot;');
+        const tpId = (t.id||'').slice(-6).toUpperCase();
+        return `
+        <a href="treatment-detail.html?id=${t.id}" class="card" style="display:block;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''"><div class="card-pad">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.5rem">
+            <div style="display:flex;align-items:center;gap:.5rem;min-width:0"><code class="mono" style="flex-shrink:0">TP-${tpId}</code><span class="chip" style="background:${strc}1f;color:${strc};flex-shrink:0" data-ar="${sar}" data-en="${sen}">${sar}</span></div>
+            <span class="chip" style="background:${statC}1f;color:${statC};flex-shrink:0" data-ar="${statAr}" data-en="${statEn}">${statAr}</span>
+          </div>
+          <p style="margin:0 0 .35rem;font-size:.95rem;font-weight:600;color:var(--foreground);line-height:1.4" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p>
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem" class="muted"><i data-lucide="link" style="width:.85rem;height:.85rem"></i><span data-ar="مرتبطة بـ" data-en="Linked to">مرتبطة بـ</span> <code class="mono">${t.riskNumber||'—'}</code></div>
+          <div style="margin-top:.75rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.25rem" class="muted"><span data-ar="التقدم" data-en="Progress">التقدم</span><span>${prog}%</span></div><div class="progress"><span style="width:${prog}%;background:${pc}"></span></div></div>
+          <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.85rem;font-size:.75rem" class="muted">
+            <span><i data-lucide="check-square" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${doneTasks}/${totalTasks}</span>
+            <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${oa}" data-en="${oe}">${oa}</span></span>
+            <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${due}</span>
+          </div>
+        </div></a>`;
+      }).join('');
+
+      // Table
+      document.getElementById('plansTableBody').innerHTML = slice.map(t=>{
+        const [sar,sen,strc] = STR[t.strategy] || ['—','—','#64748b'];
+        const [statAr,statEn,statC] = STATUS_LBL[t.status] || ['—','—','#64748b'];
+        const prog = t.progress || 0;
+        const pc = prog>=80?'#10b981':prog>=40?'#F39200':'#ef4444';
+        const due = t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '—';
+        const oa = t.responsibleName || '—';
+        const oe = t.responsibleNameEn || oa;
+        const titleAr = (t.titleAr || '—').replace(/"/g,'&quot;').slice(0,80);
+        const titleEn = (t.titleEn || titleAr).replace(/"/g,'&quot;').slice(0,80);
+        const tpId = (t.id||'').slice(-6).toUpperCase();
+        return `<tr style="cursor:pointer" onclick="window.location.href='treatment-detail.html?id=${t.id}'">
+          <td><code class="mono">TP-${tpId}</code></td>
+          <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p></td>
+          <td class="muted"><code class="mono">${t.riskNumber||'—'}</code></td>
+          <td class="muted" data-ar="${t.departmentAr||'—'}" data-en="${t.departmentEn||t.departmentAr||'—'}">${t.departmentAr||'—'}</td>
+          <td><span class="chip" style="background:${strc}1f;color:${strc}" data-ar="${sar}" data-en="${sen}">${sar}</span></td>
+          <td><span class="chip" style="background:${statC}1f;color:${statC}" data-ar="${statAr}" data-en="${statEn}">${statAr}</span></td>
+          <td><div style="display:flex;align-items:center;gap:.4rem;min-width:120px"><div class="progress" style="flex:1;height:.35rem"><span style="width:${prog}%;background:${pc}"></span></div><span style="font-size:.72rem;font-weight:600;color:${pc};min-width:2.3rem;text-align:end">${prog}%</span></div></td>
+          <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
+          <td class="muted">${due}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Toggle view containers
+    document.getElementById('plans').style.display = state.view === 'cards' ? 'grid' : 'none';
+    document.getElementById('plansTable').style.display = state.view === 'table' ? 'block' : 'none';
+
+    if(window.lucide) lucide.createIcons();
+    window.ermApplyLang();
+  }
+
+  // Wire inputs
+  let searchTimer = null;
+  document.getElementById('fSearch').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.q = e.target.value; state.page = 1; syncURL(); render(); }, 200);
+  });
+  ['fStatus','fStrategy','fDept'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      const key = id.replace('f','').toLowerCase();
+      state[key] = e.target.value; state.page = 1; syncURL(); render();
+    });
+  });
+  document.getElementById('fReset').addEventListener('click', () => {
+    state.q = ''; state.status = ''; state.strategy = ''; state.dept = ''; state.page = 1;
+    document.getElementById('fSearch').value = '';
+    document.getElementById('fStatus').value = '';
+    document.getElementById('fStrategy').value = '';
+    document.getElementById('fDept').value = '';
+    syncURL(); render();
+  });
+  document.querySelectorAll('.vt-btn').forEach(b => b.addEventListener('click', () => {
+    state.view = b.dataset.view;
+    document.querySelectorAll('.vt-btn').forEach(x => {
+      const on = x.dataset.view === state.view;
+      x.style.background = on ? 'var(--primary)' : 'transparent';
+      x.style.color = on ? '#fff' : 'var(--foreground-secondary)';
+    });
+    syncURL(); render();
+  }));
+
+  // Restore filter state when user navigates back via popstate
+  window.addEventListener('popstate', () => {
+    const u = new URL(window.location.href);
+    state.q = u.searchParams.get('q') || '';
+    state.status = u.searchParams.get('status') || '';
+    state.strategy = u.searchParams.get('strategy') || '';
+    state.dept = u.searchParams.get('dept') || '';
+    state.view = u.searchParams.get('view') || 'cards';
+    state.page = parseInt(u.searchParams.get('page') || '1', 10) || 1;
+    document.getElementById('fSearch').value = state.q;
+    document.getElementById('fStatus').value = state.status;
+    document.getElementById('fStrategy').value = state.strategy;
+    document.getElementById('fDept').value = state.dept;
+    render();
+  });
+
+  // ===== Excel + PDF export =====
+  document.getElementById('plansExportExcel')?.addEventListener('click', () => {
+    const isAr = window.ermLang() === 'ar';
+    const list = filtered();
+    window.ermExportExcel({
+      baseFilename: 'treatment-plans',
+      sheetName: isAr ? 'خطط المعالجة' : 'Treatment Plans',
+      headers: [
+        { key:'tpId',         label_ar:'رقم الخطة',     label_en:'Plan No.',     width:14 },
+        { key:'riskNumber',   label_ar:'رقم الخطر',     label_en:'Risk No.',     width:14 },
+        { key:'title',        label_ar:'عنوان الخطة',   label_en:'Plan Title',   width:48 },
+        { key:'riskTitle',    label_ar:'عنوان الخطر',   label_en:'Risk Title',   width:48 },
+        { key:'department',   label_ar:'الإدارة',       label_en:'Department',   width:22 },
+        { key:'strategy',     label_ar:'الاستراتيجية',  label_en:'Strategy',     width:14 },
+        { key:'status',       label_ar:'الحالة',         label_en:'Status',       width:14 },
+        { key:'progress',     label_ar:'التقدم %',       label_en:'Progress %',   width:10 },
+        { key:'responsible',  label_ar:'المسؤول',        label_en:'Responsible',  width:24 },
+        { key:'priority',     label_ar:'الأولوية',       label_en:'Priority',     width:12 },
+        { key:'startDate',    label_ar:'تاريخ البدء',    label_en:'Start Date',   width:12 },
+        { key:'dueDate',      label_ar:'الاستحقاق',      label_en:'Due Date',     width:12 },
+        { key:'tasks',        label_ar:'عدد المهام',      label_en:'Tasks',        width:8 },
+        { key:'inherentScore',label_ar:'الكامن',         label_en:'Inherent',     width:8 },
+        { key:'residualScore',label_ar:'المتبقي',        label_en:'Residual',     width:8 },
+      ],
+      rows: list.map(t => ({
+        tpId: 'TP-' + (t.id||'').slice(-6).toUpperCase(),
+        riskNumber: t.riskNumber || '',
+        title: isAr ? (t.titleAr||'') : (t.titleEn||t.titleAr||''),
+        riskTitle: isAr ? (t.riskTitleAr||'') : (t.riskTitleEn||t.riskTitleAr||''),
+        department: isAr ? (t.departmentAr||'') : (t.departmentEn||t.departmentAr||''),
+        strategy: STR[t.strategy] ? (isAr ? STR[t.strategy][0] : STR[t.strategy][1]) : t.strategy||'',
+        status: STATUS_LBL[t.status] ? (isAr ? STATUS_LBL[t.status][0] : STATUS_LBL[t.status][1]) : t.status||'',
+        progress: t.progress || 0,
+        responsible: isAr ? (t.responsibleName||'') : (t.responsibleNameEn||t.responsibleName||''),
+        priority: t.priority || '',
+        startDate: t.startDate ? new Date(t.startDate).toISOString().slice(0,10) : '',
+        dueDate: t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '',
+        tasks: t.tasks?.length || 0,
+        inherentScore: t.inherentScore || '',
+        residualScore: t.residualScore || '',
+      })),
+    });
+  });
+
+  document.getElementById('plansExportPDF')?.addEventListener('click', () => {
+    const isAr = window.ermLang() === 'ar';
+    const list = filtered().slice(0, 60);
+    const rows_ar = list.map(t => `<tr><td>TP-${(t.id||'').slice(-6).toUpperCase()}</td><td>${(t.titleAr||'—').slice(0,80)}</td><td>${t.riskNumber||'—'}</td><td>${t.departmentAr||'—'}</td><td>${STR[t.strategy]?STR[t.strategy][0]:'—'}</td><td>${STATUS_LBL[t.status]?STATUS_LBL[t.status][0]:'—'}</td><td>${t.progress||0}%</td><td>${t.responsibleName||'—'}</td></tr>`).join('');
+    const rows_en = list.map(t => `<tr><td>TP-${(t.id||'').slice(-6).toUpperCase()}</td><td>${(t.titleEn||t.titleAr||'—').slice(0,80)}</td><td>${t.riskNumber||'—'}</td><td>${t.departmentEn||t.departmentAr||'—'}</td><td>${STR[t.strategy]?STR[t.strategy][1]:'—'}</td><td>${STATUS_LBL[t.status]?STATUS_LBL[t.status][1]:'—'}</td><td>${t.progress||0}%</td><td>${t.responsibleNameEn||t.responsibleName||'—'}</td></tr>`).join('');
+    window.ermPrintPDF({
+      title_ar: 'خطط المعالجة',
+      title_en: 'Treatment Plans',
+      subtitle_ar: `إجمالي ${list.length} خطة` + (state.q||state.status||state.strategy||state.dept ? ' (مع الفلاتر المطبّقة)' : ''),
+      subtitle_en: `${list.length} plans` + (state.q||state.status||state.strategy||state.dept ? ' (filtered)' : ''),
+      sections: [{
+        title_ar: 'القائمة',
+        title_en: 'List',
+        html_ar: `<table class="erm-table"><thead><tr><th>رقم الخطة</th><th>العنوان</th><th>الخطر</th><th>الإدارة</th><th>الإستراتيجية</th><th>الحالة</th><th>التقدم</th><th>المسؤول</th></tr></thead><tbody>${rows_ar}</tbody></table>`,
+        html_en: `<table class="erm-table"><thead><tr><th>Plan No.</th><th>Title</th><th>Risk</th><th>Department</th><th>Strategy</th><th>Status</th><th>Progress</th><th>Responsible</th></tr></thead><tbody>${rows_en}</tbody></table>`,
+      }],
+    });
+  });
+
+  // Initial render
+  render();
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
+
 </script>
+<script src="erm-export.js"></script>
 <script src="erm-shell.js"></script>
 </body></html>
