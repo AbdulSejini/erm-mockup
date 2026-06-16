@@ -83,21 +83,21 @@
 
     // Row 1 — Brand name on primary orange #F39200
     setStyle('A1', {
-      font: { name: isAr?'Arial':'Calibri', bold:true, sz:18, color:{ rgb:'FFFFFF' } },
+      font: { name: 'Tahoma', bold:true, sz:18, color:{ rgb:'FFFFFF' } },
       fill: { patternType:'solid', fgColor:{ rgb:'F39200' } },
       alignment: { horizontal:'center', vertical:'center' },
       border: { top: { style:'medium', color:{ rgb:'E08600' } }, left:{ style:'medium', color:{ rgb:'E08600' } }, right:{ style:'medium', color:{ rgb:'E08600' } } },
     });
     // Row 2 — System name on darker orange #E08600
     setStyle('A2', {
-      font: { name: isAr?'Arial':'Calibri', bold:true, sz:12, color:{ rgb:'FFFFFF' } },
+      font: { name: 'Tahoma', bold:true, sz:12, color:{ rgb:'FFFFFF' } },
       fill: { patternType:'solid', fgColor:{ rgb:'E08600' } },
       alignment: { horizontal:'center', vertical:'center' },
       border: { left:{ style:'medium', color:{ rgb:'E08600' } }, right:{ style:'medium', color:{ rgb:'E08600' } } },
     });
     // Row 3 — Date stamp on cream #FFF4E6 with primary orange text
     setStyle('A3', {
-      font: { name: isAr?'Arial':'Calibri', italic:true, sz:10, color:{ rgb:'E08600' } },
+      font: { name: 'Tahoma', italic:true, sz:10, color:{ rgb:'E08600' } },
       fill: { patternType:'solid', fgColor:{ rgb:'FFF4E6' } },
       alignment: { horizontal:'center', vertical:'center' },
       border: { bottom: { style:'medium', color:{ rgb:'F39200' } }, left:{ style:'medium', color:{ rgb:'E08600' } }, right:{ style:'medium', color:{ rgb:'E08600' } } },
@@ -108,7 +108,7 @@
       // Ensure cell exists
       if(!ws[ref]) ws[ref] = { t:'s', v: labels[c] };
       setStyle(ref, {
-        font: { name: isAr?'Arial':'Calibri', bold:true, sz:11, color:{ rgb:'FFFFFF' } },
+        font: { name: 'Tahoma', bold:true, sz:11, color:{ rgb:'FFFFFF' } },
         fill: { patternType:'solid', fgColor:{ rgb:'F39200' } },
         alignment: { horizontal:'center', vertical:'center', wrapText:true },
         border: {
@@ -149,8 +149,42 @@
             extraFont = { color:{ rgb:'2563EB' } };
           }
         }
+        if(/status/i.test(headerKey)){
+          // Treatment plan statuses
+          if(val === 'completed' || val === 'مكتملة' || val === 'Completed' || val === 'mitigated' || val === 'مُعالج' || val === 'Mitigated'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'DCFCE7' } };
+            extraFont = { color:{ rgb:'16A34A' }, bold:true };
+          } else if(val === 'inProgress' || val === 'قيد التنفيذ' || val === 'In Progress' || val === 'inTreatment' || val === 'قيد المعالجة' || val === 'In Treatment'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'DBEAFE' } };
+            extraFont = { color:{ rgb:'2563EB' }, bold:true };
+          } else if(val === 'overdue' || val === 'متأخرة' || val === 'Overdue'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'FEE2E2' } };
+            extraFont = { color:{ rgb:'DC2626' }, bold:true };
+          } else if(val === 'notStarted' || val === 'لم تبدأ' || val === 'Not Started'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'F1F5F9' } };
+            extraFont = { color:{ rgb:'64748B' } };
+          } else if(val === 'open' || val === 'مفتوح' || val === 'Open' || val === 'active'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'DBEAFE' } };
+            extraFont = { color:{ rgb:'2563EB' } };
+          } else if(val === 'closed' || val === 'مغلق' || val === 'Closed'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'E2E8F0' } };
+            extraFont = { color:{ rgb:'475569' } };
+          } else if(val === 'cancelled' || val === 'ملغية' || val === 'Cancelled'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'F3E8FF' } };
+            extraFont = { color:{ rgb:'9333EA' } };
+          } else if(val === 'pending' || val === 'بانتظار الموافقة' || val === 'Pending'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'FEF3C7' } };
+            extraFont = { color:{ rgb:'D97706' }, bold:true };
+          } else if(val === 'approved' || val === 'معتمد' || val === 'Approved'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'DCFCE7' } };
+            extraFont = { color:{ rgb:'16A34A' }, bold:true };
+          } else if(val === 'rejected' || val === 'مرفوض' || val === 'Rejected'){
+            extraFill = { patternType:'solid', fgColor:{ rgb:'FEE2E2' } };
+            extraFont = { color:{ rgb:'DC2626' }, bold:true };
+          }
+        }
         setStyle(ref, {
-          font: { name: isAr?'Arial':'Calibri', sz:10, color:{ rgb:'1E293B' }, ...extraFont },
+          font: { name: 'Tahoma', sz:10, color:{ rgb:'1E293B' }, ...extraFont },
           fill: Object.keys(extraFill).length ? extraFill : { patternType:'solid', fgColor:{ rgb: fillRgb } },
           alignment: { horizontal:'center', vertical:'center', wrapText:true },
           border: fullBorder,
