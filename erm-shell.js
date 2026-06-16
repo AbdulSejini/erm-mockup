@@ -206,6 +206,21 @@
     }
   });
 
+  // ===== Real-data loader =====
+  window.ermData = {};
+  const _cache = {};
+  window.ermLoad = async function(name){
+    if(_cache[name]) return _cache[name];
+    try{
+      const r = await fetch(`data/${name}.json`, {cache:'force-cache'});
+      if(!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      _cache[name] = j;
+      window.ermData[name] = j;
+      return j;
+    }catch(e){ console.warn('ermLoad failed', name, e); return null; }
+  };
+
   if(window.lucide) lucide.createIcons();
   applyTheme();
   window.ermApplyLang();

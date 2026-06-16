@@ -50,29 +50,48 @@
 
 </div>
 <script>
-window.ermInit=function(){
-  const R=[
-    ['R-001','تقلبات أسعار النحاس والألمنيوم','Copper & aluminum price volatility','مالي','Financial','المالية','Finance',25,'حرج','Critical','#ef4444',15,'مفتوح','Open','#3b82f6','ماجد الدوسري','Majed Al-Dossari'],
-    ['R-002','اضطرابات سلسلة الإمداد للمواد الخام','Raw material supply disruptions','تشغيلي','Operational','المشتريات','Procurement',20,'حرج','Critical','#ef4444',12,'قيد المعالجة','In Treatment','#f59e0b','سعاد البيشي','Suaad Al-Bishi'],
-    ['R-003','تغيّر أسعار صرف العملات الأجنبية','Foreign exchange fluctuations','مالي','Financial','الخزينة','Treasury',16,'رئيسي','Major','#f97316',16,'مفتوح','Open','#3b82f6','خالد الزهراني','Khaled Al-Zahrani'],
-    ['R-004','الامتثال للاشتراطات البيئية','Environmental compliance','امتثال','Compliance','القانونية','Legal',12,'رئيسي','Major','#f97316',8,'قيد المعالجة','In Treatment','#f59e0b','هند السبيعي','Hind Al-Subaie'],
-    ['R-005','السلامة المهنية في خطوط الإنتاج','Occupational safety','تشغيلي','Operational','السلامة','HSE',10,'رئيسي','Major','#f97316',6,'قيد المعالجة','In Treatment','#f59e0b','ياسر الشهراني','Yasser Al-Shahrani'],
-    ['R-006','مخاطر الأمن السيبراني','Cybersecurity risk','تقني','Technology','تقنية المعلومات','IT',12,'رئيسي','Major','#f97316',9,'مفتوح','Open','#3b82f6','فهد الشمري','Fahad Al-Shamri'],
-    ['R-007','تركّز العملاء في قطاع المرافق','Customer concentration','استراتيجي','Strategic','المبيعات','Sales',9,'متوسط','Moderate','#eab308',9,'مفتوح','Open','#3b82f6','نورة الغامدي','Nora Al-Ghamdi'],
-    ['R-008','فقدان الكفاءات الهندسية','Loss of engineering talent','موارد بشرية','HR','الموارد البشرية','HR',6,'متوسط','Moderate','#eab308',4,'مُعالج','Mitigated','#10b981','عبدالله القحطاني','Abdullah Al-Qahtani'],
-    ['R-009','تقادم خطوط الإنتاج','Production line obsolescence','تشغيلي','Operational','الإنتاج','Production',8,'متوسط','Moderate','#eab308',6,'قيد المعالجة','In Treatment','#f59e0b','ماجد الدوسري','Majed Al-Dossari'],
-    ['R-010','تقلب الطلب في السوق','Market demand volatility','استراتيجي','Strategic','المبيعات','Sales',6,'متوسط','Moderate','#eab308',4,'مُعالج','Mitigated','#10b981','نورة الغامدي','Nora Al-Ghamdi'],
-  ];
-  document.getElementById('riskRows').innerHTML=R.map(([id,ta,te,ca,ce,da,de,iscore,ira,ire,ic,rscore,sa,se,sc,oa,oe])=>`
-    <tr style="cursor:pointer" onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${id}'"><td><code class="mono">${id}</code></td>
-    <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p></td>
-    <td class="muted" data-ar="${ca}" data-en="${ce}">${ca}</td>
-    <td class="muted" data-ar="${da}" data-en="${de}">${da}</td>
-    <td><span class="chip" style="background:${ic}1f;color:${ic}">${iscore}</span></td>
-    <td><span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)">${rscore}</span></td>
+window.ermInit=async function(){
+  const stats = await window.ermLoad('stats');
+  const risks = await window.ermLoad('risks') || [];
+  const total = stats?.counts?.risks ?? risks.length;
+  const byRating = stats?.byRating || {};
+  const critical = byRating.Critical || 0;
+  const withPlans = risks.filter(r=>r.treatmentCount>0).length;
+  const open = risks.filter(r=>r.status==='open' || r.status==='active' || !r.status).length;
+
+  // Update stat tiles
+  const tiles = document.querySelectorAll('.stat-tile p[style*="font-weight:700"]');
+  if(tiles[0]) tiles[0].textContent = total;
+  if(tiles[1]) tiles[1].textContent = open;
+  if(tiles[2]) tiles[2].textContent = critical;
+  if(tiles[3]) tiles[3].textContent = withPlans;
+
+  // Update pagination label
+  const pageSize = 12;
+  const pageLabel = document.querySelector('span[data-ar^="عرض"]');
+  if(pageLabel){ pageLabel.textContent = `عرض 1–${Math.min(pageSize,total)} من ${total}`; pageLabel.setAttribute('data-ar', `عرض 1–${Math.min(pageSize,total)} من ${total}`); pageLabel.setAttribute('data-en', `Showing 1–${Math.min(pageSize,total)} of ${total}`); }
+
+  const RATING={Critical:['حرج','Critical','#ef4444'],Major:['رئيسي','Major','#f97316'],Moderate:['متوسط','Moderate','#eab308'],Minor:['ثانوي','Minor','#22c55e'],Negligible:['ضئيل','Negligible','#3b82f6']};
+  const STATUS={open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#10b981']};
+
+  const sample = risks.slice(0, pageSize);
+  document.getElementById('riskRows').innerHTML=sample.map(r=>{
+    const ratInfo = RATING[r.inherentRating] || ['—','—','#64748b'];
+    const [ira,ire,ic] = ratInfo;
+    const statInfo = STATUS[r.status] || [r.status||'—',r.status||'—','#64748b'];
+    const [sa,se,sc] = statInfo;
+    const titleAr = (r.titleAr||'—').replace(/"/g,'&quot;');
+    const titleEn = (r.titleEn||titleAr).replace(/"/g,'&quot;');
+    return `<tr style="cursor:pointer" onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${r.id}'"><td><code class="mono">${r.riskNumber||'—'}</code></td>
+    <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p></td>
+    <td class="muted" data-ar="${r.categoryAr||'—'}" data-en="${r.categoryEn||r.categoryAr||'—'}">${r.categoryAr||'—'}</td>
+    <td class="muted" data-ar="${r.departmentAr||'—'}" data-en="${r.departmentEn||r.departmentAr||'—'}">${r.departmentAr||'—'}</td>
+    <td><span class="chip" style="background:${ic}1f;color:${ic}">${r.inherentScore||'—'}</span></td>
+    <td><span class="chip" style="background:var(--background-tertiary);color:var(--foreground-secondary)">${r.residualScore||'—'}</span></td>
     <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
-    <td class="muted" data-ar="${oa}" data-en="${oe}">${oa}</td>
-    <td><button class="btn btn-outline" style="padding:.3rem .5rem" onclick="event.stopPropagation()"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td></tr>`).join('');
+    <td class="muted" data-ar="${r.ownerName||'—'}" data-en="${r.ownerNameEn||r.ownerName||'—'}">${r.ownerName||'—'}</td>
+    <td><button class="btn btn-outline" style="padding:.3rem .5rem" onclick="event.stopPropagation()"><i data-lucide="more-horizontal" style="width:1rem;height:1rem"></i></button></td></tr>`;
+  }).join('');
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>

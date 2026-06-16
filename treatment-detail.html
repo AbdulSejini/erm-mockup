@@ -266,10 +266,120 @@ https://erm-system-jet.vercel.app/treatment/TP-014
 
 </div>
 <script>
-window.ermInit=function(){
+window.ermInit=async function(){
+  // Load real treatment by ?id= from URL
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const treatments = await window.ermLoad('treatments') || [];
+  const t = id ? treatments.find(x => x.id === id) : treatments[0];
+
+  if(t){
+    // Update sticky nav risk number
+    const riskCode = document.querySelector('.mono');
+    if(riskCode) riskCode.textContent = t.riskNumber || riskCode.textContent;
+
+    // Update title
+    const h1 = document.querySelector('#overview h1');
+    if(h1){
+      h1.textContent = t.titleAr || h1.textContent;
+      h1.setAttribute('data-ar', t.titleAr || '');
+      h1.setAttribute('data-en', t.titleEn || t.titleAr || '');
+    }
+
+    // Update subtitle
+    const sub = document.querySelector('#overview h1 + p');
+    if(sub){
+      const txtAr = `مرتبطة بالخطر ${t.riskNumber||''} — ${t.riskTitleAr||''}`;
+      const txtEn = `Linked to ${t.riskNumber||''} — ${t.riskTitleEn||t.riskTitleAr||''}`;
+      sub.textContent = txtAr;
+      sub.setAttribute('data-ar', txtAr);
+      sub.setAttribute('data-en', txtEn);
+    }
+
+    // Strategy badge
+    const STR_LBL = {avoid:['تجنّب','Avoid'],reduce:['تقليل','Reduce'],transfer:['تحويل','Transfer'],accept:['قبول','Accept']};
+    const STATUS_LBL = {notStarted:['لم تبدأ','Not Started','#64748b'],inProgress:['قيد التنفيذ','In Progress','#3b82f6'],completed:['مكتملة','Completed','#10b981'],overdue:['متأخرة','Overdue','#ef4444']};
+    const PRIO_LBL = {high:['عالية الأولوية','High Priority'],medium:['متوسطة الأولوية','Medium Priority'],low:['منخفضة الأولوية','Low Priority']};
+
+    const badges = document.querySelectorAll('#overview span[style*="border-radius:999px"]');
+    if(badges[0] && STR_LBL[t.strategy]){
+      badges[0].textContent = STR_LBL[t.strategy][0];
+      badges[0].setAttribute('data-ar', STR_LBL[t.strategy][0]);
+      badges[0].setAttribute('data-en', STR_LBL[t.strategy][1]);
+    }
+    if(badges[1] && STATUS_LBL[t.status]){
+      badges[1].textContent = STATUS_LBL[t.status][0];
+      badges[1].setAttribute('data-ar', STATUS_LBL[t.status][0]);
+      badges[1].setAttribute('data-en', STATUS_LBL[t.status][1]);
+      badges[1].style.background = STATUS_LBL[t.status][2];
+    }
+    if(badges[2] && PRIO_LBL[t.priority]){
+      badges[2].textContent = PRIO_LBL[t.priority][0];
+      badges[2].setAttribute('data-ar', PRIO_LBL[t.priority][0]);
+      badges[2].setAttribute('data-en', PRIO_LBL[t.priority][1]);
+    }
+
+    // Meta cards
+    function setMetaVal(idx, val, valEn){
+      const v = document.querySelectorAll('.meta-card .val')[idx];
+      if(v && val){
+        v.textContent = val;
+        v.setAttribute('data-ar', val);
+        v.setAttribute('data-en', valEn||val);
+      }
+    }
+    setMetaVal(0, t.departmentAr, t.departmentEn);
+    setMetaVal(1, t.responsibleName, t.responsibleNameEn);
+    setMetaVal(2, t.riskOwnerName, t.riskOwnerName);
+    if(t.startDate) setMetaVal(4, new Date(t.startDate).toISOString().slice(0,10));
+    if(t.dueDate) setMetaVal(5, new Date(t.dueDate).toISOString().slice(0,10));
+
+    // Progress
+    const progSpan = document.querySelector('span[style*="font-size:1.5rem"]');
+    if(progSpan) progSpan.textContent = (t.progress||0) + '%';
+    const progBar = document.querySelector('div[style*="background:#fff;border-radius:999px;box-shadow"]');
+    if(progBar) progBar.style.width = (t.progress||0) + '%';
+
+    // Risk scores - update score-tile values
+    const scoreVals = document.querySelectorAll('.score-tile .val');
+    if(scoreVals[0]) scoreVals[0].textContent = t.inherentScore || '—';
+    if(scoreVals[1]) scoreVals[1].textContent = t.residualScore || '—';
+    if(scoreVals[2]) scoreVals[2].textContent = t.expectedResidualScore || '—';
+    if(scoreVals[3] && t.inherentScore && t.residualScore) {
+      scoreVals[3].textContent = Math.round((t.inherentScore - (t.expectedResidualScore || t.residualScore))/t.inherentScore*100) + '%';
+    }
+
+    // Justification text
+    const justification = document.querySelector('.card p[data-ar*="تذبذب"]');
+    if(justification && t.justificationAr){
+      justification.textContent = t.justificationAr;
+      justification.setAttribute('data-ar', t.justificationAr);
+      justification.setAttribute('data-en', t.justificationEn || t.justificationAr);
+    }
+
+    // Override TASKS list with real
+    if(t.tasks && t.tasks.length){
+      window.__realTasks = t.tasks.map((tk,i) => ({
+        n: i+1,
+        ta: tk.titleAr || '—',
+        te: tk.titleEn || tk.titleAr || '—',
+        status: tk.status || 'notStarted',
+        prio: 'medium',
+        assignee: [tk.assigneeName||'—', tk.assigneeName||'—', tk.assigneeEmail||''],
+        monitor: [tk.monitorName||'—', tk.monitorName||'—', tk.monitorEmail||''],
+        due: tk.dueDate ? new Date(tk.dueDate).toISOString().slice(0,10) : '—',
+        done: null, att: null,
+        steps: [], upd: 0
+      }));
+    }
+  } else {
+    // No data found — keep hardcoded preview
+    console.warn('Treatment plan not found in snapshot', id);
+  }
+
   // ===== Tasks =====
   const STATUS_LBL={completed:['مكتملة','Completed','#10b981','check-circle-2'],inProgress:['قيد التنفيذ','In Progress','#3b82f6','play'],notStarted:['لم تبدأ','Not Started','#64748b','circle-dot']};
-  const TASKS=[
+  const TASKS=(window.__realTasks && window.__realTasks.length) ? window.__realTasks : [
     {n:1,ta:'تحليل تقلبات أسعار النحاس على آخر 18 شهراً',te:'Analyze copper price volatility over last 18 months',status:'completed',prio:'high',assignee:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],monitor:['نواف باقاسي','Nawaf Bagasi','n.bagasi@saudicable.com'],due:'2026-02-28',done:'2026-02-25',att:'تحليل-LME-Q1.xlsx',steps:[{t:'سحب بيانات LME',s:'completed'},{t:'بناء نموذج تذبذب',s:'completed'},{t:'تقرير ملخص للجنة',s:'completed'}],upd:2},
     {n:2,ta:'التفاوض على عقود تحوّط ستة أشهر — 60% من الاحتياج',te:'Negotiate 6-month hedge contracts — 60% of demand',status:'completed',prio:'high',assignee:['أحلام تركستاني','Ahlam Turkistani','a.turkistani@saudicable.com'],monitor:['ماجد الدوسري','Majed Al-Dossari','m.dossari@saudicable.com'],due:'2026-04-15',done:'2026-04-10',att:'Hedge-Contracts-Signed.pdf',steps:[{t:'اختيار البنوك الوسيطة',s:'completed'},{t:'مراجعة الشروط من القانونية',s:'completed'},{t:'توقيع وإيداع',s:'completed'}],upd:4},
     {n:3,ta:'مراجعة سياسة التسعير مع كبار العملاء',te:'Revise pricing policy with key customers',status:'completed',prio:'medium',assignee:['نورة الغامدي','Nora Al-Ghamdi','n.ghamdi@saudicable.com'],monitor:['نواف باقاسي','Nawaf Bagasi','n.bagasi@saudicable.com'],due:'2026-05-30',done:'2026-05-22',att:'Pricing-Policy-v3.docx',steps:[{t:'مسوّدة جديدة',s:'completed'},{t:'موافقة لجنة الاستثمار',s:'completed'}],upd:3},

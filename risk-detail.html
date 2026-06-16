@@ -215,18 +215,112 @@
 
 </div>
 <script>
-window.ermInit=function(){
+window.ermInit=async function(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const risks = await window.ermLoad('risks') || [];
+  const treatments = await window.ermLoad('treatments') || [];
+  const r = id ? risks.find(x => x.id === id) : risks[0];
+
+  if(r){
+    // Update sticky nav risk code
+    const riskCode = document.querySelector('code.mono');
+    if(riskCode) riskCode.textContent = r.riskNumber || riskCode.textContent;
+
+    // Update title in hero
+    const h1 = document.querySelector('#overview h1');
+    if(h1){
+      h1.textContent = r.titleAr || h1.textContent;
+      h1.setAttribute('data-ar', r.titleAr || '');
+      h1.setAttribute('data-en', r.titleEn || r.titleAr || '');
+    }
+    const sub = document.querySelector('#overview h1 + p');
+    if(sub && r.departmentAr){
+      const txt = r.departmentAr + ' · ' + (r.categoryAr || '—');
+      sub.textContent = txt;
+      sub.setAttribute('data-ar', txt);
+      sub.setAttribute('data-en', (r.departmentEn||r.departmentAr) + ' · ' + (r.categoryEn||r.categoryAr||'—'));
+    }
+
+    // Category badges in hero
+    const catBadges = document.querySelectorAll('#overview span[style*="border-radius:999px"]');
+    if(catBadges[0] && r.categoryAr){
+      catBadges[0].textContent = r.categoryAr;
+      catBadges[0].setAttribute('data-ar', r.categoryAr);
+      catBadges[0].setAttribute('data-en', r.categoryEn||r.categoryAr);
+    }
+
+    // Meta cards
+    function setMetaVal(idx, val, valEn){
+      const v = document.querySelectorAll('.meta-card .val')[idx];
+      if(v && val){ v.textContent = val; v.setAttribute('data-ar', val); v.setAttribute('data-en', valEn||val); }
+    }
+    setMetaVal(0, r.ownerName, r.ownerNameEn);
+    setMetaVal(1, r.championName, r.championNameEn);
+
+    // Inline scores
+    const inlineNumbers = document.querySelectorAll('div[style*="rgba(255,255,255,.15)"] p[style*="font-size:1.8rem"]');
+    if(inlineNumbers[0]) inlineNumbers[0].textContent = r.inherentScore || '—';
+    if(inlineNumbers[1]) inlineNumbers[1].textContent = r.residualScore || '—';
+    if(inlineNumbers[2]) inlineNumbers[2].textContent = r.treatmentCount || 0;
+    // 5x5 pair labels
+    const pairLbls = document.querySelectorAll('div[style*="rgba(255,255,255,.15)"] p[style*="font-size:.7rem"]:nth-child(3)');
+    if(r.inherentLikelihood && r.inherentImpact && pairLbls[0]) pairLbls[0].textContent = r.inherentLikelihood + ' × ' + r.inherentImpact;
+    if(r.residualLikelihood && r.residualImpact && pairLbls[1]) pairLbls[1].textContent = r.residualLikelihood + ' × ' + r.residualImpact;
+
+    // Description, cause, impact, controls
+    function setBlock(selector, val){
+      const el = document.querySelector(selector);
+      if(el && val){ el.textContent = val; el.setAttribute('data-ar', val); }
+    }
+    const fbs = document.querySelectorAll('.field-block p');
+    if(fbs[0] && r.descriptionAr){ fbs[0].textContent = r.descriptionAr; fbs[0].setAttribute('data-ar', r.descriptionAr); fbs[0].setAttribute('data-en', r.descriptionEn||r.descriptionAr); }
+    if(fbs[1] && r.causeAr){ fbs[1].textContent = r.causeAr; fbs[1].setAttribute('data-ar', r.causeAr); fbs[1].setAttribute('data-en', r.causeEn||r.causeAr); }
+    if(fbs[2] && r.impactAr){ fbs[2].textContent = r.impactAr; fbs[2].setAttribute('data-ar', r.impactAr); fbs[2].setAttribute('data-en', r.impactEn||r.impactAr); }
+    if(fbs[3] && r.existingControlsAr){ fbs[3].textContent = r.existingControlsAr; fbs[3].setAttribute('data-ar', r.existingControlsAr); fbs[3].setAttribute('data-en', r.existingControlsEn||r.existingControlsAr); }
+
+    // Assessment scores
+    const scoreVals = document.querySelectorAll('.score-tile .val');
+    if(scoreVals[0]) scoreVals[0].textContent = r.inherentScore || '—';
+    if(scoreVals[1]) scoreVals[1].textContent = r.residualScore || '—';
+    if(scoreVals[2] && r.inherentScore){
+      scoreVals[2].textContent = Math.round((r.inherentScore - r.residualScore)/r.inherentScore*100) + '%';
+    }
+
+    // Override PLANS with real treatments for this risk
+    const myPlans = treatments.filter(t => t.riskNumber === r.riskNumber);
+    if(myPlans.length){
+      window.__realPlans = myPlans.map(t => ({
+        id: t.id,
+        ta: t.titleAr || '—',
+        te: t.titleEn || t.titleAr || '—',
+        str: t.strategy || 'reduce',
+        prog: t.progress || 0,
+        resp_ar: t.responsibleName || '—',
+        resp_en: t.responsibleNameEn || t.responsibleName || '—',
+        due: t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '—',
+        st: t.status || 'notStarted',
+      }));
+    }
+
+    // Mini matrices: pass inherent and residual
+    window.__matrixHighlight = {
+      inh: { l: r.inherentLikelihood, i: r.inherentImpact },
+      res: { l: r.residualLikelihood, i: r.residualImpact },
+    };
+  }
+
 
   // mini matrices
   const col=(l,i)=>{const s=l*i;return s>=20?'#dc2626':s>=15?'#f97316':s>=10?'#eab308':s>=5?'#22c55e':'#3b82f6';};
   const buildMini=(highlightL,highlightI)=>{let h='';for(let l=5;l>=1;l--) for(let i=1;i<=5;i++){const isHi=(l===highlightL&&i===highlightI);h+=`<div class="matrix-mini-cell" style="background:${col(l,i)};${isHi?'box-shadow:0 0 0 3px #fff,0 0 0 5px var(--primary);transform:scale(1.05)':''}">${l*i}</div>`;}return h;};
-  document.getElementById('matrixIn').innerHTML=buildMini(5,5);
-  document.getElementById('matrixRes').innerHTML=buildMini(3,5);
+  document.getElementById('matrixIn').innerHTML=buildMini(window.__matrixHighlight?.inh?.l||5, window.__matrixHighlight?.inh?.i||5);
+  document.getElementById('matrixRes').innerHTML=buildMini(window.__matrixHighlight?.res?.l||3, window.__matrixHighlight?.res?.i||5);
 
   // treatment plans linked to this risk
   const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
   const STATUS={completed:['مكتملة','Completed','#10b981'],inProgress:['قيد التنفيذ','In Progress','#3b82f6'],overdue:['متأخرة','Overdue','#ef4444'],notStarted:['لم تبدأ','Not Started','#64748b']};
-  const PLANS=[
+  const PLANS=(window.__realPlans && window.__realPlans.length) ? window.__realPlans.map(p => ({...p})) : [
     {id:'TP-014',ta:'خطة تحوّط أسعار النحاس',te:'Copper price hedging plan',str:'reduce',prog:75,resp_ar:'ماجد الدوسري',resp_en:'Majed Al-Dossari',due:'2026-08-31',st:'inProgress'},
     {id:'TP-101',ta:'مراجعة سياسة التسعير ديناميكياً',te:'Dynamic pricing policy review',str:'reduce',prog:100,resp_ar:'نورة الغامدي',resp_en:'Nora Al-Ghamdi',due:'2026-05-30',st:'completed'},
     {id:'TP-102',ta:'بوليصة تأمين مخزون المواد الخام',te:'Raw-material inventory insurance',str:'transfer',prog:100,resp_ar:'خالد الزهراني',resp_en:'Khaled Al-Zahrani',due:'2026-04-15',st:'completed'},
@@ -236,7 +330,7 @@ window.ermInit=function(){
     const[sa,se,sc]=STR[p.str];const[ssa,sse,ssc]=STATUS[p.st];
     const pc=p.prog>=80?'#10b981':p.prog>=40?'#F39200':'#ef4444';
     return `<tr style="cursor:pointer" onclick="window.location.href='treatment-detail.html?id=${p.id}'">
-      <td><code class="mono">${p.id}</code></td>
+      <td><code class="mono">${(p.id||"").length>6?"TP-"+p.id.slice(-6).toUpperCase():p.id}</code></td>
       <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${p.ta}" data-en="${p.te}">${p.ta}</p></td>
       <td><span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span></td>
       <td><div style="display:flex;align-items:center;gap:.5rem;min-width:140px"><div class="progress" style="flex:1;height:.4rem"><span style="width:${p.prog}%;background:${pc}"></span></div><span style="font-size:.78rem;font-weight:600;color:${pc};min-width:2.5rem;text-align:end">${p.prog}%</span></div></td>

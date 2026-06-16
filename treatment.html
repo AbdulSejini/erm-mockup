@@ -65,38 +65,62 @@
 
 </div>
 <script>
-window.ermInit=function(){
+window.ermInit=async function(){
+  const stats = await window.ermLoad('stats');
+  const treatments = await window.ermLoad('treatments') || [];
+  const STATUS_LBL={notStarted:['لم تبدأ','Not Started','#64748b'],inProgress:['قيد التنفيذ','In Progress','#3b82f6'],completed:['مكتملة','Completed','#10b981'],overdue:['متأخرة','Overdue','#ef4444'],cancelled:['ملغية','Cancelled','#a855f7']};
+
+  const total = stats?.counts?.treatments ?? treatments.length;
+  const byStatus = stats?.byStatus || {};
+  const inProgress = byStatus.inProgress || 0;
+  const completed = byStatus.completed || 0;
+  const overdue = byStatus.overdue || 0;
+
   document.getElementById('tstats').innerHTML=[
-    ['الإجمالي','Total',552,'#F39200','clipboard-list'],
-    ['قيد التنفيذ','In Progress',218,'#3b82f6','play'],
-    ['مكتملة','Completed',287,'#10b981','check-circle'],
-    ['متأخرة','Overdue',47,'#ef4444','clock']
+    ['الإجمالي','Total',total,'#F39200','clipboard-list'],
+    ['قيد التنفيذ','In Progress',inProgress,'#3b82f6','play'],
+    ['مكتملة','Completed',completed,'#10b981','check-circle'],
+    ['متأخرة','Overdue',overdue,'#ef4444','clock']
   ].map(([ar,en,v,c,ic])=>`<div class="stat-tile"><div class="glow" style="background:${c}"></div><div style="position:relative;display:flex;align-items:center;justify-content:space-between"><div><p class="muted" style="margin:0;font-size:.8rem" data-ar="${ar}" data-en="${en}">${ar}</p><p style="margin:.25rem 0 0;font-size:1.875rem;font-weight:700;color:${c}">${v}</p></div><div style="display:flex;height:3rem;width:3rem;align-items:center;justify-content:center;border-radius:.9rem;background:${c}1f;color:${c}"><i data-lucide="${ic}"></i></div></div></div>`).join('');
 
+  // Update pagination label
+  const pageSize = 12;
+  const pageLabel = document.querySelector('span[data-ar^="عرض"]');
+  if(pageLabel){ pageLabel.textContent = `عرض 1–${Math.min(pageSize,total)} من ${total}`; pageLabel.setAttribute('data-ar', `عرض 1–${Math.min(pageSize,total)} من ${total}`); pageLabel.setAttribute('data-en', `Showing 1–${Math.min(pageSize,total)} of ${total}`); }
+
   const STR={avoid:['تجنّب','Avoid','#dc2626'],reduce:['تقليل','Reduce','#F39200'],transfer:['تحويل','Transfer','#3b82f6'],accept:['قبول','Accept','#10b981']};
-  const P=[
-    ['TP-014','خطة تحوّط أسعار النحاس','Copper price hedging plan','R-001','reduce',75,3,4,'ماجد الدوسري','Majed Al-Dossari','2026-08-31','قيد التنفيذ','In Progress','#3b82f6'],
-    ['TP-015','تنويع قاعدة الموردين','Supplier base diversification','R-002','reduce',40,2,5,'سعاد البيشي','Suaad Al-Bishi','2026-07-15','قيد التنفيذ','In Progress','#3b82f6'],
-    ['TP-016','تحديث ضوابط الأمن السيبراني','Cybersecurity controls upgrade','R-006','reduce',60,3,5,'فهد الشمري','Fahad Al-Shamri','2026-06-10','متأخرة','Overdue','#ef4444'],
-    ['TP-017','بوليصة تأمين شاملة على الأصول','Comprehensive asset insurance','R-003','transfer',100,4,4,'خالد الزهراني','Khaled Al-Zahrani','2026-05-20','مكتملة','Completed','#10b981'],
-    ['TP-018','برنامج السلامة المهنية المعزّز','Enhanced HSE program','R-005','reduce',20,1,6,'ياسر الشهراني','Yasser Al-Shahrani','2026-09-01','قيد التنفيذ','In Progress','#3b82f6'],
-    ['TP-019','قبول مخاطر تركّز العملاء','Accept customer concentration','R-007','accept',100,1,1,'نورة الغامدي','Nora Al-Ghamdi','2026-04-30','مكتملة','Completed','#10b981'],
-  ];
-  document.getElementById('plans').innerHTML=P.map(([id,ta,te,rn,str,prog,td,tt,oa,oe,due,sa,se,sc])=>{const[sar,sen,strc]=STR[str];const pc=prog>=80?'#10b981':prog>=40?'#F39200':'#ef4444';return `
-    <a href="treatment-detail.html?id=${id}" class="card" style="display:block;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''"><div class="card-pad">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-        <div style="display:flex;align-items:center;gap:.5rem"><code class="mono">${id}</code><span class="chip" style="background:${strc}1f;color:${strc}" data-ar="${sar}" data-en="${sen}">${sar}</span></div>
-        <span class="chip" style="background:${sc}1f;color:${sc}" data-ar="${sa}" data-en="${se}">${sa}</span>
+  const sample = treatments.slice(0, pageSize);
+  document.getElementById('plans').innerHTML = sample.map(t=>{
+    const strInfo = STR[t.strategy] || ['—','—','#64748b'];
+    const [sar,sen,strc] = strInfo;
+    const statInfo = STATUS_LBL[t.status] || ['—','—','#64748b'];
+    const [statAr,statEn,statC] = statInfo;
+    const prog = t.progress || 0;
+    const pc = prog>=80?'#10b981':prog>=40?'#F39200':'#ef4444';
+    const totalTasks = t.tasks?.length || 0;
+    const doneTasks = (t.tasks||[]).filter(x=>x.status==='completed').length;
+    const due = t.dueDate ? new Date(t.dueDate).toISOString().slice(0,10) : '—';
+    const oa = t.responsibleName || '—';
+    const oe = t.responsibleNameEn || oa;
+    const titleAr = (t.titleAr || '—').replace(/"/g,'&quot;');
+    const titleEn = (t.titleEn || titleAr).replace(/"/g,'&quot;');
+    const tpId = (t.id||'').slice(-6).toUpperCase();
+    return `
+    <a href="treatment-detail.html?id=${t.id}" class="card" style="display:block;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''"><div class="card-pad">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.5rem">
+        <div style="display:flex;align-items:center;gap:.5rem;min-width:0"><code class="mono" style="flex-shrink:0">TP-${tpId}</code><span class="chip" style="background:${strc}1f;color:${strc};flex-shrink:0" data-ar="${sar}" data-en="${sen}">${sar}</span></div>
+        <span class="chip" style="background:${statC}1f;color:${statC};flex-shrink:0" data-ar="${statAr}" data-en="${statEn}">${statAr}</span>
       </div>
-      <p style="margin:0 0 .35rem;font-size:1rem;font-weight:600;color:var(--foreground)" data-ar="${ta}" data-en="${te}">${ta}</p>
-      <div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem" class="muted"><i data-lucide="link" style="width:.85rem;height:.85rem"></i><span data-ar="مرتبطة بـ" data-en="Linked to">مرتبطة بـ</span> <code class="mono">${rn}</code></div>
+      <p style="margin:0 0 .35rem;font-size:.95rem;font-weight:600;color:var(--foreground);line-height:1.4" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem" class="muted"><i data-lucide="link" style="width:.85rem;height:.85rem"></i><span data-ar="مرتبطة بـ" data-en="Linked to">مرتبطة بـ</span> <code class="mono">${t.riskNumber||'—'}</code></div>
       <div style="margin-top:.75rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.25rem" class="muted"><span data-ar="التقدم" data-en="Progress">التقدم</span><span>${prog}%</span></div><div class="progress"><span style="width:${prog}%;background:${pc}"></span></div></div>
-      <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:1rem;font-size:.78rem" class="muted">
-        <span><i data-lucide="check-square" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="المهام" data-en="Tasks">المهام</span>: ${td}/${tt}</span>
+      <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.85rem;font-size:.75rem" class="muted">
+        <span><i data-lucide="check-square" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${doneTasks}/${totalTasks}</span>
         <span><i data-lucide="user" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> <span data-ar="${oa}" data-en="${oe}">${oa}</span></span>
         <span><i data-lucide="calendar" style="width:.85rem;height:.85rem;vertical-align:-2px"></i> ${due}</span>
       </div>
-    </div></a>`;}).join('');
+    </div></a>`;
+  }).join('');
   if(window.lucide) lucide.createIcons(); window.ermApplyLang();
 };
 </script>
