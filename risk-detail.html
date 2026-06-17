@@ -400,15 +400,26 @@ const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realP
   });
 
   // ===== Edit Risk Modal =====
-  document.getElementById('editBtn')?.addEventListener('click', () => {
+  document.getElementById('editBtn')?.addEventListener('click', async () => {
     const rk = r || risks[0];
     if(!rk){ alert('No data'); return; }
     const isAr = window.ermLang() === 'ar';
-    // Collect unique categories + departments + owners from data
-    const cats = Array.from(new Set(risks.map(x => x.categoryAr).filter(Boolean))).sort();
-    const depts = Array.from(new Set(risks.map(x => x.departmentAr).filter(Boolean))).sort();
-    const owners = Array.from(new Set(risks.map(x => x.ownerName).filter(Boolean))).sort();
-    const champs = Array.from(new Set(risks.map(x => x.championName).filter(Boolean))).sort();
+    // Load full master lists from snapshot (not just values seen in risks.json)
+    const [championsList, ownersList, categoriesList, deptsList] = await Promise.all([
+      window.ermLoad('champions'),
+      window.ermLoad('riskOwners'),
+      window.ermLoad('categories'),
+      window.ermLoad('departments'),
+    ]);
+    const champs = (championsList || []).map(c => c.fullName).filter(Boolean).sort();
+    const owners = (ownersList || []).map(o => o.fullName).filter(Boolean).sort();
+    const cats = (categoriesList || []).map(c => c.nameAr).filter(Boolean).sort();
+    const depts = (deptsList || []).map(d => d.nameAr).filter(Boolean).sort();
+    // Fall back to values seen in risks if the lookup file is missing
+    if(!champs.length) champs.push(...Array.from(new Set(risks.map(x => x.championName).filter(Boolean))).sort());
+    if(!owners.length) owners.push(...Array.from(new Set(risks.map(x => x.ownerName).filter(Boolean))).sort());
+    if(!cats.length) cats.push(...Array.from(new Set(risks.map(x => x.categoryAr).filter(Boolean))).sort());
+    if(!depts.length) depts.push(...Array.from(new Set(risks.map(x => x.departmentAr).filter(Boolean))).sort());
 
     function sel(id, val, options, ph){
       return `<select id="${id}" class="input">${ph?`<option value="">${ph}</option>`:''}${options.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('')}</select>`;

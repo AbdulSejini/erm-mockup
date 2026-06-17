@@ -75,6 +75,18 @@ async function main() {
     },
   });
 
+  console.log('Fetching categories + risk owners...');
+  const categories = await prisma.riskCategory.findMany({
+    select: { id:true, code:true, nameAr:true, nameEn:true },
+    orderBy: { nameAr: 'asc' },
+  });
+  const riskOwners = await prisma.riskOwner.findMany({
+    where: { isActive: true },
+    select: { id:true, fullName:true, fullNameEn:true, email:true,
+      department: { select:{ nameAr:true, nameEn:true } } },
+    orderBy: { fullName: 'asc' },
+  });
+
   console.log('Fetching notifications...');
   const notifications = await prisma.notification.findMany({
     take: 20,
@@ -232,6 +244,8 @@ async function main() {
   }))));
 
   writeFileSync(`${outDir}/notifications.json`, JSON.stringify(notifications));
+  writeFileSync(`${outDir}/categories.json`, JSON.stringify(categories.map(c=>({ id:c.id, code:c.code, nameAr:c.nameAr, nameEn:c.nameEn }))));
+  writeFileSync(`${outDir}/riskOwners.json`, JSON.stringify(riskOwners.map(o=>({ id:o.id, fullName:o.fullName, fullNameEn:o.fullNameEn, email:o.email, departmentAr:o.department?.nameAr, departmentEn:o.department?.nameEn }))));
 
   writeFileSync(`${outDir}/discussions.json`, JSON.stringify(allDiscussions.map(d=>({
     id: d.id, type: d.type, content: d.content,
