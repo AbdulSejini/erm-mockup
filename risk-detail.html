@@ -274,10 +274,25 @@ window.ermInit=async function(){
       if(el && val){ el.textContent = val; el.setAttribute('data-ar', val); }
     }
     const fbs = document.querySelectorAll('.field-block p');
-    if(fbs[0] && r.descriptionAr){ fbs[0].textContent = r.descriptionAr; fbs[0].setAttribute('data-ar', r.descriptionAr); fbs[0].setAttribute('data-en', r.descriptionEn||r.descriptionAr); }
-    if(fbs[1] && r.causeAr){ fbs[1].textContent = r.causeAr; fbs[1].setAttribute('data-ar', r.causeAr); fbs[1].setAttribute('data-en', r.causeEn||r.causeAr); }
-    if(fbs[2] && r.impactAr){ fbs[2].textContent = r.impactAr; fbs[2].setAttribute('data-ar', r.impactAr); fbs[2].setAttribute('data-en', r.impactEn||r.impactAr); }
-    if(fbs[3] && r.existingControlsAr){ fbs[3].textContent = r.existingControlsAr; fbs[3].setAttribute('data-ar', r.existingControlsAr); fbs[3].setAttribute('data-en', r.existingControlsEn||r.existingControlsAr); }
+    // Always write the loaded value — even if empty — so leftover hardcoded
+    // placeholder text from the HTML doesn't bleed through when the field is blank.
+    const dashAr = '— لم يُسجّل —';
+    const dashEn = '— Not recorded —';
+    function setField(el, ar, en){
+      if(!el) return;
+      const v = (ar||'').trim();
+      const ven = (en||'').trim() || v;
+      const noData = !v;
+      el.textContent = noData ? dashAr : v;
+      el.setAttribute('data-ar', noData ? dashAr : v);
+      el.setAttribute('data-en', noData ? dashEn : ven);
+      el.style.color = noData ? 'var(--foreground-muted)' : '';
+      el.style.fontStyle = noData ? 'italic' : '';
+    }
+    setField(fbs[0], r.descriptionAr, r.descriptionEn);
+    setField(fbs[1], r.causeAr, r.causeEn);
+    setField(fbs[2], r.impactAr, r.impactEn);
+    setField(fbs[3], r.existingControlsAr, r.existingControlsEn);
 
     // Assessment scores
     const scoreVals = document.querySelectorAll('.score-tile .val');
