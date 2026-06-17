@@ -112,8 +112,12 @@ async function main() {
   const byDept: Record<string, { ar:string; en:string; total:number; critical:number; major:number; moderate:number; minor:number; negligible:number; withPlans:number; mitigated:number; inhAvg:number; resAvg:number; inhSum:number; resSum:number } > = {};
 
   // Only rated risks count toward totals — unrated (pending approval) are excluded
-  // Only RATED + NOT-DELETED risks count toward portfolio totals
-  const ratedRisks = risks.filter(r => !r.isDeleted && r.residualRating && r.residualRating !== 'Unknown');
+  // Only RATED + NOT-DELETED risks count toward portfolio totals.
+  // 'deleted' = isDeleted flag OR legacy status ∈ {delete, n/a} which the user
+  // also treats as removed from the active register.
+  const isRiskDeleted = (r: { isDeleted:boolean; status:string|null }) =>
+    r.isDeleted || ['delete','deleted','n/a','N/A','NA'].includes(r.status||'');
+  const ratedRisks = risks.filter(r => !isRiskDeleted(r) && r.residualRating && r.residualRating !== 'Unknown');
   for (const r of ratedRisks) {
     byRating[r.residualRating!] = (byRating[r.residualRating!]||0) + 1;
     const k = r.department?.id || 'none';
@@ -195,10 +199,12 @@ async function main() {
     krisAr: r.krisAr, krisEn: r.krisEn,
     departmentAr: r.department?.nameAr, departmentEn: r.department?.nameEn,
     categoryAr: r.category?.nameAr, categoryEn: r.category?.nameEn,
-    // Soft-deleted risks surface as status='deleted' so the role-aware filter
-    // in risks.html hides them from non-Risk-Management viewers automatically.
-    status: r.isDeleted ? 'deleted' : r.status,
-    isDeleted: r.isDeleted, deletedAt: r.deletedAt,
+    // Treat soft-deleted (isDeleted=true OR status in [delete, n/a]) as deleted.
+    // The role-aware filter in risks.html hides these from non-Risk-Management
+    // viewers automatically.
+    status: (r.isDeleted || ['delete','deleted','n/a','N/A','NA'].includes(r.status||'')) ? 'deleted' : r.status,
+    isDeleted: r.isDeleted || ['delete','deleted','n/a','N/A','NA'].includes(r.status||''),
+    deletedAt: r.deletedAt,
     inherentLikelihood: r.inherentLikelihood, inherentImpact: r.inherentImpact,
     inherentScore: r.inherentScore, inherentRating: r.inherentRating,
     residualLikelihood: r.residualLikelihood, residualImpact: r.residualImpact,
