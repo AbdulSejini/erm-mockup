@@ -1,9 +1,9 @@
 {
-  "snapshotAt": "2026-06-17T08:02:05.850Z",
+  "snapshotAt": "2026-06-17T08:07:48.034Z",
   "counts": {
     "risks": 759,
-    "risksAll": 765,
-    "risksUnrated": 6,
+    "risksAll": 798,
+    "risksUnrated": 39,
     "treatments": 551,
     "tasks": 1977,
     "departments": 23,
@@ -23,9 +23,9 @@
     "avoid": 6
   },
   "byStatus": {
-    "notStarted": 527,
+    "notStarted": 526,
     "completed": 5,
-    "inProgress": 16,
+    "inProgress": 17,
     "overdue": 3
   },
   "byDepartment": [

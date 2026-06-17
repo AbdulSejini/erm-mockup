@@ -6,9 +6,10 @@ async function main() {
   const outDir = '/Users/abdulelahsejini/Desktop/ERM-System/data';
   mkdirSync(outDir, { recursive: true });
 
-  console.log('Fetching risks...');
+  console.log('Fetching risks (including soft-deleted)...');
+  // Include soft-deleted risks too — the UI hides them from non-Risk-Management
+  // users but keeps them visible to admins/Risk Managers per the governance rule.
   const risks = await prisma.risk.findMany({
-    where: { isDeleted: false },
     include: {
       department: { select: { id:true, nameAr:true, nameEn:true, code:true } },
       category: { select: { nameAr:true, nameEn:true } },
@@ -111,7 +112,8 @@ async function main() {
   const byDept: Record<string, { ar:string; en:string; total:number; critical:number; major:number; moderate:number; minor:number; negligible:number; withPlans:number; mitigated:number; inhAvg:number; resAvg:number; inhSum:number; resSum:number } > = {};
 
   // Only rated risks count toward totals — unrated (pending approval) are excluded
-  const ratedRisks = risks.filter(r => r.residualRating && r.residualRating !== 'Unknown');
+  // Only RATED + NOT-DELETED risks count toward portfolio totals
+  const ratedRisks = risks.filter(r => !r.isDeleted && r.residualRating && r.residualRating !== 'Unknown');
   for (const r of ratedRisks) {
     byRating[r.residualRating!] = (byRating[r.residualRating!]||0) + 1;
     const k = r.department?.id || 'none';
@@ -193,7 +195,10 @@ async function main() {
     krisAr: r.krisAr, krisEn: r.krisEn,
     departmentAr: r.department?.nameAr, departmentEn: r.department?.nameEn,
     categoryAr: r.category?.nameAr, categoryEn: r.category?.nameEn,
-    status: r.status,
+    // Soft-deleted risks surface as status='deleted' so the role-aware filter
+    // in risks.html hides them from non-Risk-Management viewers automatically.
+    status: r.isDeleted ? 'deleted' : r.status,
+    isDeleted: r.isDeleted, deletedAt: r.deletedAt,
     inherentLikelihood: r.inherentLikelihood, inherentImpact: r.inherentImpact,
     inherentScore: r.inherentScore, inherentRating: r.inherentRating,
     residualLikelihood: r.residualLikelihood, residualImpact: r.residualImpact,
