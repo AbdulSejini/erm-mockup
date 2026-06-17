@@ -278,6 +278,20 @@ async function main() {
     parentId: d.parentId,
   }))));
 
+  // Bake snapshot version into erm-shell.js so the browser breaks its data
+  // cache on the next deploy automatically.
+  try {
+    const shellPath = '/Users/abdulelahsejini/Desktop/ERM-System/erm-shell.js';
+    const fs = await import('fs');
+    let shell = fs.readFileSync(shellPath, 'utf8');
+    const ver = stats.snapshotAt; // ISO timestamp from this run
+    shell = shell.replace(/const SNAPSHOT_VERSION = '[^']*';/, `const SNAPSHOT_VERSION = '${ver}';`);
+    fs.writeFileSync(shellPath, shell);
+    console.log('Stamped erm-shell.js with snapshot version', ver);
+  } catch(e) {
+    console.warn('Could not stamp snapshot version:', e);
+  }
+
   console.log('\n✓ Snapshot written to', outDir);
   console.log('Risks:', risks.length, '· Treatments:', treatments.length, '· Champions:', champions.length, '· Departments:', departments.length, '· Incidents:', incidents.length);
 }

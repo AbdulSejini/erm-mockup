@@ -230,12 +230,20 @@
   });
 
   // ===== Real-data loader =====
+  // Snapshot version is baked at deploy time so the URL changes whenever the
+  // data files change — that gets us cache-busting without forcing a network
+  // round trip on every load.
   window.ermData = {};
   const _cache = {};
+  const SNAPSHOT_VERSION = '2026-06-17T08:48:10.090Z';
   window.ermLoad = async function(name){
     if(_cache[name]) return _cache[name];
     try{
-      const r = await fetch(`data/${name}.json`, {cache:'force-cache'});
+      // No force-cache — let the browser honor the server's Cache-Control
+      // headers + ETag. The ?v=<snapshot> query string changes on every
+      // deploy so stale data can never persist across releases.
+      const url = `data/${name}.json?v=${encodeURIComponent(SNAPSHOT_VERSION)}`;
+      const r = await fetch(url);
       if(!r.ok) throw new Error(r.status);
       const j = await r.json();
       _cache[name] = j;
