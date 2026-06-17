@@ -47,7 +47,7 @@
     </div>
     <div style="margin-inline-start:auto;display:flex;gap:.4rem;flex-wrap:wrap">
       <button id="pdfBtn" class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="file-text" style="width:.9rem;height:.9rem"></i>PDF</button>
-      <button class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="pencil" style="width:.9rem;height:.9rem"></i><span data-ar="تعديل" data-en="Edit">تعديل</span></button>
+      <button id="editBtn" class="btn btn-outline" style="padding:.45rem .7rem"><i data-lucide="pencil" style="width:.9rem;height:.9rem"></i><span data-ar="تعديل" data-en="Edit">تعديل</span></button>
       <button class="btn btn-primary" style="padding:.45rem .7rem"><i data-lucide="plus" style="width:.9rem;height:.9rem"></i><span data-ar="إضافة خطة معالجة" data-en="Add Treatment Plan">إضافة خطة معالجة</span></button>
     </div>
   </div>
@@ -396,6 +396,190 @@ const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realP
           html_en:`<table class="erm-table"><thead><tr><th>Plan No.</th><th>Title</th><th>Responsible</th><th>Progress</th><th>Due</th></tr></thead><tbody>${planRows_en}</tbody></table>`,
         },
       ],
+    });
+  });
+
+  // ===== Edit Risk Modal =====
+  document.getElementById('editBtn')?.addEventListener('click', () => {
+    const rk = r || risks[0];
+    if(!rk){ alert('No data'); return; }
+    const isAr = window.ermLang() === 'ar';
+    // Collect unique categories + departments + owners from data
+    const cats = Array.from(new Set(risks.map(x => x.categoryAr).filter(Boolean))).sort();
+    const depts = Array.from(new Set(risks.map(x => x.departmentAr).filter(Boolean))).sort();
+    const owners = Array.from(new Set(risks.map(x => x.ownerName).filter(Boolean))).sort();
+    const champs = Array.from(new Set(risks.map(x => x.championName).filter(Boolean))).sort();
+
+    function sel(id, val, options, ph){
+      return `<select id="${id}" class="input">${ph?`<option value="">${ph}</option>`:''}${options.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('')}</select>`;
+    }
+    function num(id, val, min, max){
+      return `<select id="${id}" class="input">${Array.from({length:max-min+1},(_,i)=>i+min).map(n => `<option value="${n}" ${n===val?'selected':''}>${n}</option>`).join('')}</select>`;
+    }
+
+    const html = `<div id="editModal" style="position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:1rem">
+      <div style="background:var(--card);border-radius:1rem;width:100%;max-width:840px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.3);overflow:hidden">
+        <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.65rem">
+          <div style="width:2.4rem;height:2.4rem;border-radius:.7rem;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center"><i data-lucide="pencil" style="width:1.15rem;height:1.15rem"></i></div>
+          <div style="flex:1">
+            <h3 style="margin:0;font-size:1.05rem;font-weight:800" data-ar="تعديل الخطر" data-en="Edit Risk">تعديل الخطر</h3>
+            <p class="muted" style="margin:.15rem 0 0;font-size:.75rem">${rk.riskNumber || ''}</p>
+          </div>
+          <button id="editClose" style="background:none;border:0;cursor:pointer;color:var(--foreground-secondary);padding:.4rem;border-radius:.4rem"><i data-lucide="x"></i></button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:1.25rem;display:grid;grid-template-columns:1fr;gap:1rem" id="editFormGrid">
+          <div>
+            <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="عنوان الخطر (عربي)" data-en="Risk Title (Arabic)">عنوان الخطر (عربي)</label>
+            <textarea id="ef_titleAr" class="input" rows="2" dir="rtl">${(rk.titleAr||'').replace(/"/g,'&quot;')}</textarea>
+          </div>
+          <div>
+            <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="عنوان الخطر (إنجليزي)" data-en="Risk Title (English)">عنوان الخطر (إنجليزي)</label>
+            <textarea id="ef_titleEn" class="input" rows="2" dir="ltr">${(rk.titleEn||'').replace(/"/g,'&quot;')}</textarea>
+          </div>
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:.85rem">
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="التصنيف" data-en="Category">التصنيف</label>
+              ${sel('ef_category', rk.categoryAr || '', cats, isAr?'اختر تصنيفاً':'Select category')}
+            </div>
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="الإدارة" data-en="Department">الإدارة</label>
+              ${sel('ef_dept', rk.departmentAr || '', depts, isAr?'اختر الإدارة':'Select dept')}
+            </div>
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="مالك الخطر" data-en="Risk Owner">مالك الخطر</label>
+              ${sel('ef_owner', rk.ownerName || '', owners, isAr?'اختر المالك':'Select owner')}
+            </div>
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="رائد المخاطر" data-en="Champion">رائد المخاطر</label>
+              ${sel('ef_champion', rk.championName || '', champs, isAr?'اختر الرائد':'Select champion')}
+            </div>
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="الحالة" data-en="Status">الحالة</label>
+              <select id="ef_status" class="input">
+                <option value="open" ${rk.status==='open'?'selected':''} ${(!rk.status)?'selected':''}>${isAr?'مفتوح':'Open'}</option>
+                <option value="inTreatment" ${rk.status==='inTreatment'?'selected':''}>${isAr?'قيد المعالجة':'In Treatment'}</option>
+                <option value="mitigated" ${rk.status==='mitigated'?'selected':''}>${isAr?'مُعالج':'Mitigated'}</option>
+                <option value="closed" ${rk.status==='closed'?'selected':''}>${isAr?'مغلق':'Closed'}</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="وصف الخطر" data-en="Description">وصف الخطر</label>
+            <textarea id="ef_descAr" class="input" rows="3" dir="rtl">${(rk.descriptionAr||'').replace(/"/g,'&quot;')}</textarea>
+          </div>
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:.85rem">
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="السبب المحتمل" data-en="Potential Cause">السبب المحتمل</label>
+              <textarea id="ef_causeAr" class="input" rows="3" dir="rtl">${(rk.causeAr||'').replace(/"/g,'&quot;')}</textarea>
+            </div>
+            <div>
+              <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="الأثر المحتمل" data-en="Potential Impact">الأثر المحتمل</label>
+              <textarea id="ef_impactAr" class="input" rows="3" dir="rtl">${(rk.impactAr||'').replace(/"/g,'&quot;')}</textarea>
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="الضوابط الحالية" data-en="Existing Controls">الضوابط الحالية</label>
+            <textarea id="ef_ctrlAr" class="input" rows="3" dir="rtl">${(rk.existingControlsAr||'').replace(/"/g,'&quot;')}</textarea>
+          </div>
+          <div style="padding:1rem;background:linear-gradient(135deg,rgba(243,146,0,.06),rgba(243,146,0,.02));border:1px solid rgba(243,146,0,.25);border-radius:.85rem">
+            <h4 style="margin:0 0 .5rem;font-size:.85rem;font-weight:800;color:var(--primary)" data-ar="الخطر الكامن (قابل للتعديل)" data-en="Inherent Risk (editable)">الخطر الكامن (قابل للتعديل)</h4>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem">
+              <div><label style="display:block;font-size:.72rem;font-weight:600;margin-bottom:.3rem" data-ar="الاحتمالية" data-en="Likelihood">الاحتمالية</label>${num('ef_inhL', rk.inherentLikelihood||3, 1, 5)}</div>
+              <div><label style="display:block;font-size:.72rem;font-weight:600;margin-bottom:.3rem" data-ar="الأثر" data-en="Impact">الأثر</label>${num('ef_inhI', rk.inherentImpact||3, 1, 5)}</div>
+            </div>
+          </div>
+          <div style="padding:1rem;background:rgba(100,116,139,.05);border:1px solid var(--border);border-radius:.85rem">
+            <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem">
+              <i data-lucide="lock" style="width:1rem;height:1rem;color:var(--foreground-secondary);flex-shrink:0;margin-top:.15rem"></i>
+              <div>
+                <h4 style="margin:0;font-size:.85rem;font-weight:800" data-ar="الخطر المتبقي (للقراءة فقط)" data-en="Residual Risk (read-only)">الخطر المتبقي (للقراءة فقط)</h4>
+                <p class="muted" style="margin:.2rem 0 0;font-size:.72rem;line-height:1.5" data-ar="لتعديل الخطر المتبقي يجب إنشاء خطة معالجة معتمدة من مدير المخاطر" data-en="To change residual risk, create an approved treatment plan via Risk Manager">لتعديل الخطر المتبقي يجب إنشاء خطة معالجة معتمدة من مدير المخاطر</p>
+              </div>
+            </div>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem">
+              <div><label style="display:block;font-size:.72rem;font-weight:600;margin-bottom:.3rem" data-ar="الاحتمالية" data-en="Likelihood">الاحتمالية</label><input class="input" disabled value="${rk.residualLikelihood||'—'}" style="opacity:.7"></div>
+              <div><label style="display:block;font-size:.72rem;font-weight:600;margin-bottom:.3rem" data-ar="الأثر" data-en="Impact">الأثر</label><input class="input" disabled value="${rk.residualImpact||'—'}" style="opacity:.7"></div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end;background:var(--background-tertiary)">
+          <button id="editCancel" class="btn btn-outline"><span data-ar="إلغاء" data-en="Cancel">إلغاء</span></button>
+          <button id="editSave" class="btn btn-primary"><i data-lucide="check" style="width:.9rem;height:.9rem"></i><span data-ar="حفظ التغييرات" data-en="Save Changes">حفظ التغييرات</span></button>
+        </div>
+      </div>
+    </div>`;
+    const wrap = document.createElement('div'); wrap.innerHTML = html;
+    document.body.appendChild(wrap.firstElementChild);
+    if(window.lucide) lucide.createIcons();
+    window.ermApplyLang();
+
+    function close(){ document.getElementById('editModal')?.remove(); }
+    document.getElementById('editClose').addEventListener('click', close);
+    document.getElementById('editCancel').addEventListener('click', close);
+    document.getElementById('editModal').addEventListener('click', e => { if(e.target.id === 'editModal') close(); });
+
+    document.getElementById('editSave').addEventListener('click', () => {
+      // Apply edits to in-memory object and re-render hero + scores + descriptions
+      rk.titleAr = document.getElementById('ef_titleAr').value;
+      rk.titleEn = document.getElementById('ef_titleEn').value;
+      rk.categoryAr = document.getElementById('ef_category').value;
+      rk.departmentAr = document.getElementById('ef_dept').value;
+      rk.ownerName = document.getElementById('ef_owner').value;
+      rk.championName = document.getElementById('ef_champion').value;
+      rk.status = document.getElementById('ef_status').value;
+      rk.descriptionAr = document.getElementById('ef_descAr').value;
+      rk.causeAr = document.getElementById('ef_causeAr').value;
+      rk.impactAr = document.getElementById('ef_impactAr').value;
+      rk.existingControlsAr = document.getElementById('ef_ctrlAr').value;
+      rk.inherentLikelihood = parseInt(document.getElementById('ef_inhL').value, 10);
+      rk.inherentImpact = parseInt(document.getElementById('ef_inhI').value, 10);
+      rk.inherentScore = rk.inherentLikelihood * rk.inherentImpact;
+      rk.inherentRating = rk.inherentScore>=20?'Critical':rk.inherentScore>=15?'Major':rk.inherentScore>=10?'Moderate':rk.inherentScore>=5?'Minor':'Negligible';
+
+      // Update DOM
+      const h1 = document.querySelector('#overview h1');
+      if(h1){ h1.textContent = rk.titleAr; h1.setAttribute('data-ar', rk.titleAr); h1.setAttribute('data-en', rk.titleEn || rk.titleAr); }
+      const sub = document.querySelector('#overview h1 + p');
+      if(sub){ sub.textContent = `${rk.departmentAr} · ${rk.categoryAr}`; }
+      // Status badge
+      const stChip = document.querySelector('.card code.mono + .chip + .chip');
+      if(stChip){
+        const STATUS_MAP = {open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#475569']};
+        const sInfo = STATUS_MAP[rk.status] || ['—','—','#64748b'];
+        stChip.textContent = sInfo[0];
+        stChip.setAttribute('data-ar', sInfo[0]);
+        stChip.setAttribute('data-en', sInfo[1]);
+        stChip.style.background = sInfo[2] + '1f';
+        stChip.style.color = sInfo[2];
+      }
+      // Meta cards
+      const metaVals = document.querySelectorAll('.meta-card .val');
+      if(metaVals[0]){ metaVals[0].textContent = rk.ownerName; metaVals[0].setAttribute('data-ar', rk.ownerName); }
+      if(metaVals[1]){ metaVals[1].textContent = rk.championName; metaVals[1].setAttribute('data-ar', rk.championName); }
+      // Inline scores
+      const inlineNumbers = document.querySelectorAll('div[style*="rgba(255,255,255,.15)"] p[style*="font-size:1.8rem"]');
+      if(inlineNumbers[0]) inlineNumbers[0].textContent = rk.inherentScore;
+      // Field blocks
+      const fbs = document.querySelectorAll('.field-block p');
+      if(fbs[0]) fbs[0].textContent = rk.descriptionAr;
+      if(fbs[1]) fbs[1].textContent = rk.causeAr;
+      if(fbs[2]) fbs[2].textContent = rk.impactAr;
+      if(fbs[3]) fbs[3].textContent = rk.existingControlsAr;
+      // Assessment scores
+      const scoreVals = document.querySelectorAll('.score-tile .val');
+      if(scoreVals[0]) scoreVals[0].textContent = rk.inherentScore;
+      // Mini matrix highlight
+      const mIn = document.getElementById('matrixIn');
+      if(mIn) mIn.innerHTML = buildMini(rk.inherentLikelihood, rk.inherentImpact);
+
+      close();
+      // Toast
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;top:5rem;inset-inline-end:1rem;z-index:90;padding:.75rem 1.1rem;border-radius:.7rem;background:#10b981;color:#fff;font-weight:600;font-size:.85rem;box-shadow:0 12px 24px -8px rgba(16,185,129,.6);display:flex;align-items:center;gap:.5rem';
+      t.innerHTML = '<i data-lucide="check-circle-2" style="width:1rem;height:1rem"></i>' + (isAr?'تم حفظ التغييرات':'Changes saved');
+      document.body.appendChild(t);
+      if(window.lucide) lucide.createIcons();
+      setTimeout(() => t.remove(), 2500);
     });
   });
 
