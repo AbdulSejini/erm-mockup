@@ -257,6 +257,10 @@ window.ermInit=async function(){
     }
     setMetaVal(0, r.ownerName, r.ownerNameEn);
     setMetaVal(1, r.championName, r.championNameEn);
+    setMetaVal(2, r.sourceAr, r.sourceEn);
+    if(r.identifiedDate)  setMetaVal(3, new Date(r.identifiedDate).toISOString().slice(0,10));
+    if(r.lastReviewDate)  setMetaVal(4, new Date(r.lastReviewDate).toISOString().slice(0,10));
+    if(r.nextReviewDate)  setMetaVal(5, new Date(r.nextReviewDate).toISOString().slice(0,10));
 
     // Inline scores
     const inlineNumbers = document.querySelectorAll('div[style*="rgba(255,255,255,.15)"] p[style*="font-size:1.8rem"]');

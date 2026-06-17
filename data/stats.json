@@ -1,11 +1,11 @@
 {
-  "snapshotAt": "2026-06-17T08:23:49.763Z",
+  "snapshotAt": "2026-06-17T08:38:00.078Z",
   "counts": {
     "risks": 557,
     "risksAll": 798,
     "risksUnrated": 241,
     "treatments": 551,
-    "tasks": 1976,
+    "tasks": 1975,
     "departments": 23,
     "champions": 16,
     "incidents": 0

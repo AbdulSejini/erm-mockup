@@ -13,6 +13,7 @@ async function main() {
     include: {
       department: { select: { id:true, nameAr:true, nameEn:true, code:true } },
       category: { select: { nameAr:true, nameEn:true } },
+      source: { select: { id:true, nameAr:true, nameEn:true } },
       riskOwner: { select: { id:true, fullName:true, fullNameEn:true, email:true } },
       champion: { select: { id:true, fullName:true, fullNameEn:true, email:true } },
       owner: { select: { id:true, fullName:true, fullNameEn:true, email:true } },
@@ -213,6 +214,10 @@ async function main() {
     championName: r.champion?.fullName, championNameEn: r.champion?.fullNameEn, championEmail: r.champion?.email,
     treatmentCount: r.treatments.length,
     createdAt: r.createdAt,
+    identifiedDate: r.identifiedDate,
+    lastReviewDate: r.lastReviewDate,
+    nextReviewDate: r.nextReviewDate,
+    sourceAr: r.source?.nameAr, sourceEn: r.source?.nameEn,
   }));
 
   const trimmedTreatments = treatments.map(t => ({
