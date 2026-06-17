@@ -1,11 +1,11 @@
 {
-  "snapshotAt": "2026-06-17T08:48:10.090Z",
+  "snapshotAt": "2026-06-17T13:48:26.292Z",
   "counts": {
     "risks": 557,
     "risksAll": 798,
     "risksUnrated": 241,
-    "treatments": 551,
-    "tasks": 1975,
+    "treatments": 570,
+    "tasks": 2058,
     "departments": 23,
     "champions": 16,
     "incidents": 0
@@ -18,14 +18,14 @@
     "Negligible": 46
   },
   "byStrategy": {
-    "reduce": 533,
+    "reduce": 552,
     "transfer": 12,
     "avoid": 6
   },
   "byStatus": {
-    "notStarted": 524,
-    "completed": 6,
-    "inProgress": 18,
+    "notStarted": 536,
+    "completed": 10,
+    "inProgress": 21,
     "overdue": 3
   },
   "byDepartment": [
@@ -166,7 +166,7 @@
       "moderate": 11,
       "minor": 6,
       "negligible": 0,
-      "withPlans": 2,
+      "withPlans": 19,
       "mitigated": 0,
       "inhAvg": 10.5,
       "resAvg": 10.3,
@@ -215,7 +215,7 @@
       "minor": 6,
       "negligible": 1,
       "withPlans": 15,
-      "mitigated": 0,
+      "mitigated": 1,
       "inhAvg": 11.5,
       "resAvg": 11.5,
       "inhSum": 173,
@@ -247,7 +247,7 @@
       "minor": 5,
       "negligible": 0,
       "withPlans": 14,
-      "mitigated": 0,
+      "mitigated": 3,
       "inhAvg": 13.4,
       "resAvg": 13.4,
       "inhSum": 188,
@@ -526,6 +526,6 @@
     }
   ],
   "overdue": 3,
-  "completionRate": 1,
+  "completionRate": 2,
   "avgReduction": 1
 }
