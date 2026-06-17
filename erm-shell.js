@@ -191,6 +191,21 @@
   window.ermLang = ()=>lang;
 
   document.addEventListener('click',e=>{
+    // Prevent sidebar nav from clobbering filters when the user clicks the
+    // link for the page they're already on. Without this, ?dept=الإنتاج&… on
+    // /risks.html gets wiped because the link href is just "risks.html".
+    const navA = e.target.closest('.nav-link');
+    if(navA){
+      const href = navA.getAttribute('href') || '';
+      const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+      if(href === currentPage){
+        e.preventDefault();
+        // Close the mobile drawer if it was open
+        document.getElementById('sidebar')?.classList.remove('open');
+        const ov = document.getElementById('overlay'); if(ov) ov.style.display = 'none';
+        return;
+      }
+    }
     const lb=e.target.closest('.lang-btn'); if(lb){ lang=lb.dataset.lang; window.ermApplyLang(); if(window.lucide) lucide.createIcons(); }
     if(e.target.closest('#themeBtn')){ theme=theme==='dark'?'light':'dark'; applyTheme(); }
     if(e.target.closest('#menuBtn')){ document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').style.display='block'; }
