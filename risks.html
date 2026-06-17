@@ -43,10 +43,12 @@
       </select>
       <select id="fStatus" class="select" style="width:auto">
         <option value="" data-ar="كل الحالات" data-en="All Statuses">كل الحالات</option>
+        <option value="draft" data-ar="مسودة" data-en="Draft">مسودة</option>
         <option value="open" data-ar="مفتوح" data-en="Open">مفتوح</option>
         <option value="inTreatment" data-ar="قيد المعالجة" data-en="In Treatment">قيد المعالجة</option>
         <option value="mitigated" data-ar="مُعالج" data-en="Mitigated">مُعالج</option>
         <option value="closed" data-ar="مغلق" data-en="Closed">مغلق</option>
+        <option value="deleted" data-ar="محذوف" data-en="Deleted" data-rm-only="true">محذوف</option>
       </select>
       <select id="fDept" class="select" style="width:auto"></select>
       <button id="fReset" class="btn btn-outline" style="padding:.5rem .8rem"><i data-lucide="rotate-ccw" style="width:.9rem;height:.9rem"></i><span data-ar="مسح" data-en="Clear">مسح</span></button>
@@ -71,8 +73,23 @@
 window.ermInit=async function(){
   const stats = await window.ermLoad('stats');
   const allRisks = await window.ermLoad('risks') || [];
+  // Current viewer role — admin/riskManager can see deleted risks; others cannot
+  // (impersonation banner overrides; default is admin since the logged-in user is the Risk Manager)
+  const impName = document.getElementById('impName')?.textContent?.trim();
+  const impRole = document.getElementById('impRole')?.textContent?.trim();
+  const impersonating = !!impName && document.getElementById('impBanner')?.style.display !== 'none';
+  const isRiskManagement = !impersonating || /مدير|محلل|Risk Manager|Risk Analyst|Admin/i.test(impRole || '');
   // Exclude unrated (pending) risks from default views — they don't count toward stats
-  const risks = allRisks.filter(r => r.residualRating && r.residualRating !== 'Unknown');
+  // Also exclude deleted risks unless current viewer is part of Risk Management
+  const risks = allRisks.filter(r => {
+    if(!r.residualRating || r.residualRating === 'Unknown') return false;
+    if(r.status === 'deleted' && !isRiskManagement) return false;
+    return true;
+  });
+  // Hide the "Deleted" status option from non-RM users
+  if(!isRiskManagement){
+    document.querySelector('#fStatus option[value="deleted"]')?.remove();
+  }
   const total = stats?.counts?.risks ?? risks.length;
   const byRating = stats?.byRating || {};
   const critical = byRating.Critical || 0;
@@ -87,7 +104,7 @@ window.ermInit=async function(){
   if(tiles[3]) tiles[3].textContent = withPlans;
 
   const RATING={Critical:['حرج','Critical','#ef4444'],Major:['رئيسي','Major','#f97316'],Moderate:['متوسط','Moderate','#eab308'],Minor:['ثانوي','Minor','#22c55e'],Negligible:['ضئيل','Negligible','#3b82f6']};
-  const STATUS={open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#10b981']};
+  const STATUS={draft:['مسودة','Draft','#94a3b8'],open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#475569'],deleted:['محذوف','Deleted','#dc2626']};
 
   // Populate dynamic selects from real data
   const cats  = Array.from(new Set(risks.map(r => r.categoryAr).filter(Boolean))).sort();
@@ -202,9 +219,13 @@ window.ermInit=async function(){
         const [sa,se,sc] = statInfo;
         const titleAr = (r.titleAr||'—').replace(/"/g,'&quot;');
         const titleEn = (r.titleEn||titleAr).replace(/"/g,'&quot;');
-        return `<tr style="cursor:pointer" onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${r.id}'">
-          <td><code class="mono">${r.riskNumber||'—'}</code></td>
-          <td><p style="margin:0;font-weight:500;color:var(--foreground)" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p></td>
+        const isDel = r.status === 'deleted';
+        const reasonAttr = isDel && r.deletedReason ? ` title="سبب الحذف: ${r.deletedReason.replace(/"/g,'&quot;')}"` : '';
+        const rowStyle = isDel ? 'cursor:pointer;background:rgba(220,38,38,.04);opacity:.7' : 'cursor:pointer';
+        const lineThrough = isDel ? 'text-decoration:line-through' : '';
+        return `<tr style="${rowStyle}"${reasonAttr} onclick="if(!event.target.closest('button')) window.location.href='risk-detail.html?id=${r.id}'">
+          <td><code class="mono" style="${lineThrough}">${r.riskNumber||'—'}</code></td>
+          <td><p style="margin:0;font-weight:500;color:var(--foreground);${lineThrough}" data-ar="${titleAr}" data-en="${titleEn}">${titleAr}</p>${isDel && r.deletedReason?`<p class="muted" style="margin:.2rem 0 0;font-size:.7rem;color:#dc2626"><i data-lucide="trash-2" style="width:.7rem;height:.7rem;vertical-align:-1px"></i> ${(r.deletedReason||'').slice(0,80)}</p>`:''}</td>
           <td class="muted" data-ar="${r.categoryAr||'—'}" data-en="${r.categoryEn||r.categoryAr||'—'}">${r.categoryAr||'—'}</td>
           <td class="muted" data-ar="${r.departmentAr||'—'}" data-en="${r.departmentEn||r.departmentAr||'—'}">${r.departmentAr||'—'}</td>
           <td><span class="chip" style="background:${ic}1f;color:${ic}">${r.inherentScore||'—'}</span></td>

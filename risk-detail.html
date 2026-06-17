@@ -456,12 +456,25 @@ const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realP
             <div>
               <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="الحالة" data-en="Status">الحالة</label>
               <select id="ef_status" class="input">
-                <option value="open" ${rk.status==='open'?'selected':''} ${(!rk.status)?'selected':''}>${isAr?'مفتوح':'Open'}</option>
+                <option value="draft" ${rk.status==='draft'?'selected':''}>${isAr?'مسودة':'Draft'}</option>
+                <option value="open" ${rk.status==='open'?'selected':''} ${(!rk.status||rk.status==='active')?'selected':''}>${isAr?'مفتوح':'Open'}</option>
                 <option value="inTreatment" ${rk.status==='inTreatment'?'selected':''}>${isAr?'قيد المعالجة':'In Treatment'}</option>
                 <option value="mitigated" ${rk.status==='mitigated'?'selected':''}>${isAr?'مُعالج':'Mitigated'}</option>
                 <option value="closed" ${rk.status==='closed'?'selected':''}>${isAr?'مغلق':'Closed'}</option>
+                <option value="deleted" ${rk.status==='deleted'?'selected':''} style="color:#dc2626">${isAr?'محذوف':'Deleted'}</option>
               </select>
             </div>
+          </div>
+          <div id="ef_deletedBlock" style="display:${rk.status==='deleted'?'block':'none'};padding:1rem;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.3);border-radius:.85rem">
+            <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.6rem">
+              <i data-lucide="trash-2" style="width:1.1rem;height:1.1rem;color:#dc2626;flex-shrink:0;margin-top:.15rem"></i>
+              <div style="flex:1">
+                <h4 style="margin:0;font-size:.85rem;font-weight:800;color:#dc2626" data-ar="حذف الخطر" data-en="Delete Risk">حذف الخطر</h4>
+                <p class="muted" style="margin:.2rem 0 0;font-size:.72rem;line-height:1.5" data-ar="عند الحذف، يبقى الخطر مرئياً لمنسوبي إدارة المخاطر فقط. لن يظهر للرواد أو الأقسام الأخرى." data-en="Once deleted, the risk remains visible only to Risk Management. Champions and other departments will not see it.">عند الحذف، يبقى الخطر مرئياً لمنسوبي إدارة المخاطر فقط. لن يظهر للرواد أو الأقسام الأخرى.</p>
+              </div>
+            </div>
+            <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem;color:#dc2626" data-ar="سبب الحذف (إلزامي)" data-en="Deletion Reason (required)">سبب الحذف (إلزامي)</label>
+            <textarea id="ef_deletedReason" class="input" rows="2" dir="rtl" placeholder="${isAr?'اشرح سبب حذف هذا الخطر...':'Explain why this risk is being deleted...'}" style="border-color:rgba(239,68,68,.4)">${(rk.deletedReason||'').replace(/"/g,'&quot;')}</textarea>
           </div>
           <div>
             <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:.35rem" data-ar="وصف الخطر" data-en="Description">وصف الخطر</label>
@@ -518,7 +531,28 @@ const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realP
     document.getElementById('editCancel').addEventListener('click', close);
     document.getElementById('editModal').addEventListener('click', e => { if(e.target.id === 'editModal') close(); });
 
+    // Toggle deletion-reason block when status changes
+    document.getElementById('ef_status').addEventListener('change', e => {
+      document.getElementById('ef_deletedBlock').style.display = e.target.value === 'deleted' ? 'block' : 'none';
+      if(e.target.value === 'deleted') document.getElementById('ef_deletedReason').focus();
+    });
+
     document.getElementById('editSave').addEventListener('click', () => {
+      const newStatus = document.getElementById('ef_status').value;
+      if(newStatus === 'deleted'){
+        const reason = document.getElementById('ef_deletedReason').value.trim();
+        if(!reason){
+          alert(isAr ? 'سبب الحذف إلزامي' : 'Deletion reason is required');
+          document.getElementById('ef_deletedReason').focus();
+          return;
+        }
+        if(!confirm(isAr ? `هل تؤكد حذف الخطر ${rk.riskNumber}؟\nسيبقى مرئياً لإدارة المخاطر فقط.` : `Confirm deletion of risk ${rk.riskNumber}?\nWill remain visible only to Risk Management.`)) return;
+        rk.deletedReason = reason;
+        rk.deletedAt = new Date().toISOString();
+      } else {
+        rk.deletedReason = null;
+        rk.deletedAt = null;
+      }
       // Apply edits to in-memory object and re-render hero + scores + descriptions
       rk.titleAr = document.getElementById('ef_titleAr').value;
       rk.titleEn = document.getElementById('ef_titleEn').value;
@@ -544,7 +578,7 @@ const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realP
       // Status badge
       const stChip = document.querySelector('.card code.mono + .chip + .chip');
       if(stChip){
-        const STATUS_MAP = {open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#475569']};
+        const STATUS_MAP = {draft:['مسودة','Draft','#94a3b8'],open:['مفتوح','Open','#3b82f6'],inTreatment:['قيد المعالجة','In Treatment','#f59e0b'],mitigated:['مُعالج','Mitigated','#10b981'],closed:['مغلق','Closed','#475569'],deleted:['محذوف','Deleted','#dc2626']};
         const sInfo = STATUS_MAP[rk.status] || ['—','—','#64748b'];
         stChip.textContent = sInfo[0];
         stChip.setAttribute('data-ar', sInfo[0]);
@@ -574,12 +608,16 @@ const PLANS = (window.__realPlans && window.__realPlans.length) ? window.__realP
 
       close();
       // Toast
+      const wasDeleted = rk.status === 'deleted';
       const t = document.createElement('div');
-      t.style.cssText = 'position:fixed;top:5rem;inset-inline-end:1rem;z-index:90;padding:.75rem 1.1rem;border-radius:.7rem;background:#10b981;color:#fff;font-weight:600;font-size:.85rem;box-shadow:0 12px 24px -8px rgba(16,185,129,.6);display:flex;align-items:center;gap:.5rem';
-      t.innerHTML = '<i data-lucide="check-circle-2" style="width:1rem;height:1rem"></i>' + (isAr?'تم حفظ التغييرات':'Changes saved');
+      const bg = wasDeleted ? '#dc2626' : '#10b981';
+      t.style.cssText = `position:fixed;top:5rem;inset-inline-end:1rem;z-index:90;padding:.75rem 1.1rem;border-radius:.7rem;background:${bg};color:#fff;font-weight:600;font-size:.85rem;box-shadow:0 12px 24px -8px ${bg}99;display:flex;align-items:center;gap:.5rem`;
+      const ic = wasDeleted ? 'trash-2' : 'check-circle-2';
+      const msg = wasDeleted ? (isAr?'تم حذف الخطر — مرئي لإدارة المخاطر فقط':'Risk deleted — visible to Risk Management only') : (isAr?'تم حفظ التغييرات':'Changes saved');
+      t.innerHTML = `<i data-lucide="${ic}" style="width:1rem;height:1rem"></i>${msg}`;
       document.body.appendChild(t);
       if(window.lucide) lucide.createIcons();
-      setTimeout(() => t.remove(), 2500);
+      setTimeout(() => t.remove(), 3000);
     });
   });
 
