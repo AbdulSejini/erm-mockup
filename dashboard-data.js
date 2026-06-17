@@ -3,7 +3,8 @@ window.ermInit = async function(){
   const L = ()=>window.ermLang();
 
   const stats = await window.ermLoad('stats') || {};
-  const risks = await window.ermLoad('risks') || [];
+  const allRisks = await window.ermLoad('risks') || [];
+  const risks = allRisks.filter(r => r.residualRating && r.residualRating !== 'Unknown');
   const treatments = await window.ermLoad('treatments') || [];
   const c = stats.counts || {};
   const byRating = stats.byRating || {};

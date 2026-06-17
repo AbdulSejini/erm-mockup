@@ -1,7 +1,9 @@
 {
-  "snapshotAt": "2026-06-16T10:06:44.185Z",
+  "snapshotAt": "2026-06-17T07:21:10.962Z",
   "counts": {
-    "risks": 765,
+    "risks": 759,
+    "risksAll": 765,
+    "risksUnrated": 6,
     "treatments": 551,
     "tasks": 1977,
     "departments": 23,
@@ -9,7 +11,6 @@
     "incidents": 0
   },
   "byRating": {
-    "Unknown": 6,
     "Critical": 111,
     "Major": 171,
     "Moderate": 206,
@@ -61,22 +62,6 @@
       "resSum": 1145
     },
     {
-      "ar": "الإنتاج",
-      "en": "Production",
-      "total": 70,
-      "critical": 3,
-      "major": 10,
-      "moderate": 19,
-      "minor": 30,
-      "negligible": 7,
-      "withPlans": 70,
-      "mitigated": 0,
-      "inhAvg": 10.5,
-      "resAvg": 10.2,
-      "inhSum": 736,
-      "resSum": 713
-    },
-    {
       "ar": "الموارد البشرية",
       "en": "HR",
       "total": 70,
@@ -93,19 +78,35 @@
       "resSum": 774
     },
     {
+      "ar": "الإنتاج",
+      "en": "Production",
+      "total": 69,
+      "critical": 3,
+      "major": 10,
+      "moderate": 19,
+      "minor": 30,
+      "negligible": 7,
+      "withPlans": 69,
+      "mitigated": 0,
+      "inhAvg": 10.4,
+      "resAvg": 10.3,
+      "inhSum": 716,
+      "resSum": 713
+    },
+    {
       "ar": "الحوكمة",
       "en": "Governance",
-      "total": 67,
+      "total": 64,
       "critical": 8,
       "major": 13,
       "moderate": 22,
       "minor": 20,
       "negligible": 1,
-      "withPlans": 22,
-      "mitigated": 1,
-      "inhAvg": 12.6,
-      "resAvg": 11.8,
-      "inhSum": 845,
+      "withPlans": 20,
+      "mitigated": 0,
+      "inhAvg": 12.4,
+      "resAvg": 12.3,
+      "inhSum": 794,
       "resSum": 790
     },
     {
@@ -287,17 +288,17 @@
     {
       "ar": "الامتثال",
       "en": "Compliance",
-      "total": 9,
+      "total": 7,
       "critical": 3,
       "major": 3,
       "moderate": 1,
       "minor": 0,
       "negligible": 0,
-      "withPlans": 7,
-      "mitigated": 1,
-      "inhAvg": 16.4,
-      "resAvg": 12.9,
-      "inhSum": 148,
+      "withPlans": 6,
+      "mitigated": 0,
+      "inhAvg": 16.6,
+      "resAvg": 16.6,
+      "inhSum": 116,
       "resSum": 116
     },
     {
@@ -405,78 +406,6 @@
   },
   "topRisks": [
     {
-      "id": "cmo9zvlwp00014zdolay23f7l",
-      "riskNumber": "PRD-E-798",
-      "titleAr": "غياب قائمة معتمدة للآلات الحرجة — انكشاف نقطة الفشل الواحدة",
-      "titleEn": "Absence of approved Critical Machines List — Single Point of Failure exposure",
-      "departmentAr": "الإنتاج",
-      "departmentEn": "Production",
-      "inherentScore": 20,
-      "inherentRating": "Critical",
-      "residualScore": null,
-      "residualRating": null
-    },
-    {
-      "id": "cmlsk8er4000le8pkm2iv233m",
-      "riskNumber": "COM-E-797",
-      "titleAr": "الإخلال باتفاقية جدولة مبرمة مع هيئة الزكاة والضريبة والجمارك بعد التفاوض والاتفاق على خطة سداد محددة بجدول زمني وشروط تعاقدية ملزمة.",
-      "titleEn": "Breach of a payment schedule agreement concluded with the Zakat, Tax and Customs Authority after negotiation and agreement on a specific payment plan with a timetable and binding contractual terms.",
-      "departmentAr": "الامتثال",
-      "departmentEn": "Compliance",
-      "inherentScore": 20,
-      "inherentRating": "Critical",
-      "residualScore": null,
-      "residualRating": null
-    },
-    {
-      "id": "cmlsjlvpi0003e8pkfxm2kslt",
-      "riskNumber": "COM-E-796",
-      "titleAr": "تأخر في سداد مستحقات المؤسسة العامة للتأمينات الاجتماعية",
-      "titleEn": "Overdue social insurance (GOSI)",
-      "departmentAr": "الامتثال",
-      "departmentEn": "Compliance",
-      "inherentScore": 12,
-      "inherentRating": "Moderate",
-      "residualScore": null,
-      "residualRating": null
-    },
-    {
-      "id": "cmlsjhck800032pudhj3aydcy",
-      "riskNumber": "GOV-E-795",
-      "titleAr": "انحراف جوهري بنسبة 5% أو أكثر في الاستخدام الفعلي لمتحصلات الطرح",
-      "titleEn": "Material deviation (5%+) in the actual use of offering proceeds from the disclosed allocation",
-      "departmentAr": "الحوكمة",
-      "departmentEn": "Governance",
-      "inherentScore": 16,
-      "inherentRating": "Major",
-      "residualScore": null,
-      "residualRating": null
-    },
-    {
-      "id": "cmlsj9wgo0001bujzdf8bj1rn",
-      "riskNumber": "GOV-E-794",
-      "titleAr": "ارتكاب أمين إجراء إعادة التنظيم المالي المعيّن مخالفات أو إهمال أو تصرفات مخالفة لنظام الإفلاس",
-      "titleEn": "Misconduct, negligence, or bankruptcy law violations by the appointed financial reorganization trustee",
-      "departmentAr": "الحوكمة",
-      "departmentEn": "Governance",
-      "inherentScore": 15,
-      "inherentRating": "Major",
-      "residualScore": null,
-      "residualRating": null
-    },
-    {
-      "id": "cmlsj4urx0003mfjfd4j2zpxs",
-      "riskNumber": "GOV-E-793",
-      "titleAr": "عدم الالتزام بأحكام ومتطلبات إجراء إعادة التنظيم المالي وفقاً لنظام الإفلاس",
-      "titleEn": "Non-compliance with financial reorganization proceedings under the Bankruptcy",
-      "departmentAr": "الحوكمة",
-      "departmentEn": "Governance",
-      "inherentScore": 20,
-      "inherentRating": "Critical",
-      "residualScore": null,
-      "residualRating": null
-    },
-    {
       "id": "cmkiltzr10153qsmyyneppjde",
       "riskNumber": "GOV-E-739",
       "titleAr": "تعاملات مفرطة مع أطراف ذات علاقة",
@@ -523,9 +452,81 @@
       "inherentRating": "Critical",
       "residualScore": 25,
       "residualRating": "Critical"
+    },
+    {
+      "id": "cmkilt9te00vbqsmy1evu7d4s",
+      "riskNumber": "SCD-E-563",
+      "titleAr": "عدم القدرة على تأمين إمدادات كافية من المواد الخام (النحاس، الألمنيوم، PVC) بالكميات والتوقيت المطلوب",
+      "titleEn": "Failure to secure adequate supply of raw materials (copper, aluminum, plastic derivatives) in required quantities and timing",
+      "departmentAr": "سلسلة التوريد",
+      "departmentEn": "Supply Chain",
+      "inherentScore": 25,
+      "inherentRating": "Critical",
+      "residualScore": 25,
+      "residualRating": "Critical"
+    },
+    {
+      "id": "cmkilt5i500tpqsmyd69wcbzm",
+      "riskNumber": "MAR-E-534",
+      "titleAr": "تضرر سمعة العلامة التجارية بسبب تأخيرات التسليم والإخفاقات التشغيلية",
+      "titleEn": "Damage to brand reputation due to operational delivery delays and service failures",
+      "departmentAr": "التسويق",
+      "departmentEn": "Marketing",
+      "inherentScore": 25,
+      "inherentRating": "Critical",
+      "residualScore": 25,
+      "residualRating": "Critical"
+    },
+    {
+      "id": "cmkilsx5100qjqsmy2s6i7gsq",
+      "riskNumber": "HSE-E-477",
+      "titleAr": "عدم كفاية عدد المستجيبين للطوارئ المدربين وموظفي الإسعافات الأولية",
+      "titleEn": "Insufficient number of trained emergency responders and first aid personnel",
+      "departmentAr": "الصحة والسلامة والبيئة",
+      "departmentEn": "HSE",
+      "inherentScore": 25,
+      "inherentRating": "Critical",
+      "residualScore": 25,
+      "residualRating": "Critical"
+    },
+    {
+      "id": "cmkilscr900ivqsmyz8gu4994",
+      "riskNumber": "FIN-E-339",
+      "titleAr": "تقلبات سوق شديدة تتجاوز سيناريوهات المتوقع له، مع تكاليف تحوط عالية تآكل الهوامش وتحديد/تقييم غير كافٍ للمخاطر المالية يؤدي لخسائر كارثية",
+      "titleEn": "Extreme market volatility exceeding stress test scenarios with high hedging costs eroding margins and inadequate identification/assessment of financial risks leading to catastrophic losses",
+      "departmentAr": "المالية",
+      "departmentEn": "Finance",
+      "inherentScore": 25,
+      "inherentRating": "Critical",
+      "residualScore": 25,
+      "residualRating": "Critical"
+    },
+    {
+      "id": "cmkils74900grqsmylvz3a069",
+      "riskNumber": "FIN-E-301",
+      "titleAr": "قيود يومية غير مصرح بها أو غير صحيحة وتلاعب غير مصرح به بالفترات المحاسبية (فتح/إغلاق) يؤدي لتحريف القوائم المالية والتلاعب بالأداء المالي",
+      "titleEn": "Unauthorized or incorrect journal entries and unauthorized period manipulations (opening/closing) leading to financial misstatements and manipulation of financial performance",
+      "departmentAr": "المالية",
+      "departmentEn": "Finance",
+      "inherentScore": 25,
+      "inherentRating": "Critical",
+      "residualScore": 25,
+      "residualRating": "Critical"
+    },
+    {
+      "id": "cmkils5cp00g3qsmyadw4jc7r",
+      "riskNumber": "FIN-E-289",
+      "titleAr": "تجاوز الإدارة للضوابط الداخلية لارتكاب احتيال أو التلاعب في القوائم المالية",
+      "titleEn": "Management override of internal controls to perpetrate fraud or manipulate financial statements",
+      "departmentAr": "المالية",
+      "departmentEn": "Finance",
+      "inherentScore": 25,
+      "inherentRating": "Critical",
+      "residualScore": 25,
+      "residualRating": "Critical"
     }
   ],
   "overdue": 3,
   "completionRate": 1,
-  "avgReduction": 2
+  "avgReduction": 1
 }

@@ -98,8 +98,10 @@ async function main() {
   const byStatus: Record<string, number> = {};
   const byDept: Record<string, { ar:string; en:string; total:number; critical:number; major:number; moderate:number; minor:number; negligible:number; withPlans:number; mitigated:number; inhAvg:number; resAvg:number; inhSum:number; resSum:number } > = {};
 
-  for (const r of risks) {
-    byRating[r.residualRating || 'Unknown'] = (byRating[r.residualRating || 'Unknown']||0) + 1;
+  // Only rated risks count toward totals — unrated (pending approval) are excluded
+  const ratedRisks = risks.filter(r => r.residualRating && r.residualRating !== 'Unknown');
+  for (const r of ratedRisks) {
+    byRating[r.residualRating!] = (byRating[r.residualRating!]||0) + 1;
     const k = r.department?.id || 'none';
     if (!byDept[k]) byDept[k] = { ar:r.department?.nameAr||'—', en:r.department?.nameEn||'—', total:0, critical:0, major:0, moderate:0, minor:0, negligible:0, withPlans:0, mitigated:0, inhAvg:0, resAvg:0, inhSum:0, resSum:0 };
     const d = byDept[k];
@@ -123,9 +125,9 @@ async function main() {
     byStatus[t.status] = (byStatus[t.status]||0) + 1;
   }
 
-  // 5x5 heatmap
+  // 5x5 heatmap — only rated risks
   const heatmap: Record<string, number> = {};
-  for (const r of risks) {
+  for (const r of ratedRisks) {
     const l = r.residualLikelihood, i = r.residualImpact;
     if (l>=1&&l<=5&&i>=1&&i<=5) {
       const k = `${l}-${i}`; heatmap[k] = (heatmap[k]||0) + 1;
@@ -135,7 +137,9 @@ async function main() {
   const stats = {
     snapshotAt: new Date().toISOString(),
     counts: {
-      risks: risks.length,
+      risks: ratedRisks.length,              // ← only rated risks are counted
+      risksAll: risks.length,                 // raw count for reference
+      risksUnrated: risks.length - ratedRisks.length,
       treatments: treatments.length,
       tasks: treatments.reduce((a,t)=>a+t.tasks.length,0),
       departments: departments.length,
@@ -147,7 +151,7 @@ async function main() {
     byStatus,
     byDepartment: Object.values(byDept).sort((a,b)=>b.total-a.total),
     heatmap,
-    topRisks: risks.slice(0,10).map(r=>({
+    topRisks: ratedRisks.slice(0,10).map(r=>({
       id: r.id, riskNumber: r.riskNumber,
       titleAr: r.titleAr, titleEn: r.titleEn,
       departmentAr: r.department?.nameAr, departmentEn: r.department?.nameEn,
@@ -158,8 +162,8 @@ async function main() {
     completionRate: treatments.length > 0
       ? Math.round((treatments.filter(t=>t.status==='completed').length / treatments.length) * 100)
       : 0,
-    avgReduction: risks.length > 0
-      ? Math.round((risks.reduce((a,r)=>a+(r.inherentScore-r.residualScore),0)/risks.reduce((a,r)=>a+r.inherentScore,0))*100)
+    avgReduction: ratedRisks.length > 0
+      ? Math.round((ratedRisks.reduce((a,r)=>a+(r.inherentScore-r.residualScore),0)/ratedRisks.reduce((a,r)=>a+r.inherentScore,0))*100)
       : 0,
   };
 

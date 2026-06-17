@@ -70,7 +70,9 @@
 <script>
 window.ermInit=async function(){
   const stats = await window.ermLoad('stats');
-  const risks = await window.ermLoad('risks') || [];
+  const allRisks = await window.ermLoad('risks') || [];
+  // Exclude unrated (pending) risks from default views — they don't count toward stats
+  const risks = allRisks.filter(r => r.residualRating && r.residualRating !== 'Unknown');
   const total = stats?.counts?.risks ?? risks.length;
   const byRating = stats?.byRating || {};
   const critical = byRating.Critical || 0;
