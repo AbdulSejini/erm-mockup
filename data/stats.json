@@ -1,5 +1,5 @@
 {
-  "snapshotAt": "2026-06-17T07:47:47.720Z",
+  "snapshotAt": "2026-06-17T08:02:05.850Z",
   "counts": {
     "risks": 759,
     "risksAll": 765,
@@ -24,8 +24,8 @@
   },
   "byStatus": {
     "notStarted": 527,
-    "completed": 4,
-    "inProgress": 17,
+    "completed": 5,
+    "inProgress": 16,
     "overdue": 3
   },
   "byDepartment": [
@@ -87,7 +87,7 @@
       "minor": 30,
       "negligible": 7,
       "withPlans": 69,
-      "mitigated": 0,
+      "mitigated": 1,
       "inhAvg": 10.4,
       "resAvg": 10.3,
       "inhSum": 716,

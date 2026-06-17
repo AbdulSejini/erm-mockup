@@ -186,7 +186,11 @@ async function main() {
     descriptionAr: r.descriptionAr, descriptionEn: r.descriptionEn,
     causeAr: r.potentialCauseAr, causeEn: r.potentialCauseEn,
     impactAr: r.potentialImpactAr, impactEn: r.potentialImpactEn,
-    existingControlsAr: r.mitigationActionsAr, existingControlsEn: r.mitigationActionsEn,
+    // ضوابط حالية = "Layers of Protection" historically. Some risks also have
+    // a separate mitigationActions field — merge it so we don't lose data.
+    existingControlsAr: r.layersOfProtectionAr || r.mitigationActionsAr,
+    existingControlsEn: r.layersOfProtectionEn || r.mitigationActionsEn,
+    krisAr: r.krisAr, krisEn: r.krisEn,
     departmentAr: r.department?.nameAr, departmentEn: r.department?.nameEn,
     categoryAr: r.category?.nameAr, categoryEn: r.category?.nameEn,
     status: r.status,
